@@ -8,31 +8,87 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Video.thumbnail'
-        db.add_column('localtv_video', 'thumbnail',
-                      self.gf('django.db.models.fields.files.ImageField')(default='', max_length=100, blank=True),
-                      keep_default=False)
+        # Deleting field 'Video.has_thumbnail'
+        db.delete_column('localtv_video', 'has_thumbnail')
 
-        # Adding field 'Feed.thumbnail'
-        db.add_column('localtv_feed', 'thumbnail',
-                      self.gf('django.db.models.fields.files.ImageField')(default='', max_length=100, blank=True),
-                      keep_default=False)
+        # Deleting field 'Video.thumbnail_extension'
+        db.delete_column('localtv_video', 'thumbnail_extension')
 
-        # Adding field 'SavedSearch.thumbnail'
-        db.add_column('localtv_savedsearch', 'thumbnail',
-                      self.gf('django.db.models.fields.files.ImageField')(default='', max_length=100, blank=True),
-                      keep_default=False)
+        # Deleting field 'SiteSettings.has_thumbnail'
+        db.delete_column('localtv_sitesettings', 'has_thumbnail')
+
+        # Deleting field 'SiteSettings.thumbnail_extension'
+        db.delete_column('localtv_sitesettings', 'thumbnail_extension')
+
+        # Deleting field 'SavedSearch.has_thumbnail'
+        db.delete_column('localtv_savedsearch', 'has_thumbnail')
+
+        # Deleting field 'SavedSearch.thumbnail_extension'
+        db.delete_column('localtv_savedsearch', 'thumbnail_extension')
+
+        # Deleting field 'Feed.thumbnail_extension'
+        db.delete_column('localtv_feed', 'thumbnail_extension')
+
+        # Deleting field 'Feed.has_thumbnail'
+        db.delete_column('localtv_feed', 'has_thumbnail')
+
+        # Deleting field 'WidgetSettings.thumbnail_extension'
+        db.delete_column('localtv_widgetsettings', 'thumbnail_extension')
+
+        # Deleting field 'WidgetSettings.has_thumbnail'
+        db.delete_column('localtv_widgetsettings', 'has_thumbnail')
 
 
     def backwards(self, orm):
-        # Deleting field 'Video.thumbnail'
-        db.delete_column('localtv_video', 'thumbnail')
+        # Adding field 'Video.has_thumbnail'
+        db.add_column('localtv_video', 'has_thumbnail',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
-        # Deleting field 'Feed.thumbnail'
-        db.delete_column('localtv_feed', 'thumbnail')
+        # Adding field 'Video.thumbnail_extension'
+        db.add_column('localtv_video', 'thumbnail_extension',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=8, blank=True),
+                      keep_default=False)
 
-        # Deleting field 'SavedSearch.thumbnail'
-        db.delete_column('localtv_savedsearch', 'thumbnail')
+        # Adding field 'SiteSettings.has_thumbnail'
+        db.add_column('localtv_sitesettings', 'has_thumbnail',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'SiteSettings.thumbnail_extension'
+        db.add_column('localtv_sitesettings', 'thumbnail_extension',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=8, blank=True),
+                      keep_default=False)
+
+        # Adding field 'SavedSearch.has_thumbnail'
+        db.add_column('localtv_savedsearch', 'has_thumbnail',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'SavedSearch.thumbnail_extension'
+        db.add_column('localtv_savedsearch', 'thumbnail_extension',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=8, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Feed.thumbnail_extension'
+        db.add_column('localtv_feed', 'thumbnail_extension',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=8, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Feed.has_thumbnail'
+        db.add_column('localtv_feed', 'has_thumbnail',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'WidgetSettings.thumbnail_extension'
+        db.add_column('localtv_widgetsettings', 'thumbnail_extension',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=8, blank=True),
+                      keep_default=False)
+
+        # Adding field 'WidgetSettings.has_thumbnail'
+        db.add_column('localtv_widgetsettings', 'has_thumbnail',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
 
     models = {
@@ -74,7 +130,6 @@ class Migration(SchemaMigration):
         },
         'localtv.category': {
             'Meta': {'unique_together': "(('slug', 'site'), ('name', 'site'))", 'object_name': 'Category'},
-            'contest_mode': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'level': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
@@ -97,7 +152,6 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {}),
             'etag': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'feed_url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
-            'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_updated': ('django.db.models.fields.DateTimeField', [], {}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
@@ -144,7 +198,7 @@ class Migration(SchemaMigration):
             'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True', 'db_column': "'sitelocation_id'"}),
+            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
@@ -171,7 +225,6 @@ class Migration(SchemaMigration):
             'auto_categories': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['localtv.Category']", 'symmetrical': 'False', 'blank': 'True'}),
             'auto_update': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'query_string': ('django.db.models.fields.TextField', [], {}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
             'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
@@ -208,7 +261,7 @@ class Migration(SchemaMigration):
             'video': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.Video']", 'unique': 'True'})
         },
         'localtv.sitesettings': {
-            'Meta': {'object_name': 'SiteSettings', 'db_table': "'localtv_sitelocation'"},
+            'Meta': {'object_name': 'SiteSettings'},
             'about_html': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'admin_for'", 'blank': 'True', 'to': "orm['auth.User']"}),
             'background': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
@@ -243,7 +296,6 @@ class Migration(SchemaMigration):
             'flash_enclosure_url': ('django.db.models.fields.URLField', [], {'max_length': '2048', 'blank': 'True'}),
             'guid': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_featured': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),

@@ -89,7 +89,6 @@ class Migration(DataMigration):
         },
         'localtv.category': {
             'Meta': {'unique_together': "(('slug', 'site'), ('name', 'site'))", 'object_name': 'Category'},
-            'contest_mode': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'level': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
@@ -160,7 +159,7 @@ class Migration(DataMigration):
             'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True', 'db_column': "'sitelocation_id'"}),
+            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
@@ -225,7 +224,7 @@ class Migration(DataMigration):
             'video': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.Video']", 'unique': 'True'})
         },
         'localtv.sitesettings': {
-            'Meta': {'object_name': 'SiteSettings', 'db_table': "'localtv_sitelocation'"},
+            'Meta': {'object_name': 'SiteSettings'},
             'about_html': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'admin_for'", 'blank': 'True', 'to': "orm['auth.User']"}),
             'background': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
@@ -233,6 +232,7 @@ class Migration(DataMigration):
             'css': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'display_submit_button': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'footer_html': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'hide_get_started': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'logo': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
@@ -243,6 +243,7 @@ class Migration(DataMigration):
             'status': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
             'submission_requires_login': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'tagline': ('django.db.models.fields.CharField', [], {'max_length': '4096', 'blank': 'True'}),
+            'thumbnail_extension': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
             'use_original_date': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         'localtv.video': {
