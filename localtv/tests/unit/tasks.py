@@ -17,7 +17,6 @@
 
 from datetime import datetime, timedelta
 
-from celery.exceptions import MaxRetriesExceededError
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
 import mock

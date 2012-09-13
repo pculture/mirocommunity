@@ -18,9 +18,7 @@
 from __future__ import with_statement
 
 from daguerre.models import Image, AdjustedImage
-from django.conf import settings
 from django.contrib.sites.models import Site
-from django.db import connections
 from django.core.files.base import File
 
 from localtv.models import SiteSettings, SiteRelatedManager, WidgetSettings

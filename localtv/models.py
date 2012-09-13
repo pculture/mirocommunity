@@ -28,14 +28,9 @@ import sys
 import traceback
 import warnings
 
-try:
-    from PIL import Image as PILImage
-except ImportError:
-    import Image as PILImage
 import time
 from bs4 import BeautifulSoup
 
-from daguerre.models import Image
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -43,7 +38,6 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
@@ -51,7 +45,6 @@ from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
 from django.template.loader import render_to_string
-from django.utils.encoding import force_unicode
 import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -64,7 +57,6 @@ from notification import models as notification
 import tagging
 import tagging.models
 
-from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
