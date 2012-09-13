@@ -1086,7 +1086,7 @@ class AddFeedForm(forms.Form):
                           scraped_feed.url,
                           exc_info=True)
             raise forms.ValidationError('There was an unknown error loading '
-                                        '{url}'.format(feed_url=scraped_feed.url))
+                                        '{url}'.format(url=scraped_feed.url))
 
         if scraped_feed.webpage and models.Feed.objects.filter(
                                                 webpage=scraped_feed.webpage,
