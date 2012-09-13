@@ -29,10 +29,10 @@ class ThumbnailableResource(ModelResource):
     thumbnail = fields.CharField(null=True, readonly=True)
 
     def dehydrate_thumbnail(self, bundle):
-        if not bundle.obj.thumbnail_file:
+        if not bundle.obj.thumbnail:
             thumbnail = None
         else:
-            thumbnail = bundle.obj.thumbnail_file.url
+            thumbnail = bundle.obj.thumbnail.url
         return thumbnail
 
 

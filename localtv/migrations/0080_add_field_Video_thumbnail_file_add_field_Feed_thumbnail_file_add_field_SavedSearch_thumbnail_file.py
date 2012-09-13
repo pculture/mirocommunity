@@ -8,31 +8,31 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Video.thumbnail_file'
-        db.add_column('localtv_video', 'thumbnail_file',
+        # Adding field 'Video.thumbnail'
+        db.add_column('localtv_video', 'thumbnail',
                       self.gf('django.db.models.fields.files.ImageField')(default='', max_length=100, blank=True),
                       keep_default=False)
 
-        # Adding field 'Feed.thumbnail_file'
-        db.add_column('localtv_feed', 'thumbnail_file',
+        # Adding field 'Feed.thumbnail'
+        db.add_column('localtv_feed', 'thumbnail',
                       self.gf('django.db.models.fields.files.ImageField')(default='', max_length=100, blank=True),
                       keep_default=False)
 
-        # Adding field 'SavedSearch.thumbnail_file'
-        db.add_column('localtv_savedsearch', 'thumbnail_file',
+        # Adding field 'SavedSearch.thumbnail'
+        db.add_column('localtv_savedsearch', 'thumbnail',
                       self.gf('django.db.models.fields.files.ImageField')(default='', max_length=100, blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Video.thumbnail_file'
-        db.delete_column('localtv_video', 'thumbnail_file')
+        # Deleting field 'Video.thumbnail'
+        db.delete_column('localtv_video', 'thumbnail')
 
-        # Deleting field 'Feed.thumbnail_file'
-        db.delete_column('localtv_feed', 'thumbnail_file')
+        # Deleting field 'Feed.thumbnail'
+        db.delete_column('localtv_feed', 'thumbnail')
 
-        # Deleting field 'SavedSearch.thumbnail_file'
-        db.delete_column('localtv_savedsearch', 'thumbnail_file')
+        # Deleting field 'SavedSearch.thumbnail'
+        db.delete_column('localtv_savedsearch', 'thumbnail')
 
 
     models = {
@@ -103,7 +103,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'thumbnail_file': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'webpage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'when_submitted': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
@@ -174,7 +174,7 @@ class Migration(SchemaMigration):
             'has_thumbnail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'query_string': ('django.db.models.fields.TextField', [], {}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
-            'thumbnail_file': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'when_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
         },
@@ -250,7 +250,7 @@ class Migration(SchemaMigration):
             'search': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.SavedSearch']", 'null': 'True', 'blank': 'True'}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'thumbnail_file': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'thumbnail_url': ('django.db.models.fields.URLField', [], {'max_length': '400', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video_service_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),

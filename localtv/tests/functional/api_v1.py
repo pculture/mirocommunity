@@ -79,12 +79,12 @@ class ApiV1TestCase(BaseTestCase):
             'etag': '',
         }
         feed = self.create_feed(
-            thumbnail_file=File(file(self._data_file('logo.png'))),
+            thumbnail=File(file(self._data_file('logo.png'))),
             **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
         feed = Feed.objects.get(pk=feed.pk)
-        expected_data['thumbnail'] = feed.thumbnail_file.url
+        expected_data['thumbnail'] = feed.thumbnail.url
         url = '/api/v1/feed/1/'
         expected_data['resource_uri'] = url
         for attr in ('last_updated', 'when_submitted'):
@@ -102,12 +102,12 @@ class ApiV1TestCase(BaseTestCase):
             'query_string': 'dead -parrot',
         }
         search = self.create_search(
-            thumbnail_file=File(file(self._data_file('logo.png'))),
+            thumbnail=File(file(self._data_file('logo.png'))),
             **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
         search = SavedSearch.objects.get(pk=search.pk)
-        expected_data['thumbnail'] = search.thumbnail_file.url
+        expected_data['thumbnail'] = search.thumbnail.url
         url = '/api/v1/search/1/'
         expected_data['resource_uri'] = url
         expected_data['when_created'] = search.when_created.isoformat()
@@ -126,14 +126,14 @@ class ApiV1TestCase(BaseTestCase):
             'tags': '',
         }
         video = self.create_video(
-            thumbnail_file=File(file(self._data_file('logo.png'))),
+            thumbnail=File(file(self._data_file('logo.png'))),
             update_index=False,
             **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
         video = Video.objects.get(pk=video.pk)
         expected_data.update({
-            'thumbnail': video.thumbnail_file.url,
+            'thumbnail': video.thumbnail.url,
             'tags': [],
             'feed': None,
             'search': None,

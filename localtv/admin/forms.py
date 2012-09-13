@@ -70,7 +70,7 @@ class EditVideoForm(forms.ModelForm):
     """
     class Meta:
         model = models.Video
-        fields = ('thumbnail_file', 'thumbnail_url', )
+        fields = ('thumbnail', 'thumbnail_url', )
 
     def save(self, commit=True):
         if self.cleaned_data.get('thumbnail'):
@@ -169,7 +169,7 @@ class SourceForm(forms.ModelForm):
     class Meta:
         model = models.Source
         fields = ('auto_approve', 'auto_categories', 'auto_authors',
-                  'thumbnail_file', 'delete_thumbnail')
+                  'thumbnail', 'delete_thumbnail')
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
@@ -201,7 +201,7 @@ class SourceForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         if self.cleaned_data.get('delete_thumbnail'):
-            self.instance.thumbnail_file.delete()
+            self.instance.thumbnail.delete()
 
         # if the categories or authors changed, update unchanged videos to the
         # new values
@@ -390,7 +390,7 @@ class BulkEditVideoForm(EditVideoForm):
 
     class Meta:
         model = models.Video
-        fields = ('name', 'description', 'thumbnail_file', 'thumbnail_url', 'tags',
+        fields = ('name', 'description', 'thumbnail', 'thumbnail_url', 'tags',
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code', 'skip_authors')
 

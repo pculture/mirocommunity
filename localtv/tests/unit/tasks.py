@@ -287,13 +287,13 @@ class VideoSaveThumbnailTestCase(BaseTestCase):
         remote_file = mock.Mock(read=lambda: thumbnail_data,
                                 getcode=lambda: 200)
 
-        self.assertTrue(video.thumbnail_file._file is None)
+        self.assertTrue(video.thumbnail._file is None)
         with mock.patch('localtv.tasks.urllib.urlopen',
                         return_value=remote_file):
             video_save_thumbnail.apply(args=(video.pk,))
-        self.assertFalse(video.thumbnail_file is None)
-        self.assertTrue(video.thumbnail_file._committed)
+        self.assertFalse(video.thumbnail is None)
+        self.assertTrue(video.thumbnail._committed)
         new_video = Video.objects.get(pk=video.pk)
-        self.assertTrue(new_video.thumbnail_file)
-        self.assertTrue(new_video.thumbnail_file._committed)
+        self.assertTrue(new_video.thumbnail)
+        self.assertTrue(new_video.thumbnail._committed)
         self.assertEqual(new_video.thumbnail_url, thumbnail_url)

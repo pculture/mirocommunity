@@ -351,9 +351,9 @@ def video_save_thumbnail(video_pk, using='default'):
 
     # Save the thumbnail file without saving the video instance.
     # Avoids a race condition as much as possible.
-    video.thumbnail_file.save(thumb_file.name, thumb_file, save=False)
+    video.thumbnail.save(thumb_file.name, thumb_file, save=False)
     Video.objects.using(using).filter(pk=video.pk
-                ).update(thumbnail_file=video.thumbnail_file.name)
+                ).update(thumbnail=video.thumbnail.name)
     remote_file.close()
     thumb_file.close()
 

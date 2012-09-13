@@ -56,12 +56,12 @@ class ThumbnailNode(template.Node):
 
         storage_path = None
 
-        if video.thumbnail_file:
+        if video.thumbnail:
             storage_path = video.thumbnail.file
-        elif video.feed_id and video.feed.thumbnail_file:
-            storage_path = video.feed.thumbnail_file.path
-        elif video.search_id and video.search.thumbnail_file:
-            storage_path = video.search.thumbnail_file.path
+        elif video.feed_id and video.feed.thumbnail:
+            storage_path = video.feed.thumbnail.name
+        elif video.search_id and video.search.thumbnail:
+            storage_path = video.search.thumbnail.name
 
         if storage_path is None:
             image = None

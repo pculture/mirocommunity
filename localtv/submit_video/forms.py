@@ -92,7 +92,7 @@ class SubmitVideoFormBase(forms.ModelForm):
                               required=True)
 
     class Meta:
-        exclude = ['status', 'site']
+        exclude = ['status', 'site', 'thumbnail']
 
     def __init__(self, request, url, *args, **kwargs):
         self.request = request
@@ -117,10 +117,6 @@ class SubmitVideoFormBase(forms.ModelForm):
             # prefer thumbnail_url.
             if not cleaned_data.get('thumbnail_url'):
                 cleaned_data['thumbnail_url'] = thumbnail_url
-
-        if cleaned_data.get('thumbnail_file'):
-            # if there's a thumbnail file, ignore the URL
-            cleaned_data.pop('thumbnail_url', None)
 
         return cleaned_data
 
@@ -167,7 +163,7 @@ class SubmitVideoFormBase(forms.ModelForm):
                 # Then it was generated with from_vidscraper_video
                 instance.save_m2m()
 
-            if instance.thumbnail_url and not instance.thumbnail_file:
+            if instance.thumbnail_url and not instance.thumbnail:
                 video_save_thumbnail.delay(instance.pk, using=CELERY_USING)
 
             if self.cleaned_data.get('tags'):
@@ -182,8 +178,16 @@ class SubmitVideoFormBase(forms.ModelForm):
 
 
 class ThumbnailSubmitVideoForm(SubmitVideoFormBase):
+    # For backwards-compatibility.
     thumbnail_file = forms.ImageField(required=False,
                                       label="Thumbnail File (optional)")
+
+    def save(self, commit=True):
+        thumbnail = self.cleaned_data.get('thumbnail_file')
+        if thumbnail:
+            self.instance.thumbnail = thumbnail
+            self.instance.thumbnail_url = ''
+        return super(ThumbnailSubmitVideoForm, self).save(commit)
 
 
 class ScrapedSubmitVideoForm(SubmitVideoFormBase):

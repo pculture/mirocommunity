@@ -461,5 +461,5 @@ class ThumbnailSubmitVideoFormTestCase(BaseTestCase):
 
         self.assertTrue(form.is_valid(), form.errors)
         video = form.save()
-        self.assertTrue(video.thumbnail_file)
+        self.assertTrue(video.thumbnail)
         self.assertEqual(video.thumbnail_url, '')

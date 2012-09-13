@@ -144,10 +144,10 @@ class ThumbnailableTestCase(BaseTestCase):
 
         """
         video = self.create_video()
-        video.thumbnail_file.save('logo.png', File(open(self._data_file('logo.png'))))
+        video.thumbnail.save('logo.png', File(open(self._data_file('logo.png'))))
         image1 = Image.objects.for_storage_path(video.thumbnail_path)
         AdjustedImage.objects.adjust(image1, width=image1.width / 2)
         self.assertTrue(image1.adjustedimage_set.all())
-        video.thumbnail_file.save('logo.png', File(open(self._data_file('logo.png'))))
+        video.thumbnail.save('logo.png', File(open(self._data_file('logo.png'))))
         image2 = Image.objects.for_storage_path(video.thumbnail_path)
         self.assertFalse(image2.adjustedimage_set.all())

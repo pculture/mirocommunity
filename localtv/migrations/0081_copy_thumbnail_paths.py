@@ -13,15 +13,15 @@ class Migration(DataMigration):
             obj._meta.object_name.lower(),
             obj.pk,
             obj.thumbnail_extension)
-        obj.thumbnail_file = path
+        obj.thumbnail = path
         obj.save()
 
     def copy_file_to_path(self, obj):
         path = 'localtv/%s_thumbs/%d/orig.%s' % (
             obj._meta.object_name.lower(),
             obj.pk,
-            os.path.splitext(obj.thumbnail_file.path)[1])
-        file_ = obj.thumbnail_file.open()
+            os.path.splitext(obj.thumbnail.path)[1])
+        file_ = obj.thumbnail.open()
         default_storage.save(path, file_)
 
     def forwards(self, orm):
@@ -40,14 +40,14 @@ class Migration(DataMigration):
 
     def backwards(self, orm):
         "Write your backwards methods here."
-        for video in orm['localtv.Video'].objects.exclude(thumbnail_file=""):
+        for video in orm['localtv.Video'].objects.exclude(thumbnail=""):
             self.copy_file_to_path(video)
 
-        for feed in orm['localtv.Feed'].objects.exclude(thumbnail_file=""):
+        for feed in orm['localtv.Feed'].objects.exclude(thumbnail=""):
             self.copy_file_to_path(feed)
 
         for search in orm['localtv.SavedSearch'].objects.exclude(
-            thumbnail_file=""):
+            thumbnail=""):
             self.copy_file_to_path(feed)
 
     models = {
@@ -119,7 +119,7 @@ class Migration(DataMigration):
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'thumbnail_extension': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
-            'thumbnail_file': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'webpage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'when_submitted': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
@@ -191,7 +191,7 @@ class Migration(DataMigration):
             'query_string': ('django.db.models.fields.TextField', [], {}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
             'thumbnail_extension': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
-            'thumbnail_file': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'when_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
         },
@@ -268,7 +268,7 @@ class Migration(DataMigration):
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'thumbnail_extension': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
-            'thumbnail_file': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'}),
             'thumbnail_url': ('django.db.models.fields.URLField', [], {'max_length': '400', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video_service_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),

@@ -84,7 +84,7 @@ class Thumbnailable(models.Model):
     Daguerre for thumbnails, this is just for backwards compatibility.
     """
     # we set this to "logo" for SiteSettings, 'icon' for  WidgetSettings
-    thumbnail_attribute = 'thumbnail_file'
+    thumbnail_attribute = 'thumbnail'
 
     class Meta:
         abstract = True
@@ -413,8 +413,8 @@ class Source(Thumbnailable):
     """
     id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
-    thumbnail_file = models.ImageField(upload_to=utils.UploadTo('localtv/source/thumbnail/%Y/%m/%d/'),
-                                       blank=True)
+    thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/source/thumbnail/%Y/%m/%d/'),
+                                  blank=True)
 
     auto_approve = models.BooleanField(default=False)
     auto_update = models.BooleanField(default=True,
@@ -1270,8 +1270,8 @@ class Video(Thumbnailable, VideoBase):
     )
 
     site = models.ForeignKey(Site)
-    thumbnail_file = models.ImageField(upload_to=utils.UploadTo('localtv/video/thumbnail/%Y/%m/%d/'),
-                                       blank=True)
+    thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/video/thumbnail/%Y/%m/%d/'),
+                                  blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
