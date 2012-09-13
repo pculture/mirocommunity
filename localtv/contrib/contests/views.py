@@ -53,7 +53,8 @@ class ContestDetailView(ContestQuerySetMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ContestDetailView, self).get_context_data(**kwargs)
-        base_qs = Video.objects.filter(contestvideo__contest=self.object)
+        base_qs = Video.objects.filter(contestvideo__contest=self.object
+                              ).filter(status=Video.ACTIVE)
         if Contest.NEW in self.object.detail_columns:
             site_settings = SiteSettings.objects.get_current()
             context['new_videos'] = base_qs.with_best_date(
