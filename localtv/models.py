@@ -28,14 +28,9 @@ import sys
 import traceback
 import warnings
 
-try:
-    from PIL import Image as PILImage
-except ImportError:
-    import Image as PILImage
 import time
 from bs4 import BeautifulSoup
 
-from daguerre.models import Image
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -43,7 +38,6 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
@@ -63,7 +57,6 @@ from notification import models as notification
 import tagging
 import tagging.models
 
-from localtv.exceptions import CannotOpenImageUrl
 from localtv.templatetags.filters import sanitize
 from localtv import utils
 from localtv import settings as lsettings
@@ -87,77 +80,26 @@ VIDEO_SERVICE_REGEXES = (
 
 class Thumbnailable(models.Model):
     """
-    A type of Model that has thumbnails generated for it.
+    A type of Model that has thumbnails generated for it.  Now that we're using
+    Daguerre for thumbnails, this is just for backwards compatibility.
     """
-    has_thumbnail = models.BooleanField(default=False)
-    thumbnail_extension = models.CharField(max_length=8, blank=True)
+    # we set this to "logo" for SiteSettings, 'icon' for  WidgetSettings
+    thumbnail_attribute = 'thumbnail'
 
     class Meta:
         abstract = True
 
-    def save_thumbnail_from_file(self, content_thumb, update=True):
-        """
-        Takes an image file-like object and stores it as the thumbnail for this
-        video item.
-        """
-        try:
-            pil_image = PILImage.open(content_thumb)
-        except IOError:
-            raise CannotOpenImageUrl('An image could not be loaded')
-
-        # Delete previous thumbnail (and resized thumbnails) before saving
-        # the new one. This is necessary only because we're currently
-        # overwriting the same storage path over and over. In the future, we
-        # are switching to ImageFields for thumbnail storage, which will
-        # render this entire system obsolete. See bz18318.
-        if self.has_thumbnail:
-            self.delete_thumbnail()
-
-        # Save the extension and the having of a thumbnail - then update
-        # the copy in the database separately to avoid race condition
-        # issues.
-        self.thumbnail_extension = pil_image.format.lower()
-        self.has_thumbnail = True
-        if update and self.pk is not None:
-            Video.objects.using(self._state.db
-                        ).filter(pk=self.pk
-                        ).update(thumbnail_extension=self.thumbnail_extension,
-                                 has_thumbnail=True)
-        default_storage.save(self.thumbnail_path, content_thumb)
-
-        if hasattr(content_thumb, 'temporary_file_path'):
-            # might have gotten moved by Django's storage system, so it might
-            # be invalid now.  to make sure we've got a valid file, we reopen
-            # under the new path
-            content_thumb.close()
-            content_thumb = default_storage.open(self.thumbnail_path)
-            pil_image = PILImage.open(content_thumb)
+    @property
+    def has_thumbnail(self):
+        return bool(getattr(self, self.thumbnail_attribute))
 
     @property
     def thumbnail_path(self):
-        """
-        Return the path for the original thumbnail, relative to the default
-        file storage system.
-        """
-        return 'localtv/%s_thumbs/%s/orig.%s' % (
-            self._meta.object_name.lower(),
-            self.id, self.thumbnail_extension)
-
-    def delete_thumbnail(self):
-        self.has_thumbnail = False
-        delete_if_exists(self.thumbnail_path)
-        try:
-            image = Image.objects.for_storage_path(self.thumbnail_path)
-        except Image.DoesNotExist:
-            pass
+        thumb_file = getattr(self, self.thumbnail_attribute)
+        if thumb_file:
+            return thumb_file.name
         else:
-            image.delete()
-        self.thumbnail_extension = ''
-        self.save()
-
-    def delete(self, *args, **kwargs):
-        self.delete_thumbnail()
-        super(Thumbnailable, self).delete(*args, **kwargs)
+            return ''
 
 
 class SingletonManager(models.Manager):
@@ -199,6 +141,9 @@ class SiteSettings(Thumbnailable):
      - submission_requires_login: whether or not users need to log in to submit
        videos.
     """
+
+    thumbnail_attribute = 'logo'
+
     DISABLED = 0
     ACTIVE = 1
 
@@ -208,8 +153,8 @@ class SiteSettings(Thumbnailable):
     )
 
     site = models.ForeignKey(Site, unique=True)
-    logo = models.ImageField(upload_to='localtv/site_logos', blank=True)
-    background = models.ImageField(upload_to='localtv/site_backgrounds',
+    logo = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/logo/%Y/%m/%d/'), blank=True)
+    background = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/background/%Y/%m/%d/'),
                                    blank=True)
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
@@ -389,9 +334,6 @@ class WidgetSettingsManager(SiteRelatedManager):
             if site_settings.logo:
                 site_settings.logo.open()
                 ws.icon = site_settings.logo
-                cf = ContentFile(site_settings.logo.read())
-                ws.save_thumbnail_from_file(cf)
-                ws.has_thumbnail = True
                 ws.save()
         return ws
 
@@ -400,15 +342,17 @@ class WidgetSettings(Thumbnailable):
     """
     A Model which represents the options for controlling the widget creator.
     """
+    thumbnail_attribute = 'icon'
+
     site = models.OneToOneField(Site)
 
     title = models.CharField(max_length=250, blank=True)
     title_editable = models.BooleanField(default=True)
 
-    icon = models.ImageField(upload_to='localtv/widget_icon', blank=True)
+    icon = models.ImageField(upload_to=utils.UploadTo('localtv/widgetsettings/icon/%Y/%m/%d/'), blank=True)
     icon_editable = models.BooleanField(default=False)
 
-    css = models.FileField(upload_to='localtv/widget_css', blank=True)
+    css = models.FileField(upload_to=utils.UploadTo('localtv/widgetsettings/css/%Y/%m/%d/'), blank=True)
     css_editable = models.BooleanField(default=False)
 
     bg_color = models.CharField(max_length=20, blank=True)
@@ -469,6 +413,9 @@ class Source(Thumbnailable):
     """
     id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
+    thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/source/thumbnail/%Y/%m/%d/'),
+                                  blank=True)
+
     auto_approve = models.BooleanField(default=False)
     auto_update = models.BooleanField(default=True,
                                       help_text=_("If selected, new videos will"
@@ -696,7 +643,8 @@ class Category(MPTTModel):
                     "is usually lower-case and contains only letters, numbers "
                     "and hyphens."))
     logo = models.ImageField(
-        upload_to="localtv/category_logos", blank=True,
+        upload_to=utils.UploadTo('localtv/category/logo/%Y/%m/%d/'),
+        blank=True,
         verbose_name='Thumbnail/Logo',
         help_text=_("Optional. For example: a leaf for 'environment' or the "
                     "logo of a university department."))
@@ -1299,11 +1247,7 @@ class Video(Thumbnailable, VideoBase):
        give out when they don't actually want their enclosures to
        point to video files.
      - guid: data used to identify this video
-     - has_thumbnail: whether or not this video has a thumbnail
      - thumbnail_url: url to the thumbnail, if such a thing exists
-     - thumbnail_extension: extension of the *internal* thumbnail, saved on the
-       server (usually paired with the id, so we can determine "1123.jpg" or
-       "1186.png"
      - user: if not None, the user who submitted this video
      - search: if not None, the SavedSearch from which this video came
      - video_service_user: if not blank, the username of the user on the video
@@ -1326,6 +1270,8 @@ class Video(Thumbnailable, VideoBase):
     )
 
     site = models.ForeignKey(Site)
+    thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/video/thumbnail/%Y/%m/%d/'),
+                                  blank=True)
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')

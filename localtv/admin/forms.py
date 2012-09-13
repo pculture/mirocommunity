@@ -30,7 +30,6 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
 from django.core.urlresolvers import resolve
 from django.http import Http404
 from django.utils.html import conditional_escape
@@ -69,22 +68,17 @@ class BulkFormSetMixin(object):
 class EditVideoForm(forms.ModelForm):
     """
     """
-    thumbnail = forms.ImageField(required=False)
     class Meta:
         model = models.Video
         fields = ('thumbnail', 'thumbnail_url', )
 
     def save(self, commit=True):
-        if 'thumbnail' in self.cleaned_data:
-            thumbnail = self.cleaned_data.pop('thumbnail')
-            if thumbnail:
-                self.instance.thumbnail_url = ''
-                del self.cleaned_data['thumbnail_url']
-                # since we're no longer using
-                # that URL for a thumbnail
-                self.instance.save_thumbnail_from_file(thumbnail,
-                                                       update=False)
-        if 'thumbnail_url' in self.cleaned_data:
+        if self.cleaned_data.get('thumbnail'):
+            self.instance.thumbnail_url = ''
+            del self.cleaned_data['thumbnail_url']
+            # since we're no longer using
+            # that URL for a thumbnail
+        elif 'thumbnail_url' in self.cleaned_data:
             thumbnail_url = self.cleaned_data.pop('thumbnail_url')
             if (thumbnail_url and not
                 models.Video.objects.get(id=self.instance.id).thumbnail_url == thumbnail_url):
@@ -170,7 +164,6 @@ class SourceForm(forms.ModelForm):
     auto_authors = BulkChecklistField(required=False,
                                  queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
-    thumbnail = forms.ImageField(required=False)
     delete_thumbnail = forms.BooleanField(required=False)
 
     class Meta:
@@ -207,12 +200,8 @@ class SourceForm(forms.ModelForm):
             self._meta.model = type(self.instance)
 
     def save(self, *args, **kwargs):
-        if self.cleaned_data.get('thumbnail'):
-            self.instance.save_thumbnail_from_file(
-                self.cleaned_data['thumbnail'],
-                update=False)
         if self.cleaned_data.get('delete_thumbnail'):
-            self.instance.delete_thumbnail()
+            self.instance.thumbnail.delete()
 
         # if the categories or authors changed, update unchanged videos to the
         # new values
@@ -651,10 +640,6 @@ class EditSettingsForm(forms.ModelForm):
 
     def save(self):
         sl = forms.ModelForm.save(self)
-        if sl.logo:
-            sl.logo.open()
-            cf = ContentFile(sl.logo.read())
-            sl.save_thumbnail_from_file(cf)
         sl.site.name = self.cleaned_data['title']
         sl.site.save()
         models.SiteSettings.objects.clear_cache()
@@ -664,15 +649,7 @@ class WidgetSettingsForm(forms.ModelForm):
 
     class Meta:
         model = models.WidgetSettings
-        exclude = ['site', 'has_thumbnail', 'thumbnail_extension']
-
-    def save(self):
-        ws = forms.ModelForm.save(self)
-        if ws.icon:
-            ws.icon.open()
-            cf = ContentFile(ws.icon.read())
-            ws.save_thumbnail_from_file(cf)
-        return ws
+        exclude = ['site']
 
 class VideoAsUrlWidget(forms.TextInput):
     def render(self, name, value, attrs=None):

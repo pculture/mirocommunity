@@ -240,7 +240,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             }
         if item.website_url:
             kwargs['website_url'] = iri_to_uri(item.website_url)
-        if item.has_thumbnail:
+        if item.thumbnail:
             site = Site.objects.get_current()
             image = None
             if item.thumbnail_url:
@@ -248,7 +248,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             else:
                 try:
                     image = Image.objects.for_storage_path(
-                                item.thumbnail_path)
+                                item.thumbnail.name)
                 except Image.DoesNotExist:
                     thumbnail_url = ''
                 else:

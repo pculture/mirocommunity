@@ -614,7 +614,8 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = self._POST_data_from_formset(formset)
 
         feed = Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
-        feed.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+        feed.thumbnail = File(file(self._data_file('logo.png')))
+        feed.save()
 
         POST_data.update({
                 'form-0-name': 'new name!',
@@ -639,13 +640,13 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(feed.name, POST_data['form-0-name'])
         self.assertEqual(feed.feed_url, POST_data['form-0-feed_url'])
         self.assertEqual(feed.webpage, POST_data['form-0-webpage'])
-        self.assertFalse(feed.has_thumbnail)
+        self.assertFalse(feed.thumbnail)
 
         search = SavedSearch.objects.get(
             pk=POST_data['form-1-id'].split('-')[1])
         self.assertEqual(search.query_string,
                           POST_data['form-1-query_string'])
-        self.assertTrue(search.has_thumbnail)
+        self.assertTrue(search.thumbnail)
 
 
     def test_POST_succeed_with_page(self):

@@ -17,7 +17,6 @@
 
 from datetime import datetime, timedelta
 
-from celery.exceptions import MaxRetriesExceededError
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
 import mock
@@ -259,7 +258,7 @@ class VideoSaveThumbnailTestCase(BaseTestCase):
 
         """
         thumbnail_url = 'http://pculture.org/not'
-        video = self.create_video(update_index=False, has_thumbnail=True,
+        video = self.create_video(update_index=False,
                                   thumbnail_url=thumbnail_url)
 
         class MockException(Exception):
@@ -273,7 +272,6 @@ class VideoSaveThumbnailTestCase(BaseTestCase):
                                   args=(video.pk,))
                 urlopen.assert_called_once_with(thumbnail_url)
         new_video = Video.objects.get(pk=video.pk)
-        self.assertEqual(new_video.has_thumbnail, video.has_thumbnail)
         self.assertEqual(new_video.thumbnail_url, video.thumbnail_url)
 
     def test_data_saved(self):
@@ -282,16 +280,20 @@ class VideoSaveThumbnailTestCase(BaseTestCase):
         completed.
 
         """
-        thumbnail_url = 'http://pculture.org/not'
-        video = self.create_video(update_index=False, has_thumbnail=True,
+        thumbnail_url = 'http://pculture.org/path/to/logo.png'
+        video = self.create_video(update_index=False,
                                   thumbnail_url=thumbnail_url)
         thumbnail_data = open(self._data_file('logo.png'), 'r').read()
         remote_file = mock.Mock(read=lambda: thumbnail_data,
                                 getcode=lambda: 200)
+
+        self.assertTrue(video.thumbnail._file is None)
         with mock.patch('localtv.tasks.urllib.urlopen',
                         return_value=remote_file):
             video_save_thumbnail.apply(args=(video.pk,))
+        self.assertFalse(video.thumbnail is None)
+        self.assertTrue(video.thumbnail._committed)
         new_video = Video.objects.get(pk=video.pk)
-        self.assertEqual(new_video.has_thumbnail, True)
+        self.assertTrue(new_video.thumbnail)
+        self.assertTrue(new_video.thumbnail._committed)
         self.assertEqual(new_video.thumbnail_url, thumbnail_url)
-        self.assertEqual(new_video.thumbnail_extension, 'png')

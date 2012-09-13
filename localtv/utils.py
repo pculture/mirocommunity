@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import hashlib
 import string
 import urllib
@@ -26,10 +27,11 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.db.models import get_model, Q
 from django.db.models.query import QuerySet
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_unicode, smart_str
 import tagging
 import vidscraper
 from notification import models as notification
@@ -388,3 +390,31 @@ def touch(filename, override_date=None):
 
     if override_date:
         os.utime(filename, (as_int, as_int))
+
+
+class UploadTo(object):
+    """
+    Generates upload paths based on a string format, but makes sure they
+    are short enough to fit in a FileField. See django bug 11027:
+    https://code.djangoproject.com/ticket/11027
+
+    """
+    def __init__(self, upload_to, storage=None, max_length=100):
+        self.upload_to = upload_to
+        self.storage = storage or default_storage
+        self.max_length = max_length
+
+    def __call__(self, instance, filename):
+        # Off the bat, leave extra space for potential collisions.
+        max_left = self.max_length - 5
+        dir_name = os.path.normpath(force_unicode(datetime.datetime.now().strftime(smart_str(self.upload_to))))
+        max_left = max_left - len(dir_name)
+        if max_left < 6:
+            raise ValueError("upload_to is too long.")
+        basename, ext = os.path.splitext(filename)
+        max_left = max_left - len(ext)
+        if max_left < 1:
+            raise ValueError("filename is too long")
+        if len(basename) > max_left:
+            basename = hashlib.sha1(unicode(datetime.datetime.now()) + unicode(filename)).hexdigest()[:max_left]
+        return os.path.join(dir_name, "".join((basename, ext)))

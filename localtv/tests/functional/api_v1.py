@@ -18,6 +18,7 @@
 import json
 
 from django.conf import settings
+from django.core.files import File
 
 from localtv.tests.base import BaseTestCase
 
@@ -77,13 +78,13 @@ class ApiV1TestCase(BaseTestCase):
             'description': 'Lorem ipsum',
             'etag': '',
         }
-        feed = self.create_feed(has_thumbnail=True, thumbnail_extension='png',
-                                **expected_data)
+        feed = self.create_feed(
+            thumbnail=File(file(self._data_file('logo.png'))),
+            **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
-        feed  = Feed.objects.get(pk=feed.pk)
-        expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
-                                                     feed.thumbnail_path)
+        feed = Feed.objects.get(pk=feed.pk)
+        expected_data['thumbnail'] = feed.thumbnail.url
         url = '/api/v1/feed/1/'
         expected_data['resource_uri'] = url
         for attr in ('last_updated', 'when_submitted'):
@@ -100,14 +101,13 @@ class ApiV1TestCase(BaseTestCase):
             'auto_update': True,
             'query_string': 'dead -parrot',
         }
-        search = self.create_search(has_thumbnail=True,
-                                    thumbnail_extension='png',
-                                    **expected_data)
+        search = self.create_search(
+            thumbnail=File(file(self._data_file('logo.png'))),
+            **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
         search = SavedSearch.objects.get(pk=search.pk)
-        expected_data['thumbnail'] = '{0}{1}'.format(settings.MEDIA_URL,
-                                                     search.thumbnail_path)
+        expected_data['thumbnail'] = search.thumbnail.url
         url = '/api/v1/search/1/'
         expected_data['resource_uri'] = url
         expected_data['when_created'] = search.when_created.isoformat()
@@ -125,16 +125,15 @@ class ApiV1TestCase(BaseTestCase):
             'guid': '12345',
             'tags': '',
         }
-        video = self.create_video(has_thumbnail=True,
-                                  thumbnail_extension='png',
-                                  update_index=False,
-                                  **expected_data)
+        video = self.create_video(
+            thumbnail=File(file(self._data_file('logo.png'))),
+            update_index=False,
+            **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
         video = Video.objects.get(pk=video.pk)
         expected_data.update({
-            'thumbnail': '{0}{1}'.format(settings.MEDIA_URL,
-                                                     video.thumbnail_path),
+            'thumbnail': video.thumbnail.url,
             'tags': [],
             'feed': None,
             'search': None,

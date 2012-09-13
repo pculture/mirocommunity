@@ -35,7 +35,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 		<meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
 		{% if site_settings.logo %}<link rel="image_src" href="{{ settings.MEDIA_URL }}{{ site_settings.logo }}" />{% endif %}
 	{% endblock meta %}
-	
+
 	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
 	
 	{% block styles %}

@@ -5,13 +5,13 @@
 		{# We're gonna do some logic to get the right thumbnail size here. It's gonna be messy. #}
 		
 		{# Start by cropping the image. #}
-		{% adjust video.thumbnail_path width=640 height=360 adjustment="crop" as image %}
+		{% adjust video.thumbnail.name width=640 height=360 adjustment="crop" as image %}
 		{# If the both dimensions are larger than the space, switch to fill. #}
 		{% if image.width == 640 and image.height == 360 %}
-			{% adjust video.thumbnail_path width=640 height=360 adjustment="fill" as image %}
+			{% adjust video.thumbnail.name width=640 height=360 adjustment="fill" as image %}
 		{# If one dimension is larger than the space, switch to fit. #}
 		{% elif image.width == 640 or image.height == 360  %}
-			{% adjust video.thumbnail_path width=640 height=360 adjustment="fit" as image %}
+			{% adjust video.thumbnail.name width=640 height=360 adjustment="fit" as image %}
 		{% endif %}
 		
 		<a href="{{ video.get_absolute_url }}"><img src="{{ image }}" /></a>

@@ -46,9 +46,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<meta property="og:type" content="video.other">
 
 	{# not DRY, but we can't store this. #}
-	{% if current_video.has_thumbnail %}
-		<meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}">
-		<link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment='fit' width=600 %}" />
+	{% if current_video.thumbnail %}
+		<meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name adjustment='fit' width=600 %}">
+		<link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name adjustment='fit' width=600 %}" />
 	{% endif %}
 {% endblock %}
 
@@ -98,7 +98,6 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</section>{# /.video-stage #}
 {% endblock %}
 
-
 {% block main %}
 	<div class="social-media-share">
 		<ul class="social-link-list">
@@ -112,7 +111,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				<g:plusone size="medium"></g:plusone>
 			</li>
 			<li class="pinterest-social">
-				<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail_path adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+				<a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name adjustment="fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
 			</li>
 			<li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
 			{% if current_video.file_url %}

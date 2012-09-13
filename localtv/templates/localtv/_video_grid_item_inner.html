@@ -13,7 +13,7 @@
 	{% endfilter %}
 ">
 	<span  class="video-thumb-wrapper">
-		{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" as image %}
+		{% adjust video.thumbnail.name width=300 height=216 adjustment="fill" as image %}
 		{% if image %}
 			<img src="{{ image }}" />
 		{% else %}

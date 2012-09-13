@@ -101,20 +101,14 @@ def add_feed(request):
 
             if thumbnail_url:
                 try:
-                    thumbnail_file = ContentFile(
+                    thumbnail = ContentFile(
                         urllib2.urlopen(
                             utils.quote_unicode_url(thumbnail_url)).read())
                 except IOError:
                     # couldn't get the thumbnail
                     pass
                 else:
-                    try:
-                        feed.save_thumbnail_from_file(thumbnail_file,
-                                                      update=False)
-                    except CannotOpenImageUrl:
-                        # couldn't parse the thumbnail. Not sure why this
-                        # raises CannotOpenImageUrl, tbh.
-                        pass
+                    feed.thumbnail = thumbnail
             if feed.video_service():
                 user, created = User.objects.get_or_create(
                     username=feed.name[:30],
