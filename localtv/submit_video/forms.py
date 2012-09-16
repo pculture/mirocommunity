@@ -95,8 +95,7 @@ class SubmitVideoFormBase(forms.ModelForm):
         self.request = request
         super(SubmitVideoFormBase, self).__init__(*args, **kwargs)
         if request.user.is_authenticated():
-            self.initial['contact'] = request.user.email
-            self.instance.user = request.user
+            self.fields.pop('contact', None)
         self.instance.site = Site.objects.get_current()
         self.instance.status = Video.UNAPPROVED
         if not self.instance.website_url:
@@ -105,12 +104,6 @@ class SubmitVideoFormBase(forms.ModelForm):
         # HACK for backwards-compatibility
         if 'thumbnail_url' in self.fields:
             self.fields['thumbnail'] = self.fields['thumbnail_url']
-
-    def clean_contact(self):
-        # Always use the logged-in user's email.
-        if self.request.user.is_authenticated():
-            return self.request.user.email
-        return self.cleaned_data['contact']
 
     def clean(self):
         cleaned_data = super(SubmitVideoFormBase, self).clean()
@@ -147,6 +140,10 @@ class SubmitVideoFormBase(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super(SubmitVideoFormBase, self).save(commit=False)
+
+        if self.request.user.is_authenticated():
+            self.instance.user = self.request.user
+            self.instance.contact = self.request.user.email
 
         if self.request.user_is_admin():
             instance.status = Video.ACTIVE

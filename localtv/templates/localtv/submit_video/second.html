@@ -23,9 +23,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% block inner_form %}
 	{% with field=form.url %}{% include "localtv/_form_field.html" %}{% endwith %}
 	{% with field=form.tags %}{% include "localtv/_form_field.html" %}{% endwith %}
-	{% if request.user.is_authenticated %}
-		{{ form.contact.as_hidden }}
-	{% else %}
+	{% if form.contact %}
 		{% with field=form.contact %}{% include "localtv/_form_field.html" %}{% endwith %}
 	{% endif %}
 	{% if not user_is_admin %}
