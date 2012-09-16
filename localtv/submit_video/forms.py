@@ -106,6 +106,12 @@ class SubmitVideoFormBase(forms.ModelForm):
         if 'thumbnail_url' in self.fields:
             self.fields['thumbnail'] = self.fields['thumbnail_url']
 
+    def clean_contact(self):
+        # Always use the logged-in user's email.
+        if self.request.user.is_authenticated():
+            return self.request.user.email
+        return self.cleaned_data['contact']
+
     def clean(self):
         cleaned_data = super(SubmitVideoFormBase, self).clean()
         # HACK for backwards-compatibility.
