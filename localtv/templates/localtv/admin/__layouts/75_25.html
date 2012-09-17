@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/admin/__base.html" %}
 
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
@@ -21,21 +21,21 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 
-	{% block precontent %}{% endblock %}
+    {% block precontent %}{% endblock %}
 
-	<div class="container">
-		{% block top %}{% endblock %}
-		<div class="row">
-			<div class="col-one-half">
-				{% block main %}{% endblock %}
-			</div>
-			<div class="col-one-half">
-				{% block side %}{% endblock %}
-			</div>
-		</div>
-		{% block bottom %}{% endblock %}
-	</div>
+    <div class="container">
+        {% block top %}{% endblock %}
+        <div class="row">
+            <div class="col-three-quarters">
+                {% block main %}{% endblock %}
+            </div>
+            <div class="col-one-quarter">
+                {% block side %}{% endblock %}
+            </div>
+        </div>
+        {% block bottom %}{% endblock %}
+    </div>
 
-	{% block postcontent %}{% endblock %}
+    {% block postcontent %}{% endblock %}
 
 {% endblock %}

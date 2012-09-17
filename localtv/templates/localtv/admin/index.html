@@ -1,4 +1,4 @@
-{% extends "localtv/admin/base.html" %}
+{% extends "localtv/admin/__layouts/25_75.html" %}
 {% comment %}
 # This file is part of Miro Community.
 # Copyright (C) 2010, 2011 Participatory Culture Foundation
@@ -17,187 +17,43 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% block extrahead %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}localtv/css/admin/dashboard.css" />
-<script type="text/javascript" src="{{ STATIC_URL }}localtv/js/admin/disable_get_started.js?version={{ mc_version }}"></script>
-{% if not site_settings.should_show_dashboard %}
-<meta http-equiv="refresh" content="0; url={% url localtv_admin_approve_reject %}">
-{% endif %}
-{% endblock extrahead %}
-{% block body_class %}admin_dash {% if site_settings.hide_get_started %}hide_get_started{% endif %}{% endblock body_class %}
-{% block content %}
-{% if site_settings.should_show_dashboard %}
-<div id="dashboard">
-<h1 id="hdr_activity">Activity</h1>
+{% load i18n %}
 
-<div class="clear"></div>
-<div id="account_stats">
-  <div class="clear">
-  <div id="videos_pending">
-    <h1>{{ unreviewed_count }}</h1>
-    <h2>Videos</h2>
-    <h3>pending moderation</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url localtv_admin_approve_reject %}">Moderate</a>
-  </div><!-- // videos_pending -->
-  
-  <div id="comments_pending">
-    <h1>{{ comment_count }}</h1>
-    <h2>Comments</h2>
-    <h3>pending moderation</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url comments-moderation-queue %}">Moderate</a>
-  </div><!-- // comments_pending -->
-  
-  <div id="videos_week">
-    <h1>{{ videos_this_week_count }}</h1>
-    <h2>Videos</h2>
-    <h3>added this week</h3>
-    <div class="clear"></div>
-    <a id="btn_comment_moderate" href="{% url localtv_list_this_week %}">Moderate</a>
-  </div><!-- // videos_week -->
+{% block body_classes %}{{ block.super }} admin-dashboard{% endblock %}
 
-  </div><!-- // clear -->
-</div><!-- // accounts_stats -->
+{% block side %}
+{% include 'localtv/admin/_admin_navigation.html' %}
+{% endblock %}
 
-<div id="get_started">
-  <div id="hd">
-    <div class="clear">
-      <h1 id="hdr_getstarted">Get Started</h1>
-      <a id="started_hide" href="">Hide This</a>
-    </div><!-- // clear -->
-  </div><!-- // hd -->
-  <ul>
-    <li id="step1"><strong><a href="{% url localtv_admin_manage_page %}">Add Video Feeds</a></strong> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
-    <li id="step2"><strong><a href="{% url uploadtemplate-index %}">Change Your Theme</a></strong> — <span>Choose from four default theme choices.</span></li>
-    <li id="step3"><strong><a href="{% url localtv_admin_settings %}">Edit Your Site Info &amp; Design</a></strong> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
-    <li id="step4"><strong><a href="{% url localtv_user_notifications %}">Set Your Notification Preferences</a></strong> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
-  </ul>
-</div><!-- // get_started -->
+{% block main %}
+  <header class="page-header">
+    <h1>{% block page_title %}{% trans 'Dashboard' %}{% endblock %}</h1>
+  </header>
 
-{% if settings.show_extra_dashboard %}
+  <div class="page-content">
+    <h1>Stats</h1>
 
-<div style="width: 435px; margin: 0 35px 0 0; float: left;">
-<div id="video_views" class="trending_stats">
-  <h1 id="hdr_videoviews">Video Views</h1>
-  <ul>
-    <li><strong>450</strong> views this week <em class="stats_up">449</em> from last week</li>
-    <li><strong>450</strong> views this week <em class="stats_up">449</em> from last week</li>
-    <li><strong>450</strong> views this week <em class="stats_up">449</em> from last week</li>
-  </ul>
-</div><!-- // video_views -->
+    <ul>
+      <li><a href="{% url localtv_admin_approve_reject %}">{{ unreviewed_count }} video{{ unreviewed_count|pluralize }} pending moderation</a></li>
+      <li><a href="{% url comments-moderation-queue %}">{{ comment_count }} comment{{ comment_count|pluralize }} pending moderation</a></li>
+      <li><a href="{% url localtv_list_this_week %}">{{ videos_this_week_count }} video{{ videos_this_week_count|pluralize }} added this week</a></li>
+    </ul>
 
-<div id="user_activity" class="trending_stats">
-  <h1 id="hdr_useractivity">User Activity</h1>
-  <ul>
-    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
-    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
-    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
-    <li><strong>450</strong> views this week <em class="stats_down">449</em> from last week</li>
-  </ul>
-</div><!-- // user_activity -->
-</div><!-- // left -->
 
-<div style="width: 435px;  float: left;">
-<div id="widget_stats">
-  <h1 id="hdr_widgetstats">Widget Stats <a class="wiki_link" href="">(?)</a></h1>
-  <ul class="clear stats_filter">
-    <li class="selected" >
-      <a href="" class="filter_title">Impressions <em class="icon"></em>
-        <ul class="clear filter_menu">
-          <li>this week</li>
-          <li>this month</li>
-          <li>this year</li>
+    {% if not site_settings.hide_get_started %}
+      <div id="get_started">
+        <div id="hd">
+          <div class="clear">
+            <h1 id="hdr_getstarted">Get Started</h1>
+          </div><!-- // clear -->
+        </div><!-- // hd -->
+        <ul>
+          <li id="step1"><strong><a href="{% url localtv_admin_manage_page %}">Add Video Feeds</a></strong> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
+          <li id="step2"><strong><a href="{% url uploadtemplate-index %}">Change Your Theme</a></strong> — <span>Choose from four default theme choices.</span></li>
+          <li id="step3"><strong><a href="{% url localtv_admin_settings %}">Edit Your Site Info &amp; Design</a></strong> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
+          <li id="step4"><strong><a href="{% url localtv_user_notifications %}">Set Your Notification Preferences</a></strong> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
         </ul>
-      </a></li>
-    <li><a href="" class="filter_title">Newly Created </a></li>
-    <li><a href="" class="filter_title">Clicks <em class="icon"></em>
-      <ul class="clear filter_menu">
-        <li>this week</li>
-        <li>this month</li>
-        <li>this year</li>
-      </ul>
-    </a></li>
-  </ul><!-- // stats_filter -->
-  <table class="stats_table">
-    <tr>
-      <th>referral url</th>
-      <th class="right_col">monthly impressions</th>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-  </table>
-    
-</div><!-- // video_views -->
-
-<div id="site_referrals">
-  <h1 id="hdr_referrals">Referrals <a class="wiki_link" href="">(?)</a></h1>
-  <ul class="clear stats_filter">
-    <li><a href="" class="filter_title">Websites <em class="icon"></em>
-      <ul class="clear filter_menu">
-        <li>this week</li>
-        <li>this month</li>
-        <li>this year</li>
-      </ul>
-
-    </a></li>
-    <li><a href="" class="filter_title">Search Engines <em class="icon"></em>
-      <ul class="clear filter_menu">
-        <li>Google</li>
-        <li>Yahoo</li>
-        <li>Bing</li>
-      </ul>
-    </a></li>
-  </ul><!-- // stats_filter -->
-  <table class="stats_table">
-    <tr>
-      <th>referral url</th>
-      <th class="right_col">monthly impressions</th>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-    <tr>
-      <td><a href="">duke.edu/library/video</a></td>
-      <td class="right_col impressions">32,315,724</td>
-    </tr>
-  </table>
-</div><!-- // user_activity -->
-</div><!-- // right -->
-
-{% endif %}
-
-</div><!-- // dashboard -->
-{% endif %}
+      </div>{# get_started #}
+    {% endif %}
+  </div>
 {% endblock %}
