@@ -73,6 +73,9 @@ class Contest(models.Model):
     #: Whether the actual vote counts should be displayed by the videos.
     display_vote_counts = models.BooleanField(default=False)
 
+    #: Text (or HTML) explaining the rules of the contest.
+    rules = models.TextField(blank=True)
+
     @property
     def slug(self):
         return slugify(self.name)

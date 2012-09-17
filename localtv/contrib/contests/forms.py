@@ -37,7 +37,8 @@ class ContestAdminForm(forms.ModelForm):
         # is resolved.
         #exclude = ('videos', 'site', 'detail_columns')
         fields = ('name', 'description', 'votes_per_user', 'allow_downvotes',
-                  'submissions_open', 'voting_open', 'display_vote_counts')
+                  'submissions_open', 'voting_open', 'display_vote_counts',
+                  'rules')
 
     def __init__(self, *args, **kwargs):
         super(ContestAdminForm, self).__init__(*args, **kwargs)
