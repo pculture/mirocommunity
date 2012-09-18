@@ -32,7 +32,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<div class="padded">
 				<form id="share_form" action="{{ request.path }}" method="POST">
 					{% csrf_token %}
-					{% include "localtv/_form_inner.html" %}
+					{% include "localtv/admin/_form_inner.html" %}
 					<footer class="form-actions">
 						<button>Share</button>
 					</footer>

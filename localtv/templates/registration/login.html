@@ -47,7 +47,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 							<form action="{{ settings.LOGIN_URL }}" method="POST">
 								{% csrf_token %}
 								<input type="hidden" name="next" value="{{ next }}" />
-								{% include "localtv/_form_inner.html" %}
+								{% include "localtv/admin/_form_inner.html" %}
 							
 							
 								<div class="control-group">

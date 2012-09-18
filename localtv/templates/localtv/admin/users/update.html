@@ -18,7 +18,7 @@
 
   <form action="{{ request.path }}" method="post">
     {% csrf_token %}
-    {% include "localtv/_form_inner.html" %}
+    {% include "localtv/admin/_form_inner.html" %}
 
     <button type="submit">Save changes</button>
   </form>

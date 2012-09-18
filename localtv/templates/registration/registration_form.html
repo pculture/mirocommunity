@@ -33,7 +33,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</header>
 	<div class="page-content padded">
 		<form action="{% url registration_register %}" method="POST">{% csrf_token %}
-			{% include "localtv/_form_inner.html" %}
+			{% include "localtv/admin/_form_inner.html" %}
 			<div class="control-group">
 				<div class="controls">
 					<button>{% trans "Register" %}</button>

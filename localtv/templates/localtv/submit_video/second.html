@@ -21,12 +21,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n uploadtemplate_tags filters %}
 
 {% block inner_form %}
-	{% with field=form.url %}{% include "localtv/_form_field.html" %}{% endwith %}
-	{% with field=form.tags %}{% include "localtv/_form_field.html" %}{% endwith %}
+	{% with field=form.url %}{% include "localtv/admin/_form_field.html" %}{% endwith %}
+	{% with field=form.tags %}{% include "localtv/admin/_form_field.html" %}{% endwith %}
 	{% if form.contact %}
-		{% with field=form.contact %}{% include "localtv/_form_field.html" %}{% endwith %}
+		{% with field=form.contact %}{% include "localtv/admin/_form_field.html" %}{% endwith %}
 	{% endif %}
 	{% if not user_is_admin %}
-		{% with field=form.notes %}{% include "localtv/_form_field.html" %}{% endwith %}
+		{% with field=form.notes %}{% include "localtv/admin/_form_field.html" %}{% endwith %}
 	{% endif %}
 {% endblock %}
