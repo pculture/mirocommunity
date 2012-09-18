@@ -18,9 +18,9 @@
     <h1>Stats</h1>
 
     <ul>
-      <li><a href="{% url localtv_admin_approve_reject %}">{{ unreviewed_count }} video{{ unreviewed_count|pluralize }} pending moderation</a></li>
-      <li><a href="{% url comments-moderation-queue %}">{{ comment_count }} comment{{ comment_count|pluralize }} pending moderation</a></li>
-      <li><a href="{% url localtv_list_this_week %}">{{ videos_this_week_count }} video{{ videos_this_week_count|pluralize }} added this week</a></li>
+      <li><a href="{% url 'localtv_admin_approve_reject' %}">{{ unreviewed_count }} video{{ unreviewed_count|pluralize }} pending moderation</a></li>
+      <li><a href="{% url 'comments-moderation-queue' %}">{{ comment_count }} comment{{ comment_count|pluralize }} pending moderation</a></li>
+      <li><a href="{% url 'localtv_list_this_week' %}">{{ videos_this_week_count }} video{{ videos_this_week_count|pluralize }} added this week</a></li>
     </ul>
 
 
