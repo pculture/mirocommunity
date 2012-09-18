@@ -18,14 +18,12 @@
 from django.db.models import Count, Q
 from django.conf import settings
 from django.contrib.auth.models import User, UNUSABLE_PASSWORD
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.views.decorators.csrf import csrf_protect
-from django.core.paginator import Paginator, EmptyPage
+from django.core.urlresolvers import reverse
+from django.views.generic import CreateView, UpdateView, ListView
+from django.utils.translation import ugettext as _
 
-from localtv.decorators import require_site_admin
 from localtv.admin import forms
+from localtv.models import SiteSettings
 from localtv.utils import SortHeaders
 
 def _filter_just_humans():
@@ -33,51 +31,55 @@ def _filter_just_humans():
     if 'socialauth' in settings.INSTALLED_APPS:
         filters = filters | ~Q(authmeta=None)
     return filters
-    
 
-@require_site_admin
-@csrf_protect
-def users(request, formset_class=forms.AuthorFormSet,
-          form_class=forms.AuthorForm):
-    headers = SortHeaders(request, (
-            ('Username', 'username'),
-            ('Email', None),
-            ('Role', None),
-            ('Videos', 'authored_set__count')))
 
-    users = User.objects.all().annotate(Count('authored_set'))
-    users = users.order_by(headers.order_by())
-    if request.GET.get('show', None) != 'all':
-        filters = _filter_just_humans()
-        users = users.filter(filters)
+class UserListView(ListView):
+    model = User
+    paginate_by = 50
+    template_name = 'localtv/admin/users/list.html'
+    context_object_name = 'users'
 
-    # Display only the appropriate page. Put 50 on each page at a time.
-    user_paginator = Paginator(users, 50)
-    try:
-        page = user_paginator.page(int(request.GET.get('page', 1)))
-    except ValueError:
-        return HttpResponseBadRequest('Not a page number')
-    except EmptyPage:
-        page = user_paginator.page(user_paginator.num_pages)
+    def get_queryset(self):
+        self.headers = SortHeaders(self.request, (
+            (_('Username'), 'username'),
+            (_('Email'), None),
+            (_('Role'), None),
+            (_('Videos'), 'video_count')
+        ))
+        qs = super(UserListView, self).get_queryset()
+        qs = qs.annotate(video_count=Count('authored_set'))
+        qs = qs.order_by(self.headers.order_by())
+        show = self.request.GET.get('show')
+        if show == 'humans':
+            qs = qs.filter(_filter_just_humans())
+        elif show == 'nonhumans':
+            qs = qs.exclude(_filter_just_humans())
+        return qs
 
-    formset = formset_class(queryset=page.object_list)
-    add_user_form = form_class()
-    if request.method == 'POST':
-        if not request.POST.get('form-TOTAL_FORMS'):
-            add_user_form = form_class(request.POST, request.FILES)
-            if add_user_form.is_valid():
-                add_user_form.save()
-                return HttpResponseRedirect(request.path)
-        else:
-            formset = formset_class(request.POST, request.FILES,
-                                          queryset=User.objects.all())
-            if formset.is_valid():
-                formset.save()
-                return HttpResponseRedirect(request.get_full_path())
+    def get_context_data(self, **kwargs):
+        context = super(UserListView, self).get_context_data(**kwargs)
+        context.update({
+            'site_admins': set(SiteSettings.objects.get_current().admins.all()),
+            'headers': self.headers,
+        })
+        return context
 
-    return render_to_response('localtv/admin/users.html',
-                              {'formset': formset,
-                               'add_user_form': add_user_form,
-                               'page': page,
-                               'headers': headers},
-                              context_instance=RequestContext(request))
+
+class UserCreateView(CreateView):
+    template_name = 'localtv/admin/users/create.html'
+    form_class = forms.AuthorForm
+
+    def get_success_url(self):
+        return reverse('localtv_admin_users_update',
+                       kwargs={'pk': self.object.pk})
+
+
+class UserUpdateView(UpdateView):
+    template_name = 'localtv/admin/users/update.html'
+    form_class = forms.AuthorForm
+    model = User
+    context_object_name = 'user'
+
+    def get_success_url(self):
+        return reverse('localtv_admin_users_update',
+                        kwargs={'pk': self.object.pk})

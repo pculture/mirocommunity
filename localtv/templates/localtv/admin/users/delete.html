@@ -1,0 +1,25 @@
+{% extends "localtv/admin/__layouts/25_75.html" %}
+
+{% load i18n %}
+{% load url from future %}
+
+{% block title %}Delete {{ user.username }} – {% trans "Users" %} - {% trans "Admin" %} – {{ block.super }}{% endblock %}
+
+{% block body_classes %}{{ block.super }} admin-users{% endblock %}
+
+{% block side %}
+{% include 'localtv/admin/_admin_navigation.html' %}
+{% endblock %}
+
+{% block main %}
+  <header class="page-header">
+    <h1>{% block page_title %}Delete {{ user.username }}{% endblock %}</h1>
+  </header>
+
+  <p>Are you sure?</p>s
+
+  <form action="{{ request.path }}" method="post">
+    {% csrf_token %}
+    <button type="submit">Do it.</button>
+  </form>
+{% endblock %}

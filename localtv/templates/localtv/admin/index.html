@@ -1,23 +1,7 @@
 {% extends "localtv/admin/__layouts/25_75.html" %}
-{% comment %}
-# This file is part of Miro Community.
-# Copyright (C) 2010, 2011 Participatory Culture Foundation
-# 
-# Miro Community is free software: you can redistribute it and/or modify it
-# under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or (at your
-# option) any later version.
-# 
-# Miro Community is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-# 
-# You should have received a copy of the GNU Affero General Public License
-# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-{% endcomment %}
 
 {% load i18n %}
+{% load url from future %}
 
 {% block body_classes %}{{ block.super }} admin-dashboard{% endblock %}
 
@@ -41,19 +25,13 @@
 
 
     {% if not site_settings.hide_get_started %}
-      <div id="get_started">
-        <div id="hd">
-          <div class="clear">
-            <h1 id="hdr_getstarted">Get Started</h1>
-          </div><!-- // clear -->
-        </div><!-- // hd -->
-        <ul>
-          <li id="step1"><strong><a href="{% url localtv_admin_manage_page %}">Add Video Feeds</a></strong> — <span>Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</span></li>
-          <li id="step2"><strong><a href="{% url uploadtemplate-index %}">Change Your Theme</a></strong> — <span>Choose from four default theme choices.</span></li>
-          <li id="step3"><strong><a href="{% url localtv_admin_settings %}">Edit Your Site Info &amp; Design</a></strong> — <span>Upload a logo for your site, set your title and tagline, and more.</span></li>
-          <li id="step4"><strong><a href="{% url localtv_user_notifications %}">Set Your Notification Preferences</a></strong> — <span>Decide what updates you'd like to receive about activity on the site.</span></li>
-        </ul>
-      </div>{# get_started #}
+      <h1>Get Started</h1>
+
+      <ul>
+        <li><a href="{% url 'localtv_admin_manage_page' %}">Add Video Feeds</a> — Click the Add Feed button &amp; paste in any media RSS feed or a YouTube, blip.tv or Vimeo profile URL.</li>
+        <li><a href="{% url 'localtv_admin_settings' %}">Edit Your Site Info &amp; Design</a> — Upload a logo for your site, set your title and tagline, and more.</li>
+        <li><a href="{% url 'localtv_user_notifications' %}">Set Your Notification Preferences</a> — Decide what updates you'd like to receive about activity on the site.</li>
+      </ul>
     {% endif %}
   </div>
 {% endblock %}

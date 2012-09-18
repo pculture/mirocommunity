@@ -1,0 +1,25 @@
+{% extends "localtv/admin/__layouts/25_75.html" %}
+
+{% load i18n %}
+{% load url from future %}
+
+{% block title %}{{ user.username }} – {% trans "Users" %} - {% trans "Admin" %} – {{ block.super }}{% endblock %}
+
+{% block body_classes %}{{ block.super }} admin-users{% endblock %}
+
+{% block side %}
+{% include 'localtv/admin/_admin_navigation.html' %}
+{% endblock %}
+
+{% block main %}
+  <header class="page-header">
+    <h1>{% block page_title %}{{ user.username }}{% endblock %}</h1>
+  </header>
+
+  <form action="{{ request.path }}" method="post">
+    {% csrf_token %}
+    {% include "localtv/_form_inner.html" %}
+
+    <button type="submit">Save changes</button>
+  </form>
+{% endblock %}

@@ -15,7 +15,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns, url
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse_lazy
+from django.views.decorators.csrf import csrf_protect
+from django.views.generic import DeleteView
+
+from localtv.admin.user_views import UserListView, UserCreateView, UserUpdateView
+from localtv.decorators import require_site_admin
+
 
 urlpatterns = patterns(
     'localtv.admin.views',
@@ -95,10 +103,22 @@ urlpatterns += patterns(
     (r'^bulk_edit/$', 'bulk_edit', {},
      'localtv_admin_bulk_edit'))
 
-urlpatterns += patterns(
-    'localtv.admin.user_views',
-    (r'^users/$', 'users',
-     {}, 'localtv_admin_users'))
+urlpatterns += patterns('',
+    url(r'^users/$',
+        require_site_admin(UserListView.as_view()),
+        name='localtv_admin_users'),
+    url(r'^users/add/$',
+        require_site_admin(csrf_protect(UserCreateView.as_view())),
+        name='localtv_admin_users_create'),
+    url(r'^users/(?P<pk>\d+)/$',
+        require_site_admin(csrf_protect(UserUpdateView.as_view())),
+        name='localtv_admin_users_update'),
+    url(r'^users/(?P<pk>\d+)/delete/$',
+        require_site_admin(csrf_protect(DeleteView.as_view(model=User,
+                       template_name='localtv/admin/users/delete.html',
+                       success_url=reverse_lazy('localtv_admin_users')))),
+        name='localtv_admin_users_delete'),
+)
 
 urlpatterns += patterns(
     'localtv.admin.comment_views',

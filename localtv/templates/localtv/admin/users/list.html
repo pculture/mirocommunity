@@ -1,0 +1,53 @@
+{% extends "localtv/admin/__layouts/25_75.html" %}
+
+{% load i18n %}
+{% load url from future %}
+
+{% block title %}{% trans "Users" %} - {% trans "Admin" %} – {{ block.super }}{% endblock %}
+
+{% block body_classes %}{{ block.super }} admin-users{% endblock %}
+
+{% block side %}
+{% include 'localtv/admin/_admin_navigation.html' %}
+{% endblock %}
+
+{% block main %}
+  <header class="page-header">
+    <h1>{% block page_title %}{% trans 'Users' %}{% endblock %}</h1>
+    <div class="page-actions">
+      <ul class="action-list">
+        <li><a href="{% url 'localtv_admin_users_create' %}">Add User</a></li>
+        <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url 'localtv_admin_users' %}">Show All Accounts</a></li>
+        <li{% if request.GET.show == "human" %} class="selected"{% endif %}><a href="{% url 'localtv_admin_users' %}?show=humans">Show "Human" Accounts</a></li>
+        <li{% if request.GET.show == "nonhuman" %} class="selected"{% endif %}><a href="{% url 'localtv_admin_users' %}?show=nonhumans">Show Other Accounts</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <table>
+    <thead>
+      <tr>
+        {% for header in headers %}
+          <th>{% if header.link %}<a href="{{ header.link }}">{% endif %}{{ header.label }}{% if header.link %}</a>{% endif %}  </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>
+            <span>{{ user.username }}</span>
+            <div class='actions'>
+              <a href="{% url 'localtv_admin_users_update' pk=user.pk %}">Edit</a>
+              <a href="{% url 'localtv_admin_users_delete' pk=user.pk %}">Delete</a>
+              <a href="{% url 'localtv_author' user.pk %}">View</a>
+            </div>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>{% if user.is_superuser %}Owner{% elif user in site_admins %}Admin{% else %}User{% endif %}</td>
+          <td>{{ user.video_count }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
