@@ -68,14 +68,8 @@ urlpatterns += patterns(
                     ), name='localtv_author'))
 
 # Comments patterns
-urlpatterns += patterns(
-    'localtv.comments.views',
-    url(r'^comments/post/$', 'post_comment', name='comments-post-comment'),
-    url(r'^comments/moderation-queue$', 'moderation_queue', {},
-                    'comments-moderation-queue'),
-    url(r'^comments/moderation-queue/undo$', 'undo', {},
-                    'comments-moderation-undo'),
-    url(r'^comments/', include('django.contrib.comments.urls')))
+urlpatterns += patterns('',
+    url(r'^comments/', include('localtv.comments.urls')))
 
 # Various inclusions
 urlpatterns += patterns(

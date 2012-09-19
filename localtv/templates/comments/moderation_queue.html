@@ -1,49 +1,31 @@
-{% extends "localtv/admin/base.html" %}
-{% comment %}
-Copyright 2009 - Participatory Culture Foundation
-
-This file is part of Miro Community.
-
-Miro Community is free software: you can redistribute it and/or modify it
-under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or (at your
-option) any later version.
-
-Miro Community is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
-{% endcomment %}
+{% extends "localtv/admin/__layouts/25_75.html" %}
 
 {% load i18n filters comments pagetabs %}
-{% block body_class %}comments{% endblock %}
+{% load url from future %}
 
-{% block title %}{{ block.super }} - {% trans "Admin - Comment moderation queue" %}{% endblock %}
+{% block body_classes %}{{ block.super }} admin-comments{% endblock %}
 
-{% block head %}
-  {{ block.super }}
-  <style type="text/css" media="screen">
-    p#nocomments { font-size: 200%; text-align: center; border: 1px #ccc dashed; padding: 4em; }
-    td.actions { width: 11em; }
-    td.actions form { display: inline; }
-    td.actions form input.submit { width: 5em; padding: 2px 4px; margin-right: 4px;}
-    td.actions form input.approve { background: green; color: white; }
-    td.actions form input.remove { background: red; color: white; }
-  </style>
+{% block title %}{% trans "Comments" %} – {% trans "Admin" %} – {{ block.super }}{% endblock %}
+
+{% block side %}
+{% include 'localtv/admin/_admin_navigation.html' %}
 {% endblock %}
 
-{% block content %}
+{% block main %}
+  <header class="page-header">
+    <h1>{% block page_title %}{% trans 'Comments' %}{% endblock %}</h1>
+    <div class="page-actions">
+      <ul class="action-list">
+        <li><a href="{% url 'localtv_admin_users_create' %}">Add User</a></li>
+        <li{% if not request.GET.show %} class="selected"{% endif %}><a href="{% url 'localtv_admin_users' %}">Show All Accounts</a></li>
+        <li{% if request.GET.show == "human" %} class="selected"{% endif %}><a href="{% url 'localtv_admin_users' %}?show=humans">Show "Human" Accounts</a></li>
+        <li{% if request.GET.show == "nonhuman" %} class="selected"{% endif %}><a href="{% url 'localtv_admin_users' %}?show=nonhumans">Show Other Accounts</a></li>
+      </ul>
+    </div>
+  </header>
+
 {% if empty %}
 <p id="nocomments">{% trans "No comments to moderate" %}.</p>
-    {% if request.GET.undo %}
-    <form method="POST" action="{% url comments-moderation-undo %}">{% csrf_token %}
-      <input type="hidden" name="actions" value="{{ request.GET.undo }}">
-      <input type="submit" value="Undo">
-    </form>
-    {% endif %}
 
 {% else %}
 <div id="content-main">

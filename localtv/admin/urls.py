@@ -21,6 +21,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic import DeleteView
 
+from localtv.admin.comments.views import CommentListView
 from localtv.admin.user_views import UserListView, UserCreateView, UserUpdateView
 from localtv.decorators import require_site_admin
 
@@ -121,9 +122,11 @@ urlpatterns += patterns('',
 )
 
 urlpatterns += patterns(
-    'localtv.admin.comment_views',
-    (r'^comments/spam/(\d+)/$', 'comments_spam', {}, 'comments-spam'),
-    (r'^comments/spamed/$', 'spam_done', {}, 'comments-spam-done'))
+    'localtv.admin.comments.views',
+    url(r'^comments/$', require_site_admin(CommentListView.as_view()), name='comments-moderation-queue'),
+    url(r'^comments/spam/(\d+)/$', 'comments_spam', name='comments-spam'),
+    url(r'^comments/spamed/$', 'spam_done', name='comments-spam-done'),
+)
 
 urlpatterns += patterns(
     'localtv.admin.upload_views',

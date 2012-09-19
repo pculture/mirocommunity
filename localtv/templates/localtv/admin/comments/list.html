@@ -1,0 +1,59 @@
+{% extends "localtv/admin/__layouts/25_75.html" %}
+
+{% load i18n filters comments pagetabs %}
+{% load url from future %}
+
+{% block body_classes %}{{ block.super }} admin-comments{% endblock %}
+
+{% block title %}{% trans "Comments" %} – {% trans "Admin" %} – {{ block.super }}{% endblock %}
+
+{% block side %}
+{% include 'localtv/admin/_admin_navigation.html' %}
+{% endblock %}
+
+{% block main %}
+  <header class="page-header">
+    <h1>{% block page_title %}{% trans 'Comments' %}{% endblock %}</h1>
+  </header>
+
+{% if not comments %}
+  <p>No comments to moderate.</p>
+{% else %}
+  <table>
+    <thead>
+      <tr>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Comment" %}</th>
+        <th>{% trans "Email" %}</th>
+        <th>{% trans "URL" %}</th>
+        <th>{% trans "Authenticated?" %}</th>
+        <th>{% trans "IP Address" %}</th>
+        <th>{% trans "Date posted" %}</th>
+        <th>{% trans "Video" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for comment in comments %}
+        <tr>
+          <td>
+            <span>{{ comment.name }}</span>
+            <div class='actions'>
+              <a href="{% url 'comments-approve' comment.pk %}">Approve</a>
+              <a href="{% url 'comments-delete' comment.pk %}">Delete</a>
+            </div>
+          </td>
+          <td>{{ comment.comment|sanitize }}</td>
+          <td>{{ comment.email }}</td>
+          <td>{{ comment.url }}</td>
+          <td>
+            {% if comment.user %}{% trans "yes" %}{% else %}{% trans "no" %}{% endif %}
+          </td>
+          <td>{{ comment.ip_address }}</td>
+          <td>{{ comment.submit_date|date:"F j, P" }}</td>
+          <td><a href="{% get_comment_permalink comment %}">{{ comment.content_object }}</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}
