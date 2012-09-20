@@ -39,7 +39,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
 	
 	{% block styles %}
-		{% compress css %}
+		{#% compress css %#}
 			<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/front/stylesheets/screen.css' bundled %}" media="screen" />
 			{% if site_settings.css or site_settings.background %}
 				<style type="text/css">
@@ -51,11 +51,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% endif %}
 				</style>
 			{% endif %}
-		{% endcompress %}
+		{#% endcompress %#}
 	{% endblock %}
 
 	{% block scripts %}
-		{% compress js %}
+		{#% compress js %#}
 			<script type="text/javascript">
 				(function () {
 					window.STATIC_URL = "{{ STATIC_URL }}";
@@ -71,7 +71,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<script src="{% get_static_url 'localtv/front/js/localtv.tabs.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.shrinkydink.js' bundled %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.kickoff.js' bundled %}"></script>
-		{% endcompress %}
+		{#% endcompress %#}
 	{% endblock %}
 </head>
 <body class="{% block body_classes %}miro_community{% endblock %}">
