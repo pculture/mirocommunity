@@ -41,14 +41,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	{% block styles %}
 		{#% compress css %#}
 			<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/front/stylesheets/screen.css' bundled %}" media="screen" />
-			{% if site_settings.css or site_settings.background %}
+			{% if site_settings.css %}
 				<style type="text/css">
-					{{ site_settings.get_css_for_display_if_permitted|safe }}
-					{% if site_settings.background %}
-						body {
-							background: url("{{ site_settings.background.url }}") !important;
-						}
-					{% endif %}
+					{{ site_settings.css|safe }}
+				</style>
+			{% endif %}
+			{% if site_settings.background %}
+				<style type="text/css">
+					body {
+						background: url("{{ site_settings.background.url }}") !important;
+					}
 				</style>
 			{% endif %}
 		{#% endcompress %#}
