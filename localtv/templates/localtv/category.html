@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n %}
+{% load i18n daguerre %}
 {% load url from future %}
 
 {% block title %}{{ block.super }} - {{ category.name }}{% endblock %}
@@ -44,7 +44,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block side %}
 	<div class="padded">
-		{% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
+		{% if category.logo %}<img class="scaled" src="{% adjust category.logo width=700 adjustment="fit" %}">{% endif %}
 		{{ category.description|safe }}
 	</div>{# /.padded #}
 	{% with child_set=category.child_set.all %}

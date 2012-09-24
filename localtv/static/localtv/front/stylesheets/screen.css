@@ -74,6 +74,8 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   .col-three-fifths { width: 60%; }
   .col-four-fifths { width: 80%; } }
 @media screen and (max-width: 740px) { .col, .col-one-half, .miro-footer, .footer-nav, .col-one-quarter, .col-three-quarters, .col-one-third, .precontent-details, .video-large-details, .col-two-thirds, .col-one-fifth, .col-two-fifths, .col-three-fifths, .col-four-fifths { width: 100%; } }
+.scaled { width: 100%; }
+
 h1, h2, h3, h4, h5, h6 { font-weight: bold; font-family: "Helvetica Neue", Arial, Helvetica, sans-serif; }
 
 a { text-decoration: none; }
