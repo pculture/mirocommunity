@@ -65,12 +65,13 @@ class BaseVideoListNode(SortFilterMixin, template.Node):
         return ''
 
     def get_video_list(self, context):
-        if self.filter_name is None:
-            filter_value = None
-        else:
-            filter_value = self.item.resolve(context)
-        form = self.get_form(filter_value=filter_value)
+        form = self.get_form(filter_value=self.get_filter_value(context))
         return NormalizedVideoList(form.search())
+
+    def get_filter_value(self, context):
+        if self.filter_name is None:
+            return None
+        return self.item.resolve(context)
 
 
 class NewVideoListNode(BaseVideoListNode):
@@ -103,6 +104,9 @@ class CategoryVideoListNode(BaseVideoListNode):
 
     """
     filter_name = 'category'
+
+    def get_filter_value(self, context):
+        return [self.item.resolve(context)]
 
 
 class TagVideoListNode(BaseVideoListNode):
