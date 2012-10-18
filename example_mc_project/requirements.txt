@@ -10,7 +10,7 @@ git+git://github.com/dcramer/django-paypal.git@11835ce17e855200fc4b523c659f34f1d
 git+git://github.com/toastdriven/django-haystack.git@189f6d5dc484ad00afab071296f868cffc0ea26b#egg=django-haystack
 hg+http://bitbucket.org/ubernostrum/django-registration/@1086c6ad3a47#egg=django-registration
 BeautifulSoup==3.2.0
-Django==1.3.2
+Django==1.3.4
 Pillow==1.7.5
 lxml==2.3.3
 feedparser==5.1.1
