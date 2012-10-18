@@ -1,3 +1,9 @@
+Miro Community 1.8.6 Release Notes
+==================================
+
+* Bumped Django requirement due to security releases.
+* Stopped verification of submitted URLs' existence.
+
 Miro Community 1.8.5 Release Notes
 ==================================
 

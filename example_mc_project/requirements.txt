@@ -3,7 +3,7 @@ git+http://git.participatoryculture.org/djvideo@528425bb940bad7804de7d8521a03d7d
 git+http://git.participatoryculture.org/django-email-share/@fb1ac165c2c658281b9e5542704e787229987392#egg=django_email_share
 git+http://git.participatoryculture.org/django-uploadtemplate@7f251bfde159edf5d08283f86fbacff44b588dfb#egg=django_uploadtemplate
 git+http://git.participatoryculture.org/python-bitly@b698442b5f4b5d686460072e9b0ac28776275092#egg=python_bitly
-git+git://github.com/pculture/mirocommunity.git@1.8.5#egg=mirocommunity
+git+git://github.com/pculture/mirocommunity.git@1.8.6#egg=mirocommunity
 git+git://github.com/paulswartz/Django-Socialauth.git@5c72f847cb0add291536c3a6b0a8e9bb85baef25#egg=django-socialauth
 git+git://github.com/pythonforfacebook/facebook-sdk.git@f30204a6a8dfc9db83cc0bab06fc31ec8cd50552#egg=facebook_python_sdk
 git+git://github.com/dcramer/django-paypal.git@11835ce17e855200fc4b523c659f34f1d472b5d6#egg=django-paypal
