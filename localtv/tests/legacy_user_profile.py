@@ -207,8 +207,8 @@ class NotificationsFormTestCase(TestCase):
 
     def test_user_settings(self):
         """
-        A regular user should only see the 'video_approved', 'video_comment',
-        and 'newsletter' notifications.  The initial data for the form should
+        A regular user should only see the 'video_approved' and
+        'video_comment' notifications.  The initial data for the form should
         have those settings enabled, since they're on by default.
         """
         user = User.objects.get(username='user')
@@ -219,8 +219,7 @@ class NotificationsFormTestCase(TestCase):
                 'notifications': [
                     'video_approved',
                     'video_comment',
-                    'comment_post_comment',
-                    'newsletter'
+                    'comment_post_comment'
                 ]
             })
 
@@ -255,7 +254,7 @@ class NotificationsFormTestCase(TestCase):
         self.assertEqual(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
                                   'comment_post_comment',
-                                  'newsletter', 'admin_new_playlist']
+                                  'admin_new_playlist']
                 })
 
         superuser = User.objects.get(username='superuser')
@@ -264,7 +263,7 @@ class NotificationsFormTestCase(TestCase):
         self.assertEqual(form.initial, {
                 'notifications': ['video_approved', 'video_comment',
                                   'comment_post_comment',
-                                  'newsletter', 'admin_new_playlist']
+                                  'admin_new_playlist']
                 })
 
     def test_save_admin_settings(self):
@@ -281,7 +280,7 @@ class NotificationsFormTestCase(TestCase):
                         'admin_queue_weekly']}, instance=admin)
             self.assertTrue(form.is_valid(), form.errors)
             form.save()
-            for label in ('video_comment', 'video_approved', 'newsletter',
+            for label in ('video_comment', 'video_approved',
                           'comment_post_comment'):
                 notice_type = notification.NoticeType.objects.get(label=label)
                 self.assertFalse(notification.should_send(admin, notice_type,

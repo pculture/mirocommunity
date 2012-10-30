@@ -25,7 +25,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
 
-from localtv.models import Video, Watch, Category, NewsletterSettings, SiteSettings
+from localtv.models import Video, Watch, Category, SiteSettings
 from localtv.search.forms import SearchForm
 from localtv.search.utils import NormalizedVideoList
 
@@ -199,12 +199,3 @@ def share_email(request, content_type_pk, object_id):
                               'site_settings': site_settings},
                              form_class = forms.ShareMultipleEmailForm
                              )
-
-
-def newsletter(request):
-    newsletter = NewsletterSettings.objects.get_current()
-    if newsletter.status == NewsletterSettings.DISABLED:
-        raise Http404
-
-    return HttpResponse(newsletter.as_html(
-            {'preview': True}), content_type='text/html')

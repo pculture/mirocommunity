@@ -80,9 +80,7 @@ urlpatterns += patterns(
     (r'^settings/$', 'edit_settings',
      {}, 'localtv_admin_settings'),
     (r'^settings/widget/$', 'widget_settings',
-     {}, 'localtv_admin_widget_settings'),
-    (r'^settings/newsletter/$', 'newsletter_settings',
-     {}, 'localtv_admin_newsletter_settings'))
+     {}, 'localtv_admin_widget_settings'))
 
 urlpatterns += patterns(
     'localtv.admin.category_views',

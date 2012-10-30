@@ -108,7 +108,6 @@ class NotificationsForm(forms.Form):
         ('video_comment', 'Someone left a comment on your video'),
         ('comment_post_comment',
          'Someone left a comment on a video you commented on'),
-        ('newsletter', 'Receive an occasional newsletter'),
     )
     ADMIN_CHOICES = (
         ('admin_new_comment', 'A new comment was left on the site'),

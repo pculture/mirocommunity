@@ -271,112 +271,6 @@ class SiteSettings(Thumbnailable):
         return lsettings.SHOW_ADMIN_DASHBOARD
 
 
-class NewsletterSettings(models.Model):
-    DISABLED = 0
-    FEATURED = 1
-    POPULAR = 2
-    CUSTOM = 3
-    LATEST = 4
-    
-    STATUS_CHOICES = (
-        (DISABLED, _(u'Disabled')),
-        (FEATURED, _("5 most recently featured")),
-        (POPULAR, _("5 most popular")),
-        (LATEST, _("5 latest videos")),
-        (CUSTOM, _("Custom selection")),
-    )
-    site_settings = models.OneToOneField(SiteSettings)
-    status = models.IntegerField(
-        choices=STATUS_CHOICES, default=DISABLED,
-        help_text='What videos should get sent out in the newsletter?')
-
-    # for custom newsletter
-    video1 = models.ForeignKey('Video', related_name='newsletter1', null=True,
-                               help_text='A URL of a video on your site.')
-    video2 = models.ForeignKey('Video', related_name='newsletter2', null=True,
-                               help_text='A URL of a video on your site.')
-    video3 = models.ForeignKey('Video', related_name='newsletter3', null=True,
-                               help_text='A URL of a video on your site.')
-    video4 = models.ForeignKey('Video', related_name='newsletter4', null=True,
-                               help_text='A URL of a video on your site.')
-    video5 = models.ForeignKey('Video', related_name='newsletter5', null=True,
-                               help_text='A URL of a video on your site.')
-    
-    intro = models.CharField(max_length=200, blank=True,
-                             help_text=('Include a short introduction to your '
-                                        'newsletter. If you will be sending '
-                                        'the newsletter automatically, make '
-                                        'sure to update this or write '
-                                        'something that will be evergreen! '
-                                        '(limit 200 characters)'))
-    show_icon = models.BooleanField(default=True,
-                                    help_text=('Do you want to include your '
-                                               'site logo in the newsletter '
-                                               'header?'))
-
-    twitter_url = models.URLField(verify_exists=False, blank=True,
-                                  help_text='e.g. https://twitter.com/#!/mirocommunity')
-    facebook_url = models.URLField(verify_exists=False, blank=True,
-                                   help_text='e.g. http://www.facebook.com/universalsubtitles')
-
-    repeat = models.IntegerField(default=0) # hours between sending
-    last_sent = models.DateTimeField(null=True)
-
-    objects = SingletonManager()
-
-    def videos(self):
-        if self.status == NewsletterSettings.DISABLED:
-            raise ValueError('no videos for disabled newsletter')
-        elif self.status == NewsletterSettings.FEATURED:
-            videos = Video.objects.get_featured_videos(self.site_settings)
-        elif self.status == NewsletterSettings.POPULAR:
-            # popular over the last week
-            videos = Video.objects.get_popular_videos(self.site_settings)
-        elif self.status == NewsletterSettings.LATEST:
-            videos = Video.objects.get_latest_videos(self.site_settings)
-        elif self.status == NewsletterSettings.CUSTOM:
-            videos = [video for video in (
-                    self.video1,
-                    self.video2,
-                    self.video3,
-                    self.video4,
-                    self.video5) if video]
-        return videos[:5]
-
-    def next_send_time(self):
-        if not self.repeat:
-            return None
-        if not self.last_sent:
-            dt = datetime.datetime.now()
-        else:
-            dt = self.last_sent
-        return dt + datetime.timedelta(hours=self.repeat)
-
-    def send(self):
-        from localtv.admin.user_views import _filter_just_humans
-        body = self.as_html()
-        subject = '[%s] Newsletter for %s' % (self.site_settings.site.name,
-                                              datetime.datetime.now().strftime('%m/%d/%y'))
-        notice_type = notification.NoticeType.objects.get(label='newsletter')
-        for u in User.objects.exclude(email=None).exclude(email='').filter(
-            _filter_just_humans()):
-            if notification.get_notification_setting(u, notice_type, "1"):
-                message = EmailMessage(subject, body,
-                                       settings.DEFAULT_FROM_EMAIL,
-                                       [u.email])
-                message.content_subtype = 'html'
-                message.send(fail_silently=True)
-
-    def as_html(self, extra_context=None):
-        context = {'newsletter': self,
-                   'site_settings': self.site_settings,
-                   'site': self.site_settings.site}
-        if extra_context:
-            context.update(extra_context)
-        return render_to_string('localtv/admin/newsletter.html',
-                                context)
-
-
 class WidgetSettingsManager(SiteRelatedManager):
     def _new_entry(self, site, using):
         ws = super(WidgetSettingsManager, self)._new_entry(site, using)
@@ -1856,11 +1750,6 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
     notification.create_notice_type('video_approved',
                                     'Your video was approved',
                                     'An admin approved your video',
-                                    default=2,
-                                    verbosity=verbosity)
-    notification.create_notice_type('newsletter',
-                                    'Newsletter',
-                                    'Receive an occasional newsletter',
                                     default=2,
                                     verbosity=verbosity)
     notification.create_notice_type('admin_new_comment',

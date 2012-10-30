@@ -34,7 +34,6 @@ urlpatterns = patterns(
     url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
         VideoView.as_view(),
         name='localtv_view_video'),
-    url(r'^newsletter/$', 'newsletter', name='localtv_newsletter'),
     url(r'^api/', include(api_v1.urls)))
 
 # Listing patterns
