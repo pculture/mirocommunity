@@ -8,20 +8,10 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Renaming column for 'NewsletterSettings.site_settings' to match new field type.
-        db.rename_column('localtv_newslettersettings', 'sitelocation_id', 'site_settings_id')
-        # Changing field 'NewsletterSettings.site_settings'
-        db.alter_column('localtv_newslettersettings', 'site_settings_id', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['localtv.SiteSettings'], unique=True))
-
         db.rename_table('localtv_sitelocation', 'localtv_sitesettings')
         db.rename_table('localtv_sitelocation_admins', 'localtv_sitesettings_admins')
 
     def backwards(self, orm):
-        # Renaming column for 'NewsletterSettings.site_settings' to match new field type.
-        db.rename_column('localtv_newslettersettings', 'site_settings_id', 'sitelocation_id')
-        # Changing field 'NewsletterSettings.site_settings'
-        db.alter_column('localtv_newslettersettings', 'sitelocation_id', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['localtv.SiteSettings'], unique=True, db_column='sitelocation_id'))
-
         db.rename_table('localtv_sitesettings', 'localtv_sitelocation')
         db.rename_table('localtv_sitesettings_admins', 'localtv_sitelocation_admins')
 
