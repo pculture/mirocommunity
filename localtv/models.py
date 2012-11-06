@@ -1588,7 +1588,7 @@ class Watch(models.Model):
      - ip_address: IP address of the user
     """
     video = models.ForeignKey(Video)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     user = models.ForeignKey('auth.User', blank=True, null=True)
     ip_address = models.IPAddressField()
 
