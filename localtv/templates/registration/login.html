@@ -108,7 +108,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				<div class="padded">
 					<h3>Login with Facebook</h3>
 					<a href="{% url socialauth_facebook_login %}{% if next %}?next={{ next }}{% endif %}">
-						<img src="{% get_static_url 'localtv/images/facebook_login.png' bundled %}" width="151" height="24" alt="Sign In with Facebook" />
+						<img src="{% get_static_url 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Facebook" />
 					</a>
 				</div>
 			</div>
@@ -116,7 +116,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				<div class="padded">
 					<h3>Login with Twitter</h3>
 					<a href="{% url socialauth_twitter_login %}{% if next %}?next={{ next }}{% endif %}">
-						<img src="{% get_static_url 'localtv/images/twitter_login.gif' bundled %}" width="151" height="24" alt="Sign In with Twitter" />
+						<img src="{% get_static_url 'localtv/images/twitter_login.gif' %}" width="151" height="24" alt="Sign In with Twitter" />
 					</a>
 				</div>
 			</div>

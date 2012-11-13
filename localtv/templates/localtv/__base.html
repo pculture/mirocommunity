@@ -40,7 +40,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	
 	{% block styles %}
 		{#% compress css %#}
-			<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/front/stylesheets/screen.css' bundled %}" media="screen" />
+			<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/front/stylesheets/screen.css' %}" media="screen" />
 			{% if site_settings.css %}
 				<style type="text/css">
 					{{ site_settings.css|safe }}
@@ -63,16 +63,16 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					window.STATIC_URL = "{{ STATIC_URL }}";
 				}());
 			</script>
-			<script src="{% get_static_url 'localtv/front/js/modernizr-2.5.3.min.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/jquery-1.7.2.min.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/jquery.cycle.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/jquery.infinitescroll.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/bootstrap.tooltip.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/bootstrap.popover.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.dropdown.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.tabs.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.shrinkydink.js' bundled %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.kickoff.js' bundled %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/modernizr-2.5.3.min.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/jquery-1.7.2.min.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/jquery.cycle.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/jquery.infinitescroll.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/bootstrap.tooltip.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/bootstrap.popover.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/localtv.dropdown.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/localtv.tabs.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/localtv.shrinkydink.js' %}"></script>
+			<script src="{% get_static_url 'localtv/front/js/localtv.kickoff.js' %}"></script>
 		{#% endcompress %#}
 	{% endblock %}
 </head>
