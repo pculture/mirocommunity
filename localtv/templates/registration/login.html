@@ -31,22 +31,26 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	</header>
 	
 	<div class="page-content">
+		{% if request.user.is_authenticated %}
+			<div class="padded">
+				<p>You are currently logged in as <strong>{{ request.user.first_name|default:request.user.username }}</strong>.</p>
+			</div>
+		{% endif %}
 		<ul class="tabs">
-			<li class="active"><a href="#LoginForm" class="login_tab_user">{% trans "Login" %}/{% trans "Sign Up" %}</a></li>
-			<li><a href="#FacebookForm" class="login_tab_facebook">Facebook</a></li>
-			<li><a href="#TwitterForm" class="login_tab_twitter">Twitter</a></li>
-			<li><a href="#OpenIDForm" class="login_tab_openid">OpenID</a></li>
-			<li><a href="#GoogleForm" class="login_tab_google">Google</a></li>
+			<li class="active"><a href="#login">{% trans "Login" %}/{% trans "Sign Up" %}</a></li>
+			<li><a href="#facebook">Facebook</a></li>
+			<li><a href="#twitter">Twitter</a></li>
+			<li><a href="#openid">OpenID</a></li>
+			<li><a href="#google">Google</a></li>
 		</ul>
 		<div class="tab-content">
-			<div id="LoginForm" class="tab-pane active">
+			<div id="login" class="tab-pane active">
 				<div class="row">
 					<div class="col-one-half">
 						<div class="padded">
-							<h1>Login</h1>
-							<form action="{{ settings.LOGIN_URL }}" method="POST">
+							<h3>Login</h3>
+							<form action="{{ settings.LOGIN_URL }}{% if next %}?next={{ next }}{% endif %}" method="post">
 								{% csrf_token %}
-								<input type="hidden" name="next" value="{{ next }}" />
 								{% include "localtv/_form_inner.html" %}
 							
 							
@@ -57,11 +61,11 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 								</div>
 							</form>
 						</div>
-					</div>{# /.col-one-hal #}
+					</div>{# /.col-one-half #}
 					<div class="col-one-half">
 						<div class="padded">
-							<h1>Sign Up</h1>
-							<form action="/accounts/register/" method="POST">
+							<h3>Sign Up</h3>
+							<form action="/accounts/register/" method="post">
 								{% csrf_token %}
 								<div class="control-group control-group-username">
 									<label for="id_username">Username</label>
@@ -99,31 +103,28 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						</div>
 					</div>{# /.col-one-half #}
 				</div>{# /.row #}
-			</div>{# /#LoginForm #}
-			<div id="FacebookForm" class="tab-pane">
+			</div>
+			<div id="facebook" class="tab-pane">
 				<div class="padded">
-					<h1>Login with Facebook</h1>
-					<a href="{% url socialauth_facebook_login %}?next={{ next }}">
+					<h3>Login with Facebook</h3>
+					<a href="{% url socialauth_facebook_login %}{% if next %}?next={{ next }}{% endif %}">
 						<img src="{% get_static_url 'localtv/images/facebook_login.png' bundled %}" width="151" height="24" alt="Sign In with Facebook" />
 					</a>
 				</div>
-			</div>{# /#FacebookForm #}
-			<div id="TwitterForm" class="tab-pane">
+			</div>
+			<div id="twitter" class="tab-pane">
 				<div class="padded">
-					<h1>Login with Twitter</h1>
-					<a href="{% url socialauth_twitter_login %}?next={{ next }}">
+					<h3>Login with Twitter</h3>
+					<a href="{% url socialauth_twitter_login %}{% if next %}?next={{ next }}{% endif %}">
 						<img src="{% get_static_url 'localtv/images/twitter_login.gif' bundled %}" width="151" height="24" alt="Sign In with Twitter" />
 					</a>
 				</div>
-			</div>{# /#TwitterForm #}
-			<div id="OpenIDForm" class="tab-pane">
+			</div>
+			<div id="openid" class="tab-pane">
 				<div class="padded">
-					<h1>Login with OpenID</h1>
-					<form action="{% url socialauth_openid_login %}" method="post">
+					<h3>Login with OpenID</h3>
+					<form action="{% url socialauth_openid_login %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
 						{% csrf_token %}
-						{% if next %}
-							<input type="hidden" name="openid_next" value="{{ next }}">
-						{% endif %}
 						<div class="control-group">
 							<label for="openid_url">OpenID Url</label>
 							<div class="controls">
@@ -138,10 +139,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						</div>
 					</form>
 				</div>
-			</div>{# /#OpenIDForm #}
-			<div id="GoogleForm" class="tab-pane">
+			</div>
+			<div id="google" class="tab-pane">
 				<div class="padded">
-					<h1>Login with Google Account</h1>
+					<h3>Login with Google Account</h3>
 					<form action="{% url socialauth_google_login %}" method="post">{% csrf_token %}
 					<p><input type="submit" value="Sign in" class="button" /></p>
 					</form>
