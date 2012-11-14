@@ -16,25 +16,22 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.backends import ModelBackend
-from localtv.models import SiteSettings
+from django.contrib.auth.models import User
 
-class SiteAdminBackend(ModelBackend):
 
-    def get_group_permissions(self, user_obj):
-        return []
-
-    def get_all_permissions(self, user_obj):
-        return []
-
-    def has_perm(self, user_obj, perm_or_app_label):
+class MirocommunityBackend(ModelBackend):
+    def authenticate(self, username=None, password=None):
         """
-        We use this method for both has_perm and has_module_perm since our
-        authentication is an on-off switch, not permissions-based.
+        Don't try to authenticate users that don't have set passwords - for
+        example, users that were created via socialauth.
+
         """
-        if user_obj.is_superuser:
-            return True
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            pass
+        else:
+            if user.password and user.check_password(password):
+                return user
 
-        site_settings = SiteSettings.objects.get_current()
-        return site_settings.user_is_admin(user_obj)
-
-    has_module_perms = has_perm
+        return None

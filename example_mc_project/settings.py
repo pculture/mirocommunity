@@ -241,7 +241,7 @@ OPENID_AX_PROVIDER_MAP = {'Google': {'email': 'http://axschema.org/contact/email
 
 
 AUTHENTICATION_BACKENDS = (
-    'localtv.backend.SiteAdminBackend',
+    'localtv.auth_backends.MirocommunityBackend',
     'socialauth.auth_backends.OpenIdBackend',
     'socialauth.auth_backends.TwitterBackend',
     'socialauth.auth_backends.FacebookBackend',
