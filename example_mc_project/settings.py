@@ -185,8 +185,7 @@ INSTALLED_APPS = (
     'email_share',
     'djcelery',
     'notification',
-    'socialauth',
-    'openid_consumer',
+    'social_auth',
     'daguerre',
     'compressor',
     'mptt',
@@ -216,36 +215,24 @@ APPEND_SLASH = False
 
 LOGIN_REDIRECT_URL = '/'
 
-OPENID_REDIRECT_NEXT = '/accounts/openid/done/'
-
-OPENID_SREG = {"requred": "nickname, email, fullname",
-               "policy_url": ""}
-
-#example should be something more like the real thing, i think
-OPENID_AX = [{"type_uri": "http://axschema.org/contact/email",
-              "count": 1,
-              "required": True,
-              "alias": "email"},
-             {"type_uri": "http://axschema.org/schema/fullname",
-              "count":1 ,
-              "required": False,
-              "alias": "fname"}]
-
-OPENID_AX_PROVIDER_MAP = {'Google': {'email': 'http://axschema.org/contact/email',
-                                     'firstname': 'http://axschema.org/namePerson/first',
-                                     'lastname': 'http://axschema.org/namePerson/last'},
-                          'Default': {'email': 'http://axschema.org/contact/email',
-                                      'fullname': 'http://axschema.org/namePerson',
-                                      'nickname': 'http://axschema.org/namePerson/friendly'}
-                          }
-
-
 AUTHENTICATION_BACKENDS = (
-    'localtv.auth_backends.MirocommunityBackend',
-    'socialauth.auth_backends.OpenIdBackend',
-    'socialauth.auth_backends.TwitterBackend',
-    'socialauth.auth_backends.FacebookBackend',
-    )
+    'localtv.backend.SiteAdminBackend',
+    'social_auth.backends.twitter.TwitterBackend',
+    'social_auth.backends.facebook.FacebookBackend',
+    'social_auth.backends.OpenIDBackend',
+    'social_auth.backends.google.GoogleBackend',
+)
+
+SOCIAL_AUTH_PROTECTED_USER_FIELDS = ['email',]
+SOCIAL_AUTH_PIPELINE = (
+    'social_auth.backends.pipeline.social.social_auth_user',
+    #'social_auth.backends.pipeline.associate.associate_by_email',
+    'social_auth.backends.pipeline.user.get_username',
+    'social_auth.backends.pipeline.user.create_user',
+    'social_auth.backends.pipeline.social.associate_user',
+    'social_auth.backends.pipeline.social.load_extra_data',
+    'social_auth.backends.pipeline.user.update_user_details'
+)
 
 AUTH_PROFILE_MODULE = 'user_profile.Profile'
 COMMENTS_APP = 'localtv.comments'
@@ -291,10 +278,8 @@ else:
 
 # Facebook options
 FACEBOOK_APP_ID = None
-FACEBOOK_API_KEY = None
-FACEBOOK_SECRET_KEY = None
-FACEBOOK_CONNECT_URL = None
-FACEBOOK_CONNECT_DOMAIN = None
+FACEBOOK_API_SECRET = None
+FACEBOOK_EXTENDED_PERMISSIONS = ['email']
 
 # Twitter options
 TWITTER_CONSUMER_KEY = None
