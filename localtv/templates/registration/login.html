@@ -126,9 +126,9 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					<form action="{% url socialauth_begin backend='openid' %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
 						{% csrf_token %}
 						<div class="control-group">
-							<label for="openid_url">OpenID Url</label>
+							<label for="openid_identifier">OpenID Url</label>
 							<div class="controls">
-								<input class="openid" type="text" id="openid_url" name="openid_url" />
+								<input type="text" id="openid_identifier" name="openid_identifier" />
 							</div>
 						</div>
 						<div class="control-group">
