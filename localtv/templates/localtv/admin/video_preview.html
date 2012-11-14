@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load video i18n filters editable_widget %}
+{% load generate_embed i18n filters editable_widget %}
 
 
 <h2 class="preview_heading">Click Videos to Preview Here</h2>
@@ -53,7 +53,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
   {% if current_video.embed_code %}
   {{ current_video.embed_code|wmode_transparent }}
   {% else %}
-  {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
+  {% generate_embed current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
   {% endif %}
 </div>
 <div id="thumbnail">
