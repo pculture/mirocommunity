@@ -23,7 +23,9 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models import signals
 from django.template import Context, loader
-from socialauth.models import TwitterUserProfile, FacebookUserProfile
+from social_auth.backends.facebook import FacebookBackend
+from social_auth.backends.twitter import TwitterBackend
+from social_auth.signals import socialauth_registered
 
 from localtv.utils import get_profile_model
 
@@ -33,7 +35,7 @@ class BaseProfile(models.Model):
     Some extra data that we store about users.  Gets linked to a User object
     through the Django authentication system.
     """
-    user = models.ForeignKey('auth.User')
+    user = models.ForeignKey(User)
     logo = models.ImageField(upload_to="localtv/profile_logos", blank=True,
                              verbose_name='Image')
     location = models.CharField(max_length=200, blank=True, default='')
@@ -52,42 +54,35 @@ class Profile(BaseProfile):
         db_table = 'localtv_profile'
 
 
-def twitteruserprofile_created(sender, instance=None, raw=None, created=False,
-                               **kwargs):
-    if not created:
-        return # we don't care about updates
-    profile = get_profile_model().objects.create(
-        user_id=instance.user_id,
-        location=instance.location or '',
-        description=instance.description or '',
-        website=instance.url or '')
-    if instance.profile_image_url:
+def twitter_profile_data(sender, user, response, details, **kwargs):
+    profile = get_profile_model()(user=user,
+                                  location=response.get('location', ''),
+                                  description=response.get('description', ''),
+                                  website=response.get('url', ''))
+    if response.get('profile_image_url', ''):
         try:
-            cf = ContentFile(urllib.urlopen(
-                    instance.profile_image_url).read())
+            cf = ContentFile(urllib.urlopen(response['profile_image_url']).read())
         except Exception:
             pass
         else:
-            cf.name = instance.profile_image_url
+            cf.name = response['profile_image_url']
             profile.logo = cf
-            profile.save()
+
+    profile.save()
 
 
-def facebookuserprofile_created(sender, instance=None, raw=None, created=False,
-                                **kwargs):
-    if not created:
-        return # we don't care about updates
+socialauth_registered.connect(twitter_profile_data, sender=TwitterBackend)
+
+
+def facebook_profile_data(sender, user, response, details, **kwargs):
     get_profile_model().objects.create(
-        user_id=instance.user_id,
-        location=instance.location or '',
-        description=instance.about_me or '',
-        website=instance.url or '')
+        user=user,
+        location=response.get('location', ''),
+        description=response.get('about_me', ''),
+        website=response.get('url', ''))
 
 
-signals.post_save.connect(twitteruserprofile_created,
-                          sender=TwitterUserProfile)
-signals.post_save.connect(facebookuserprofile_created,
-                          sender=FacebookUserProfile)
+socialauth_registered.connect(facebook_profile_data, sender=FacebookBackend)
 
 
 ### On creating a new user, if the user has an email address

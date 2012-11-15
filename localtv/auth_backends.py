@@ -23,7 +23,8 @@ class MirocommunityBackend(ModelBackend):
     def authenticate(self, username=None, password=None):
         """
         Don't try to authenticate users that don't have set passwords - for
-        example, users that were created via socialauth.
+        example, users that were created via socialauth. This is needed because
+        of how Django-Socialauth works (or doesn't).
 
         """
         try:
