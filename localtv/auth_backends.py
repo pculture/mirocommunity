@@ -32,7 +32,11 @@ class MirocommunityBackend(ModelBackend):
         except User.DoesNotExist:
             pass
         else:
-            if user.password and user.check_password(password):
+            if not user.password:
+                user.set_unusable_password()
+                user.save()
+
+            if user.check_password(password):
                 return user
 
         return None

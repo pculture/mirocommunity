@@ -216,7 +216,7 @@ APPEND_SLASH = False
 LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = (
-    'localtv.backend.SiteAdminBackend',
+    'localtv.auth_backends.MirocommunityBackend',
     'social_auth.backends.twitter.TwitterBackend',
     'social_auth.backends.facebook.FacebookBackend',
     'social_auth.backends.OpenIDBackend',
