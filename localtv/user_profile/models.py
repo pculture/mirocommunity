@@ -56,17 +56,16 @@ class Profile(BaseProfile):
 
 def twitter_profile_data(sender, user, response, details, **kwargs):
     profile = get_profile_model()(user=user,
-                                  location=details.get('location', ''),
-                                  description=details.get('description', ''),
-                                  website=details.get('url', ''))
-    if details['profile_image_url']:
+                                  location=response.get('location', ''),
+                                  description=response.get('description', ''),
+                                  website=response.get('url', ''))
+    if response.get('profile_image_url', ''):
         try:
-            cf = ContentFile(urllib.urlopen(
-                    instance.profile_image_url).read())
+            cf = ContentFile(urllib.urlopen(response['profile_image_url']).read())
         except Exception:
             pass
         else:
-            cf.name = instance.profile_image_url
+            cf.name = response['profile_image_url']
             profile.logo = cf
 
     profile.save()
@@ -78,9 +77,9 @@ socialauth_registered.connect(twitter_profile_data, sender=TwitterBackend)
 def facebook_profile_data(sender, user, response, details, **kwargs):
     get_profile_model().objects.create(
         user=user,
-        location=details.get('location', ''),
-        description=details.get('about_me', ''),
-        website=details.get('url', ''))
+        location=response.get('location', ''),
+        description=response.get('about_me', ''),
+        website=response.get('url', ''))
 
 
 socialauth_registered.connect(facebook_profile_data, sender=FacebookBackend)
