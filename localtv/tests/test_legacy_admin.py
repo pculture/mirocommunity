@@ -36,7 +36,7 @@ from notification import models as notification
 
 from localtv import utils
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings
-from localtv.tests.legacy_localtv import BaseTestCase
+from localtv.tests.test_legacy_localtv import BaseTestCase
 import localtv.admin.user_views
 
 Profile = utils.get_profile_model()

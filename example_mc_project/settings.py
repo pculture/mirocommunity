@@ -189,12 +189,15 @@ INSTALLED_APPS = (
     'daguerre',
     'compressor',
     'mptt',
+    'django_nose',
 )
 
 if USE_SOUTH:
     if 'south' not in INSTALLED_APPS:
         INSTALLED_APPS = INSTALLED_APPS + ('south',)
     SOUTH_TESTS_MIGRATE = True
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',

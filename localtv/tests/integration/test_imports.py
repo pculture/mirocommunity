@@ -24,9 +24,6 @@ from localtv.models import Video, Feed
 from localtv.tests import BaseTestCase
 
 class AdminFeedImportIntegrationTestCase(BaseTestCase):
-
-    urls = 'localtv.urls'
-
     def setUp(self):
         BaseTestCase.setUp(self)
         self.url = reverse('localtv_admin_feed_add')

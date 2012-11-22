@@ -35,3 +35,7 @@ Markdown==2.1.1
 django-daguerre==0.1
 django-social-auth==0.7.9
 python-openid==2.2.4
+django-nose==1.1
+nose==1.2.1
+blessings==1.5
+nose-progressive==1.3

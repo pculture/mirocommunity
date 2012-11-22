@@ -14,7 +14,3 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community. If not, see <http://www.gnu.org/licenses/>.
-
-from localtv.tests.unit.search.forms import *
-from localtv.tests.unit.search.query import *
-from localtv.tests.unit.search.utils import *
