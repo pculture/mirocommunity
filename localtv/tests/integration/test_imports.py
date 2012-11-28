@@ -17,17 +17,26 @@
 
 import time
 
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
+import feedparser
+from mock import patch
+from vidscraper import VideoFeed
 
 from localtv.models import Video, Feed
-
 from localtv.tests import BaseTestCase
+
 
 class AdminFeedImportIntegrationTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self.url = reverse('localtv_admin_feed_add')
-        self.feed_url = 'http://qa.pculture.org/feeds_test/feed1.rss'
+        with self._data_file('feeds/qa1.rss') as f:
+            feed = feedparser.parse(f.read())
+        patcher = patch.object(VideoFeed, 'get_url_response', lambda *args, **kwargs: feed)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.create_user(username='admin', password='admin', is_superuser=True)
         self.client.login(username='admin', password='admin')
 
     def test_GET(self):
@@ -38,13 +47,13 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         information about the feed.  There should be a `video_count` variable
         in the context which has the number of videos in the feed.
         """
-        response = self.client.get(self.url, {'feed_url': self.feed_url})
+        response = self.client.get(self.url, {'feed_url': 'http://google.com/'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['video_count'], 6)
         form = response.context['form']
         instance = form.instance
         self.assertEqual(instance.id, None) # not created yet
-        self.assertEqual(instance.feed_url, self.feed_url)
+        self.assertEqual(instance.feed_url, 'http://google.com/')
         self.assertEqual(instance.status, instance.INACTIVE)
         self.assertEqual(instance.name, 'Yahoo Media TEST')
         self.assertEqual(instance.description,
@@ -61,7 +70,7 @@ media enclosures. All contents of this feed are for example only.""")
         response = self.client.get(self.url, {'feed_url':
                                                   'foo://example.invalid/'})
         self.assertEqual(response.status_code, 400)
-        self.assertEquals(response.content, '* Enter a valid URL.')
+        self.assertEqual(response.content, '* Enter a valid URL.')
 
     def test_POST(self):
         """
@@ -69,25 +78,24 @@ media enclosures. All contents of this feed are for example only.""")
         real, import the feed, and redirect back to the admin page.
         """
         response = self.client.post('%s?feed_url=%s' % (self.url,
-                                                        self.feed_url))
+                                                        'http://google.com/'))
         self.assertEqual(response.status_code, 302)
-        self.assertEquals(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
-                reverse('localtv_admin_manage_page')))
+        self.assertEqual(response['Location'],
+                          'http://testserver%s' % (reverse('localtv_admin_manage_page')))
         feed = Feed.objects.get()
         finish_by = time.time() + 5 # 5s timeout
         while feed.status == feed.INACTIVE and time.time() < finish_by:
             time.sleep(0.3)
             feed = Feed.objects.get()
 
-        self.assertEquals(feed.status, Feed.ACTIVE)
+        self.assertEqual(feed.status, Feed.ACTIVE)
         feed_import = feed.imports.get()
-        self.assertEquals(feed_import.status, feed_import.COMPLETE)
-        self.assertEquals(feed_import.total_videos, 6)
-        self.assertEquals(feed_import.videos_imported, 2)
-        self.assertEquals(feed_import.videos_skipped, 4)
+        self.assertEqual(feed_import.status, feed_import.COMPLETE)
+        self.assertEqual(feed_import.total_videos, 6)
+        self.assertEqual(feed_import.videos_imported, 2)
+        self.assertEqual(feed_import.videos_skipped, 4)
 
-        self.assertEquals(
+        self.assertEqual(
             feed.video_set.filter(status=Video.UNAPPROVED).count(), 2)
 
     def test_POST_auto_approve(self):
@@ -96,25 +104,24 @@ media enclosures. All contents of this feed are for example only.""")
         approve all the videos.
         """
         response = self.client.post('%s?feed_url=%s' % (self.url,
-                                                        self.feed_url),
+                                                        'http://google.com/'),
                                     {'auto_approve': 'yes'})
         self.assertEqual(response.status_code, 302)
-        self.assertEquals(response['Location'], 'http://%s%s' % (
-                self.site_settings.site.domain,
-                reverse('localtv_admin_manage_page')))
+        self.assertEqual(response['Location'],
+                         'http://testserver%s' % (reverse('localtv_admin_manage_page')))
         feed = Feed.objects.get()
         finish_by = time.time() + 5 # 5s timeout
         while feed.status == feed.INACTIVE and time.time() < finish_by:
             time.sleep(0.3)
             feed = Feed.objects.get()
-        self.assertEquals(feed.status, Feed.ACTIVE)
-        self.assertEquals(feed.auto_approve, True)
+        self.assertEqual(feed.status, Feed.ACTIVE)
+        self.assertEqual(feed.auto_approve, True)
         feed_import = feed.imports.get()
-        self.assertEquals(feed_import.auto_approve, True)
-        self.assertEquals(feed_import.status, feed_import.COMPLETE)
-        self.assertEquals(feed_import.total_videos, 6)
-        self.assertEquals(feed_import.videos_imported, 2)
-        self.assertEquals(feed_import.videos_skipped, 4)
+        self.assertEqual(feed_import.auto_approve, True)
+        self.assertEqual(feed_import.status, feed_import.COMPLETE)
+        self.assertEqual(feed_import.total_videos, 6)
+        self.assertEqual(feed_import.videos_imported, 2)
+        self.assertEqual(feed_import.videos_skipped, 4)
 
-        self.assertEquals(
+        self.assertEqual(
             feed.video_set.filter(status=Video.ACTIVE).count(), 2)

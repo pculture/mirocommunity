@@ -23,7 +23,7 @@ from django.core import mail
 from django.test.client import Client
 from django.http import Http404
 
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 from localtv.models import SiteSettings
 
 from localtv.playlists.models import Playlist, PlaylistItem

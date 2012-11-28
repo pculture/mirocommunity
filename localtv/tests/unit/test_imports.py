@@ -24,7 +24,7 @@ from vidscraper.suites import Video as VidscraperVideo
 from localtv.models import (Source, Feed, FeedImport, Video, FeedImportIndex,
                             FeedImportError)
 from localtv.tasks import haystack_update, haystack_remove
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class SourceImportUnitTestCase(BaseTestCase):

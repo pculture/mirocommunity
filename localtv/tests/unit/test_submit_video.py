@@ -32,7 +32,7 @@ from localtv.submit_video import forms
 from localtv.submit_video.views import (_has_submit_permissions,
                                         SubmitURLView,
                                         SubmitVideoView)
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 from localtv.utils import get_or_create_tags
 
 
@@ -431,7 +431,7 @@ class ThumbnailSubmitVideoFormTestCase(BaseTestCase):
         request = self.factory.get('/')
         form = self.form_class(request, 'http://google.com')
         form.cleaned_data = {
-            'thumbnail_file': File(file(self._data_file('logo.png'))),
+            'thumbnail_file': File(self._data_file('logo.png')),
             'thumbnail_url': 'http://google.com'
         }
         video = form.save()

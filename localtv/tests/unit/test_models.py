@@ -24,7 +24,7 @@ from django.db import connections
 from django.core.files.base import File
 
 from localtv.models import SiteSettings, SiteRelatedManager, WidgetSettings
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class SiteRelatedManagerTestCase(BaseTestCase):
@@ -146,10 +146,10 @@ class ThumbnailableTestCase(BaseTestCase):
 
 		"""
 		video = self.create_video()
-		video.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+		video.save_thumbnail_from_file(File(self._data_file('logo.png')))
 		image1 = Image.objects.for_storage_path(video.thumbnail_path)
 		AdjustedImage.objects.adjust(image1, width=image1.width / 2)
 		self.assertTrue(image1.adjustedimage_set.all())
-		video.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+		video.save_thumbnail_from_file(File(self._data_file('logo.png')))
 		image2 = Image.objects.for_storage_path(video.thumbnail_path)
 		self.assertFalse(image2.adjustedimage_set.all())

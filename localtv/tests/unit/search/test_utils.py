@@ -24,7 +24,7 @@ from haystack.query import SearchQuerySet
 
 from localtv.models import Video, SiteSettings, Category, Watch
 from localtv.search import utils, forms
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class NormalizedVideoListUnitTestCase(BaseTestCase):

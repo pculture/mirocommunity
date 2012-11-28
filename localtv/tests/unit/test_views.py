@@ -22,7 +22,7 @@ from localtv.listing.views import CompatibleListingView
 from localtv.models import Video
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterView
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 from localtv.views import VideoView
 
 
