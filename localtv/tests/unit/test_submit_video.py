@@ -19,7 +19,6 @@ import mock
 import datetime
 import urllib2
 
-from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
@@ -36,21 +35,19 @@ from localtv.tests import BaseTestCase
 from localtv.utils import get_or_create_tags
 
 
-class SubmitPermissionsTestCase(BaseTestCase):
+class Permissions(BaseTestCase):
     """
     Test case for submit permissions.
 
     """
-    fixtures = ['users']
     def setUp(self):
         BaseTestCase.setUp(self)
-        url = reverse('localtv_submit_video')
-        self.site_settings = SiteSettings.objects.get()
-        self.anonymous_request = self.factory.get(url)
-        self.user_request = self.factory.get(
-            url, user=User.objects.get(username='user'))
-        self.admin_request = self.factory.get(
-            url, user=User.objects.get(username='admin'))
+        self.site_settings = SiteSettings.objects.get_current()
+        user = self.create_user('user')
+        admin = self.create_user('admin', is_superuser=True)
+        self.anonymous_request = self.factory.get('/')
+        self.user_request = self.factory.get('/', user=user)
+        self.admin_request = self.factory.get('/', user=admin)
 
     def test_all_permitted(self):
         """

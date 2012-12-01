@@ -287,8 +287,11 @@ class BaseTestCase(TestCase):
         """
         self.assertEqual(response.status_code, 302)
         parsed_url = urlparse.urlsplit(response['Location'])
+        parsed_target = urlparse.urlsplit(target_path)
         self.assertEqual(parsed_url.netloc, netloc)
-        self.assertEqual(parsed_url.path, target_path)
+        self.assertEqual(parsed_url.path, parsed_target.path)
+        self.assertEqual(urlparse.parse_qs(parsed_url.query),
+                         urlparse.parse_qs(parsed_target.query))
 
     def assertRequiresAuthentication(self, url, username=None, password=None,
                                      data=None):

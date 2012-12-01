@@ -17,12 +17,12 @@
 
 import time
 
-from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 import feedparser
 from mock import patch
 from vidscraper import VideoFeed
 
+from localtv import tasks
 from localtv.models import Video, Feed
 from localtv.tests import BaseTestCase
 
@@ -35,6 +35,9 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
             feed = feedparser.parse(f.read())
         patcher = patch.object(VideoFeed, 'get_url_response', lambda *args, **kwargs: feed)
         patcher.start()
+        self.addCleanup(patcher.stop)
+        patcher = patch.object(tasks, 'video_save_thumbnail')
+        self.save_thumbnail = patcher.start()
         self.addCleanup(patcher.stop)
         self.create_user(username='admin', password='admin', is_superuser=True)
         self.client.login(username='admin', password='admin')
@@ -94,6 +97,7 @@ media enclosures. All contents of this feed are for example only.""")
         self.assertEqual(feed_import.total_videos, 6)
         self.assertEqual(feed_import.videos_imported, 2)
         self.assertEqual(feed_import.videos_skipped, 4)
+        self.assertEqual(self.save_thumbnail.delay.call_count, 2)
 
         self.assertEqual(
             feed.video_set.filter(status=Video.UNAPPROVED).count(), 2)
@@ -122,6 +126,7 @@ media enclosures. All contents of this feed are for example only.""")
         self.assertEqual(feed_import.total_videos, 6)
         self.assertEqual(feed_import.videos_imported, 2)
         self.assertEqual(feed_import.videos_skipped, 4)
+        self.assertEqual(self.save_thumbnail.delay.call_count, 2)
 
         self.assertEqual(
             feed.video_set.filter(status=Video.ACTIVE).count(), 2)

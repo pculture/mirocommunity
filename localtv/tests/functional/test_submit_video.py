@@ -24,24 +24,25 @@ from django.core.urlresolvers import reverse
 from django.core import mail
 from django.forms.fields import URLField
 from django.template import Context, loader
+from django.test import Client
 from notification import models as notification
+from mock import patch
+import vidscraper
 from vidscraper.suites.base import Video as VidscraperVideo
 
-from localtv.models import Video
+from localtv.models import Video, SiteSettings
 from localtv.submit_video import forms
 from localtv.submit_video.management.commands import review_status_email
 from localtv.submit_video.views import SubmitURLView
-
 from localtv.tests import BaseTestCase
 
 
-class SubmitThanksFunctionalTestCase(BaseTestCase):
-    fixtures = ['feeds', 'videos'] + BaseTestCase.fixtures
-
+class SubmitThanks(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self.url = reverse('localtv_submit_thanks')
-        self.video = Video.objects.filter(status=Video.ACTIVE)[0]
+        self.create_user('admin', 'admin', is_superuser=True)
+        self.video = self.create_video(update_index=False)
         self.url_with_video = reverse('localtv_submit_thanks', args=[
                 self.video.pk])
         self.template_name = 'localtv/submit_video/thanks.html'
@@ -82,38 +83,33 @@ class SubmitThanksFunctionalTestCase(BaseTestCase):
         self.assertEqual(response.context['video'], self.video)
 
 
-class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
+class Permissions(BaseTestCase):
     """
     Functional test case of permissions.
 
     """
-    abstract = True
+    @classmethod
+    def setUpClass(cls):
+        super(Permissions, cls).setUpClass()
+        cls.create_user('user', 'password')
+        cls.create_user('admin', 'admin', is_superuser=True)
 
-    def assertLoginRedirect(self, url, username=None, password=None):
-        """
-        Asserts that a user logged in with the given credentials will be
-        redirected to the login view from the given url.
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.site_settings = SiteSettings.objects.get_current()
 
-        """
-
-        if username is not None and password is not None:
-            self.client.login(username=username, password=password)
-
-        response = self.client.get(url)
-        self.assertRedirects(response, "%s?next=%s" % (settings.LOGIN_URL,
-                                                    quote_plus(url, safe='/')))
-
-    def assertNoLoginRedirect(self, url, username=None, password=None):
+    def assertHasAuthentication(self, url, username=None, password=None):
         """
         Asserts that a user logged in with the given credentials will not be
         redirected to the login view from the given url.
 
         """
+        c = Client()
 
         if username is not None and password is not None:
-            self.client.login(username=username, password=password)
+            c.login(username=username, password=password)
 
-        response = self.client.get(url)
+        response = c.get(url)
         self.assertFalse(response.status_code == 302 and
                          response['Location'] == (
                          'http://%s%s?next=%s' %
@@ -121,7 +117,7 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
                           settings.LOGIN_URL,
                           quote_plus(url, safe='/'))))
 
-    def test_all_permitted(self):
+    def _test_all_permitted(self, url):
         """
         If login is not required, all requests should pass the permissions
         check.
@@ -130,13 +126,27 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         self.site_settings.submission_requires_login = False
         self.site_settings.save()
 
-        self.assertNoLoginRedirect(self.url)
-        self.assertNoLoginRedirect(self.url, username='user',
-                                   password='password')
-        self.assertNoLoginRedirect(self.url, username='admin',
-                                   password='admin')
+        self.assertHasAuthentication(url)
+        self.assertHasAuthentication(url,
+                                     username='user',
+                                     password='password')
+        self.assertHasAuthentication(url,
+                                     username='admin',
+                                     password='admin')
 
-    def test_login_required(self):
+    def test_all_permitted__submit(self):
+        self._test_all_permitted(reverse('localtv_submit_video'))
+
+    def test_all_permitted__scraped(self):
+        self._test_all_permitted(reverse('localtv_submit_scraped_video'))
+
+    def test_all_permitted__embed(self):
+        self._test_all_permitted(reverse('localtv_submit_embedrequest_video'))
+
+    def test_all_permitted__directlink(self):
+        self._test_all_permitted(reverse('localtv_submit_directlink_video'))
+
+    def _test_login_required(self, url):
         """
         If login is required and a submit button is available, all logged-in
         requests should pass the permissions check.
@@ -146,13 +156,27 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         self.site_settings.display_submit_button = True
         self.site_settings.save()
 
-        self.assertLoginRedirect(self.url)
-        self.assertNoLoginRedirect(self.url, username='user',
-                                   password='password')
-        self.assertNoLoginRedirect(self.url, username='admin',
-                                   password='admin')
+        self.assertRequiresAuthentication(url)
+        self.assertHasAuthentication(url,
+                                     username='user',
+                                     password='password')
+        self.assertHasAuthentication(url,
+                                     username='admin',
+                                     password='admin')
 
-    def test_admin_required(self):
+    def test_login_required__submit(self):
+        self._test_login_required(reverse('localtv_submit_video'))
+
+    def test_login_required__scraped(self):
+        self._test_login_required(reverse('localtv_submit_scraped_video'))
+
+    def test_login_required__embed(self):
+        self._test_login_required(reverse('localtv_submit_embedrequest_video'))
+
+    def test_login_required__directlink(self):
+        self._test_login_required(reverse('localtv_submit_directlink_video'))
+
+    def _test_admin_required(self, url):
         """
         If login is required and no submit button is displayed, only admin
         requests should pass the permissions check.
@@ -162,16 +186,31 @@ class SubmitVideoBaseFunctionalTestCase(BaseTestCase):
         self.site_settings.display_submit_button = False
         self.site_settings.save()
 
-        self.assertLoginRedirect(self.url)
-        self.assertLoginRedirect(self.url, username='user',
-                                 password='password')
-        self.assertNoLoginRedirect(self.url, username='admin',
-                                   password='admin')
+        self.assertRequiresAuthentication(url)
+        self.assertRequiresAuthentication(url,
+                                          username='user',
+                                          password='password')
+        self.assertHasAuthentication(url,
+                                     username='admin',
+                                     password='admin')
+
+    def test_admin_required__submit(self):
+        self._test_admin_required(reverse('localtv_submit_video'))
+
+    def test_admin_required__scraped(self):
+        self._test_admin_required(reverse('localtv_submit_scraped_video'))
+
+    def test_admin_required__embed(self):
+        self._test_admin_required(reverse('localtv_submit_embedrequest_video'))
+
+    def test_admin_required__directlink(self):
+        self._test_admin_required(reverse('localtv_submit_directlink_video'))
 
 
-class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
+class SubmitURLViewTestCase(BaseTestCase):
     def setUp(self):
-        SubmitVideoBaseFunctionalTestCase.setUp(self)
+        BaseTestCase.setUp(self)
+        self.site_settings = SiteSettings.objects.get_current()
         self.url = reverse('localtv_submit_video')
         self.template_name = 'localtv/submit_video/submit.html'
 
@@ -198,7 +237,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertIsInstance(response.context['form'], forms.SubmitURLForm)
         self.assertFalse(response.context['form'].is_bound)
 
-    def test_submit__succeed(self):
+    def _test_submit__succeed(self, url, next_view, **kwargs):
         """
         A GET request to the SubmitURLView with GET data should submit the form
         if the GET data overlaps with the form field(s). On success, the user
@@ -210,54 +249,43 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         backwards-compatibility.
 
         """
-        # TODO: If there is a way to mock these requests, that would be great.
-        data = {'url': ('http://blip.tv/file/get/'
-                        'Miropcf-Miro20Introduction119.mp4'),
+        data = {'url': url,
                 'q': 'hello',
                 'next': 'blink'}
-
-        # Case one: Direct link to a video file.
         expected_url = "%s?%s" % (
-            reverse('localtv_submit_directlink_video'),
+            reverse(next_view),
             urlencode(data)
         )
-        response = self.client.get(self.url, data)
+        video = VidscraperVideo(url)
+        video._loaded = True
+        for attr, value in kwargs.iteritems():
+            setattr(video, attr, value)
+        with patch.object(vidscraper, 'auto_scrape', return_value=video):
+            response = self.client.get(self.url, data)
         self.assertRedirects(response, expected_url)
 
-        # Case two: Link to a page that vidscraper can scrape.
-        data['url'] = 'http://blip.tv/searching-for-mike/fixing-otter-267'
-        expected_url = "%s?%s" % (
-            reverse('localtv_submit_scraped_video'),
-            urlencode(data)
-        )
-        response = self.client.get(self.url, data)
-        self.assertRedirects(response, expected_url)
+    def test_submit__succeed__scraped(self):
+        self._test_submit__succeed('http://blip.tv/searching-for-mike/fixing-otter-267',
+                                   'localtv_submit_scraped_video',
+                                   embed_code='haha')
 
-        # Case three: Link to a page that vidscraper doesn't understand.
-        data['url'] = 'http://pculture.org/'
-        expected_url = "%s?%s" % (
-            reverse('localtv_submit_embedrequest_video'),
-            urlencode(data)
-        )
-        response = self.client.get(self.url, data)
-        self.assertRedirects(response, expected_url)
+    def test_submit__succeed__directlink(self):
+        self._test_submit__succeed('http://blip.tv/file/get/Miropcf-Miro20Introduction119.mp4',
+                                   'localtv_submit_directlink_video')
 
-    def test_submit__unusual_extension(self):
+    def test_submit__succeed__embedrequest(self):
+        self._test_submit__succeed('http://pculture.org/',
+                                   'localtv_submit_embedrequest_video')
+
+    def test_submit__succeed__unusual_extension(self):
         """
         If a URL represents a video file, but has an unusual extension, localtv
         should figure out what's going on.
 
         """
-        data = {'url': ('http://media.river-valley.tv/conferences/'
-                            'lgm2009/0302-Jean_Francois_Fortin_Tam-ogg.php')}
-
-        expected_url = "%s?%s" % (
-            reverse('localtv_submit_directlink_video'),
-            urlencode(data)
-        )
-
-        response = self.client.get(self.url, data)
-        self.assertRedirects(response, expected_url)
+        with patch('localtv.submit_video.views.is_video_url', lambda x: True):
+            self._test_submit__succeed('http://media.river-valley.tv/conferences/lgm2009/0302-Jean_Francois_Fortin_Tam-ogg.php',
+                                       'localtv_submit_directlink_video')
 
     def test_submit__existing_rejected(self):
         """
@@ -266,18 +294,13 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         should not yet be deleted.
 
         """
-        video = Video.objects.create(
-            site=self.site_settings.site,
-            status=Video.REJECTED,
-            name='test video',
-            website_url = 'http://www.pculture.org/')
-        expected_url = "%s?%s" % (
-            reverse('localtv_submit_embedrequest_video'),
-            urlencode({'url': video.website_url})
-        )
-
-        response = self.client.get(self.url, {'url': video.website_url})
-        self.assertRedirects(response, expected_url)
+        url = 'http://www.pculture.org/'
+        video = Video.objects.create(site=self.site_settings.site,
+                                     status=Video.REJECTED,
+                                     name='test video',
+                                     website_url=url)
+        self._test_submit__succeed(url,
+                                   'localtv_submit_embedrequest_video')
         self.assertEqual(list(Video.objects.filter(pk=video.pk)), [video])
 
     def test_submit__existing_unapproved(self):
@@ -305,7 +328,7 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
         self.assertTrue(response.context['was_duplicate'])
         self.assertTrue(response.context['video'] is None)
 
-    def test_submit__existing_approved(self):
+    def _test_submit__existing_approved(self, video_kwargs=None, vidscraper_kwargs=None):
         """
         If the URL represents an existing and approved video, the form should
         be redisplayed. Additionally, the context should contain two variables
@@ -315,51 +338,39 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
             * ``video``: The duplicate video instance
 
         """
-        url = 'http://www.pculture.org/'
         video = Video.objects.create(
             site=self.site_settings.site,
             name='Participatory Culture',
             status=Video.ACTIVE,
-            file_url=url
+            **video_kwargs
         )
+        data = {'url': 'http://pculture.org/'}
         expected_error = "That video has already been submitted!"
 
-        # Case one: duplicate file url
-        response = self.client.get(self.url, {'url': url})
+        vidscraper_video = VidscraperVideo(data['url'])
+        for attr, value in (vidscraper_kwargs or {}).iteritems():
+            setattr(vidscraper_video, attr, value)
+        with patch.object(vidscraper, 'auto_scrape', return_value=vidscraper_video):
+            response = self.client.get(self.url, data)
+
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.template_name)
         self.assertFormError(response, 'form', 'url', [expected_error])
         self.assertTrue(response.context['was_duplicate'])
         self.assertEqual(response.context['video'], video)
 
-        # Case two: duplicate website url
-        video.website_url = url
-        video.file_url = ''
-        video.save()
+    def test_submit__existing_approved__file_url(self):
+        data = {'file_url': 'http://pculture.org/'}
+        self._test_submit__existing_approved(data, data)
 
-        response = self.client.get(self.url, {'url': url})
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.template_name)
-        self.assertFormError(response, 'form', 'url', [expected_error])
-        self.assertTrue(response.context['was_duplicate'])
-        self.assertEqual(response.context['video'], video)
+    def test_submit__existing_approved__website_url(self):
+        url = 'http://pculture.org/'
+        self._test_submit__existing_approved({'website_url': url},
+                                             {'link': url})
 
-        # Case three: duplicate guid. TODO: It would be preferable to mock
-        # this.  TODO: vidscraper currently is changing the guids on youtube
-        # videos.  Once that is resolved one way or another, this will need to
-        # be tweaked accordingly.  video.guid =
-        # 'tag:youtube.com,2008:video:J_DV9b0x7v4'
-        video.guid = u'http://gdata.youtube.com/feeds/api/videos/J_DV9b0x7v4'
-        video.save()
-
-        response = self.client.get(
-            self.url,
-            {'url': 'http://www.youtube.com/watch?v=J_DV9b0x7v4'})
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.template_name)
-        self.assertFormError(response, 'form', 'url', [expected_error])
-        self.assertTrue(response.context['was_duplicate'])
-        self.assertEqual(response.context['video'], video)
+    def test_submit__existing_approved__guid(self):
+        data = {'guid': u'http://gdata.youtube.com/feeds/api/videos/J_DV9b0x7v4'}
+        self._test_submit__existing_approved(data, data)
 
     def test_submit__invalid_input(self):
         """
@@ -374,24 +385,38 @@ class SubmitURLViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
 
 
 class ReviewStatusEmailCommandTestCase(BaseTestCase):
-
-    fixtures = BaseTestCase.fixtures + ['feeds', 'videos']
-
     def setUp(self):
         BaseTestCase.setUp(self)
-        notice_type = notification.NoticeType.objects.get(
-            label='admin_queue_daily')
-        for username in 'admin', 'superuser':
-            user = User.objects.get(username=username)
-            setting = notification.get_notification_setting(user, notice_type,
-                                                            "1")
-            setting.send = True
-            setting.save()
+        self.site_settings = SiteSettings.objects.get_current()
+        self.admin = self.create_user('admin', 'admin', email='test@example.com')
+        self.site_settings.admins.add(self.admin)
+        self.superuser = self.create_user('superuser', 'superuser',
+                                          is_superuser=True, email='test@example.com')
+
+        # Clear welcome emails from outbox.
+        mail.outbox = []
+
+        # Create three videos submitted two days ago.
+        when_submitted = datetime.datetime.now() - datetime.timedelta(2)
+        for i in range(3):
+            video = self.create_video(status=Video.UNAPPROVED)
+            video.when_submitted = when_submitted
+            video.save()
+
+    def _set_notification(self, user, send):
+        notice_type = notification.NoticeType.objects.get(label='admin_queue_daily')
+        setting = notification.get_notification_setting(user, notice_type, "1")
+        setting.send = send
+        setting.save()
 
     def test_no_email(self):
         """
-        If no videos are new in the previous day, no e-mail should be sent.
+        If admins are subscribed, but no videos are new in the previous day,
+        no e-mail should be sent.
+
         """
+        self._set_notification(self.admin, True)
+        self._set_notification(self.superuser, True)
         review_status_email.Command().handle_noargs()
         self.assertEqual(len(mail.outbox), 0)
 
@@ -400,6 +425,8 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         If there is a video submitted in the previous day, an e-mail should be
         sent
         """
+        self._set_notification(self.admin, True)
+        self._set_notification(self.superuser, True)
         queue_videos = Video.objects.filter(
             status=Video.UNAPPROVED)
 
@@ -413,7 +440,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
 
         message = mail.outbox[0]
         self.assertEqual(message.subject,
-                          'Video Submissions for testserver')
+                          'Video Submissions for example.com')
         t = loader.get_template('localtv/submit_video/review_status_email.txt')
         c = Context({'queue_videos': queue_videos,
                      'new_videos': queue_videos.filter(pk=new_video.pk),
@@ -425,14 +452,8 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         """
         If no admins are subscribed, no e-mail should be sent.
         """
-        notice_type = notification.NoticeType.objects.get(
-            label='admin_queue_daily')
-        for username in 'admin', 'superuser':
-            user = User.objects.get(username=username)
-            setting = notification.get_notification_setting(user, notice_type,
-                                                            "1")
-            setting.send = False
-            setting.save()
+        self._set_notification(self.admin, False)
+        self._set_notification(self.superuser, False)
 
         queue_videos = Video.objects.filter(
             status=Video.UNAPPROVED)
@@ -445,7 +466,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
 
-class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
+class SubmitVideoViewFunctionalTestCase(BaseTestCase):
     """
     This is an abstract base class for testing the three cases of the
     SubmitVideoView, since their functionality is basically identical.
@@ -459,10 +480,8 @@ class SubmitVideoViewFunctionalTestCase(SubmitVideoBaseFunctionalTestCase):
     * session_url - the url expected in the session.
 
     """
-    abstract = True
-
     def setUp(self):
-        SubmitVideoBaseFunctionalTestCase.setUp(self)
+        BaseTestCase.setUp(self)
         # If the session cookie isn't set, no session store object is returned,
         # which means that you can't modify the session. See django tickets:
         # https://code.djangoproject.com/ticket/11475
