@@ -316,8 +316,10 @@ class BaseTestCase(TestCase):
             c.login(username=username, password=password)
 
         response = c.get(url, data or {})
-        self.assertRedirects(response, settings.LOGIN_URL)
         parsed_url = urlparse.urlsplit(response['Location'])
+        expected_url = "{path}?{qs}".format(path=settings.LOGIN_URL,
+                                            qs=parsed_url.query)
+        self.assertRedirects(response, expected_url)
         qd = QueryDict(parsed_url.query)
         parsed_next = urlparse.urlsplit(qd['next'])
         self.assertEqual(parsed_next.path, url)
