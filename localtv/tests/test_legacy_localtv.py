@@ -54,7 +54,7 @@ from localtv.models import (Watch, Category, SiteSettings, Video,
 from localtv import utils
 import localtv.feeds.views
 from localtv.search.utils import NormalizedVideoList
-from localtv.tasks import haystack_batch_update
+from localtv.tasks import haystack_batch_update, video_save_thumbnail
 
 from notification import models as notification
 from tagging.models import Tag
@@ -1404,6 +1404,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         # first.
         'thumbnail_updated': (datetime.datetime.now() -
                               datetime.timedelta(days=8)).replace(day=8),
+        'tags': set()
         }
 
 
@@ -1416,8 +1417,18 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
             name=self.BASE_DATA['name'],
             description=self.BASE_DATA['description'],
             thumbnail_url=self.BASE_DATA['thumbnail_url'])
+        self.vidscraper_video = vidscraper.Video(url=self.BASE_URL)
+        self.vidscraper_video.__dict__.update({
+            'link': self.BASE_URL,
+            'title': self.BASE_DATA['name'],
+            'description': self.BASE_DATA['description'],
+            'thumbnail_url': self.BASE_DATA['thumbnail_url'],
+            'tags': [],
+            '_loaded': True,
+        })
         self.original = self.video.original
         self.original.thumbnail_updated = self.BASE_DATA['thumbnail_updated']
+        self.original._remote_thumbnail_appears_changed = lambda: False
         self.original.save()
         notice_type = notification.NoticeType.objects.get(
             label='admin_video_updated')
@@ -1445,51 +1456,48 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         If nothing has changed, then OriginalVideo.changed_fields() should
         return an empty dictionary.
         """
-        self.assertEqual(self.original.changed_fields(), {})
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            self.assertEqual(self.original.changed_fields(), {})
 
-    def assertChanges(self, field, value, old_value):
+    def _test_change_field(self, field, value):
         """
-        Sets the field on self.original, tests that
-        self.original.changed_fields() contains the correct data, and then
-        resets the field.
+        Sets the field on self.original and tests that
+        self.original.changed_fields() contains the correct data.
         """
         setattr(self.original, field, value)
-        changed_fields = self.original.changed_fields()
-        self.assertEqual(changed_fields, {field: old_value})
-        setattr(self.original, field, old_value)
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            changed_fields = self.original.changed_fields()
+        self.assertEqual(changed_fields, {field: self.BASE_DATA[field]})
 
-    def test_name_change(self):
+    def test_change_field__name(self):
         """
         If the name has changed, OriginalVideo.changed_fields() should return
         the new name.
         """
-        self.assertChanges('name', 'Different Name', self.BASE_DATA['name'])
+        self._test_change_field('name', 'Different Name')
 
-    def test_description_change(self):
+    def test_change_field__description(self):
         """
         If the description has changed, OriginalVideo.changed_fields() should
         return the new description.
         """
-        self.assertChanges('description', 'Different Description',
-                           self.BASE_DATA['description'])
+        self._test_change_field('description', 'Different Description')
 
-    def test_tags_change(self):
+    def test_change_field__tags(self):
         """
         If the tags have changed, OriginalVideo.changed_fields() should return
         the new tags.
         """
-        self.assertChanges('tags', ['Different', 'Tags'], set())
+        self._test_change_field('tags', ['Different', 'Tags'])
 
-    def test_thumbnail_url_change(self):
+    def test_change_field__thumbnail_url(self):
         """
         If the thumbnail_url has changed, OriginalVideo.changed_fields() should
         return the new thumbnail_url.
         """
-        self.assertChanges('thumbnail_url',
-            'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png',
-            self.BASE_DATA['thumbnail_url'])
+        self._test_change_field('thumbnail_url', 'http://www.google.com/intl/en_ALL/images/srpr/logo1w.png')
 
-    def test_thumbnail_updated_change(self):
+    def test_change_field__thumbnail_updated(self):
         """
         If the date on the thumbnail has changed,
         OriginalVideo.changed_fields() should return the new thumbnail date.
@@ -1500,7 +1508,9 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.thumbnail_updated = datetime.datetime.min
 
         time_at_start_of_test = datetime.datetime.utcnow()
-        changed_fields = self.original.changed_fields()
+        self.original._remote_thumbnail_appears_changed = lambda: True
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            changed_fields = self.original.changed_fields()
         self.assertTrue('thumbnail_updated' in changed_fields)
         new_thumbnail_timestamp = changed_fields['thumbnail_updated']
         self.assertTrue(new_thumbnail_timestamp >=
@@ -1513,7 +1523,8 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.thumbnail_updated = datetime.datetime.min
         self.original.remote_thumbnail_hash = '6a63e0b2a8c085c06b1777aa62af98bde5db1196'
 
-        changed_fields = self.original.changed_fields()
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            changed_fields = self.original.changed_fields()
         self.assertFalse('thumbnail_updated' in changed_fields)
         self.original.thumbnail_updated = old_updated
 
@@ -1522,7 +1533,8 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         If nothing has been updated, OriginalVideo.update() should not send any
         e-mails.
         """
-        self.original.update()
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            self.original.update()
         self.assertEqual(len(mail.outbox), 0)
 
     def test_update_modified(self):
@@ -1537,7 +1549,9 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.tags = 'foo bar'
         self.original.save()
 
-        self.original.update()
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            with mock.patch.object(video_save_thumbnail, 'delay') as vst_mock:
+                self.original.update()
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(),
@@ -1567,7 +1581,10 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.video.save()
         self.original.save()
 
-        self.original.update()
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            with mock.patch.object(video_save_thumbnail, 'delay') as vst_mock:
+                self.original.update()
+                self.assertEqual(vst_mock.call_count, 1)
 
 
         self.assertEqual(len(mail.outbox), 0)
@@ -1599,7 +1616,9 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.video.save()
         self.original.save()
 
-        self.original.update()
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            with mock.patch.object(video_save_thumbnail, 'delay') as vst_mock:
+                self.original.update()
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(),
@@ -1625,15 +1644,18 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         lines (rather than crash).
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result = vidscraper.Video(self.BASE_URL) # all fields None
+        vidscraper_video = vidscraper.Video(self.BASE_URL) # all fields None
+        vidscraper_video._loaded = True
 
-        self.original.update(override_vidscraper_result=vidscraper_result)
+        with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
+            self.original.update()
 
         self.assertTrue(self.original.remote_video_was_deleted)
         self.assertEqual(len(mail.outbox), 0) # not e-mailed yet
 
         # second try sends the e-mail
-        self.original.update(override_vidscraper_result=vidscraper_result)
+        with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
+            self.original.update()
 
         self.assertTrue(self.original.remote_video_was_deleted)
         self.assertEqual(len(mail.outbox), 1)
@@ -1644,7 +1666,8 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         # Now, imagine a day goes by.
         # Clear the outbox, and do the same query again.
         mail.outbox = []
-        self.original.update(override_vidscraper_result=vidscraper_result)
+        with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
+            self.original.update()
         self.assertEqual(len(mail.outbox), 0)
 
     def test_remote_video_spurious_delete(self):
@@ -1653,21 +1676,24 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         and reset the remote_video_was_deleted flag.
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_result = vidscraper.Video(self.BASE_URL)
+        vidscraper_video = vidscraper.Video(self.BASE_URL)
+        vidscraper_video._loaded = True
 
-        self.original.update(override_vidscraper_result=vidscraper_result)
+        with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
+            self.original.update()
 
         self.assertTrue(self.original.remote_video_was_deleted)
         self.assertEqual(len(mail.outbox), 0) # not e-mailed yet
 
         # second try doesn't sends the e-mail
-        vidscraper_result.__dict__.update({
+        vidscraper_video.__dict__.update({
                 'title': self.video.name,
                 'description': self.video.description,
                 'tags': list(self.video.tags),
                 'thumbnail_url': self.video.thumbnail_url})
 
-        self.original.update(override_vidscraper_result=vidscraper_result)
+        with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
+            self.original.update()
 
         self.assertFalse(self.original.remote_video_was_deleted)
         self.assertEqual(len(mail.outbox), 0)
@@ -1689,13 +1715,9 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.video.save()
 
         # Now, do a refresh, simulating the remote response having \r\n line endings
-        vidscraper_result = vidscraper.Video(self.BASE_URL)
-        vidscraper_result.__dict__.update(
-            {'description': self.original.description.replace('\n', '\r\n'),
-             'thumbnail_url': self.BASE_DATA['thumbnail_url'],
-             'title': self.BASE_DATA['name'],
-             })
-        changes = self.original.changed_fields(override_vidscraper_result=vidscraper_result)
+        self.vidscraper_video.description = self.original.description.replace('\n', '\r\n')
+        with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
+            changes = self.original.changed_fields()
         self.assertFalse(changes)
 
     @mock.patch('vidscraper.auto_scrape',
