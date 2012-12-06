@@ -147,13 +147,19 @@ class SortFilterViewTestCase(BaseTestCase):
 
     def test_invalid_sort(self):
         """
-        If an invalid sort is selected, an empty queryset should be returned.
+        If an invalid sort is selected, should fall back on the "newest" sort.
 
         """
+        self._clear_index()
+        for i in range(3):
+            self.create_video('test' + str(i))
         view = SortFilterView()
         view.request = self.factory.get('/', {'sort': 'unheard_of'})
+        self.assertFalse(hasattr(view, 'form'))
         queryset = view.get_queryset()
-        self.assertEqual(len(queryset), 0)
+        self.assertEqual(len(queryset), 3)
+        self.assertTrue(hasattr(view, 'form'))
+        self.assertEqual(view.form.cleaned_data['sort'], 'newest')
 
     def test_invalid_filter_value(self):
         """
