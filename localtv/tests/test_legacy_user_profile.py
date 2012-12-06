@@ -176,8 +176,7 @@ class ProfileViewTestCase(BaseTestCase):
         If the 'delete_logo' POST argument is present, the logo should be
         deleted.
         """
-        self.profile.logo = File(
-            file(self._data_file('logo.png')))
+        self.profile.logo = File(self._data_file('logo.png'))
         self.profile.save()
         self.assertTrue(self.profile.logo)
 

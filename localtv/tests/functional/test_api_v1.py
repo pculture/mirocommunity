@@ -19,7 +19,7 @@ import json
 
 from django.conf import settings
 
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 from localtv.models import Feed, SavedSearch, Video
 

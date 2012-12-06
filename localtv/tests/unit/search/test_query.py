@@ -16,7 +16,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from localtv.search.query import SmartSearchQuerySet
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 from haystack import connections
 

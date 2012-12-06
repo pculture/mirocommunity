@@ -17,7 +17,6 @@
 
 from datetime import datetime, timedelta
 
-from celery.exceptions import MaxRetriesExceededError
 from celery.signals import task_postrun
 from haystack.query import SearchQuerySet
 import mock
@@ -26,7 +25,7 @@ from localtv.models import Video
 from localtv.tasks import (haystack_update, haystack_remove,
                            haystack_batch_update, video_from_vidscraper_video,
                            video_save_thumbnail)
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class VideoFromVidscraperTestCase(BaseTestCase):
@@ -285,7 +284,7 @@ class VideoSaveThumbnailTestCase(BaseTestCase):
         thumbnail_url = 'http://pculture.org/not'
         video = self.create_video(update_index=False, has_thumbnail=True,
                                   thumbnail_url=thumbnail_url)
-        thumbnail_data = open(self._data_file('logo.png'), 'r').read()
+        thumbnail_data = self._data_file('logo.png').read()
         remote_file = mock.Mock(read=lambda: thumbnail_data,
                                 getcode=lambda: 200)
         with mock.patch('localtv.tasks.urllib.urlopen',

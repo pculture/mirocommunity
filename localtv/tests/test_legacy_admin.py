@@ -29,10 +29,12 @@ from django.forms.models import model_to_dict
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.encoding import force_unicode
+import feedparser
 from haystack.query import SearchQuerySet
-
 import mock
 from notification import models as notification
+from vidscraper.suites.base import VideoFeed, VideoSearch, registry
+from vidscraper.suites.youtube import YouTubeSuite
 
 from localtv import utils
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings
@@ -614,16 +616,16 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = self._POST_data_from_formset(formset)
 
         feed = Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
-        feed.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+        feed.save_thumbnail_from_file(File(self._data_file('logo.png')))
 
         POST_data.update({
-                'form-0-name': 'new name!',
-                'form-0-feed_url': 'http://pculture.org/',
-                'form-0-webpage': 'http://getmiro.com/',
-                'form-0-delete_thumbnail': 'yes',
-                'form-1-query_string': 'localtv',
-                'form-1-thumbnail': File(
-                    file(self._data_file('logo.png')))})
+            'form-0-name': 'new name!',
+            'form-0-feed_url': 'http://pculture.org/',
+            'form-0-webpage': 'http://getmiro.com/',
+            'form-0-delete_thumbnail': 'yes',
+            'form-1-query_string': 'localtv',
+            'form-1-thumbnail': File(self._data_file('logo.png'))
+        })
 
         POST_response = c.post(self.url, POST_data,
                                follow=True)
@@ -1033,6 +1035,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 class FeedAdministrationTestCase(BaseTestCase):
     url = reverse_lazy('localtv_admin_feed_add')
     feed_url = "http://qa.pculture.org/feeds_test/feed7.rss"
+    feed_data_path = "feed_with_relative_url.rss"
 
     def test_GET(self):
         """
@@ -1044,7 +1047,10 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': self.feed_url})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
@@ -1090,38 +1096,6 @@ class FeedAdministrationTestCase(BaseTestCase):
             self.assertEqual(response.status_code, 400,
                               '%r not stopped as a duplicate' % url)
 
-    def test_GET_vimeo(self):
-        """
-        A GET request to the add_feed view should render the
-        'localtv/admin/add_feed.html' template if the URL is a Vimeo
-        User RSS url.
-        """
-        url = 'http://www.vimeo.com/user1054395/videos/rss'
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': url})
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.templates[0].name,
-                          'localtv/admin/add_feed.html')
-        self.assertTrue(response.context[2]['form'].instance.feed_url,
-                        url)
-
-    def test_GET_vimeo_channel(self):
-        """
-        A GET request to the add_feed view should render the
-        'localtv/admin/add_feed.html' template if the URL is a Vimeo
-        Channel RSS url.
-        """
-        url = 'http://vimeo.com/channels/sparkyawards/videos/rss'
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': url})
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.templates[0].name,
-                          'localtv/admin/add_feed.html')
-        self.assertTrue(response.context[2]['form'].instance.feed_url,
-                        url)
-
     def test_POST_failure(self):
         """
         A POST request to the add_feed view should rerender the template with
@@ -1129,9 +1103,12 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                          {'feed_url': self.feed_url,
-                           'auto_categories': [1]})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                              {'feed_url': self.feed_url,
+                               'auto_categories': [1]})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
@@ -1160,10 +1137,13 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                          {'feed_url': self.feed_url,
-                           'auto_approve': 'yes',
-                           'cancel': 'yes'})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                              {'feed_url': self.feed_url,
+                               'auto_approve': 'yes',
+                               'cancel': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -1181,9 +1161,12 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                          {'feed_url': self.feed_url,
-                           'auto_approve': 'yes'})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                              {'feed_url': self.feed_url,
+                               'auto_approve': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -1197,7 +1180,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
         self.assertTrue(feed.auto_approve)
 
-    def test_GET_creates_user(self):
+    def test_POST_creates_user(self):
         """
         When creating a new feed from a feed for a user on a video service, a
         User object should be created with that username and should be set as
@@ -1207,9 +1190,11 @@ class FeedAdministrationTestCase(BaseTestCase):
                "?alt=rss&v=2&orderby=published")
         c = Client()
         c.login(username='admin', password='admin')
-        c.post(self.url + "?feed_url=%s" % url,
-               {'feed_url': url,
-                'auto_approve': 'yes'})
+        parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
+        with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
+            c.post(self.url + "?feed_url=%s" % url,
+                   {'feed_url': url,
+                    'auto_approve': 'yes'})
 
         feed = Feed.objects.get()
         user = User.objects.get(username='mphtower')
@@ -1217,13 +1202,12 @@ class FeedAdministrationTestCase(BaseTestCase):
 
         self.assertFalse(user.has_usable_password())
         self.assertEqual(user.email, '')
-        self.assertTrue(user.get_profile().website) # YouTube changes this
-                                                    # periodically, so just
-                                                    # check that it's there
+        self.assertEqual(user.get_profile().website,
+                         'http://www.youtube.com/channel/UCypx79omQfPsBsY46TrEn_w/videos')
         self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 
-    def test_GET_reuses_existing_user(self):
+    def test_POST_reuses_existing_user(self):
         """
         When creating a feed from a feed for a user on a video servers, if a
         User already exists with the given username, it should be used instead
@@ -1238,9 +1222,11 @@ class FeedAdministrationTestCase(BaseTestCase):
                "?alt=rss&v=2&orderby=published")
         c = Client()
         c.login(username='admin', password='admin')
-        c.post(self.url + "?feed_url=%s" % url,
-               {'feed_url': url,
-                'auto_approve': 'yes'})
+        parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
+        with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
+            c.post(self.url + "?feed_url=%s" % url,
+                   {'feed_url': url,
+                    'auto_approve': 'yes'})
 
         user = User.objects.get(username='mphtower') # reload user
         self.assertTrue(user.has_usable_password())
@@ -1310,6 +1296,19 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
     url = reverse_lazy('localtv_admin_search')
 
+    def _search(self, query, *args, **kwargs):
+        suite = registry._suite_dict[YouTubeSuite]
+        search = VideoSearch(query, suite)
+        search.handle_first_response(feedparser.parse(self._data_file('youtube_search.rss')))
+        return list(search)
+
+    def _intersperse(self, videos, *args, **kwargs):
+        # Keep videos from loading and make them look real
+        for video in videos:
+            video._loaded = True
+            video.embed_code = 'fake!'
+            yield video
+
     def test_GET(self):
         """
         A GET request to the livesearch view should render the
@@ -1340,8 +1339,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
@@ -1360,14 +1361,18 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertEqual(response.context[2]['page_obj'].number, 1)
         self.assertEqual(len(response.context[2]['page_obj'].object_list), 10)
 
-        response2 = c.get(self.url,
-                         {'query': 'search string',
-                          'page': '2'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response2 = c.get(self.url,
+                                 {'query': 'search string',
+                                  'page': '2'})
         page_obj = response2.context[2]['page_obj']
         self.assertEqual(page_obj.number, 2)
         if page_obj.has_next():
@@ -1389,15 +1394,19 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         self.assertTrue(c.login(username='admin', password='admin'))
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         fake_video = response.context[2]['page_obj'].object_list[0]
         fake_video2 = response.context[2]['page_obj'].object_list[1]
 
-        response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
-                          'video_id': fake_video.id},
-                         HTTP_REFERER="http://www.getmiro.com/")
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_video_approve'),
+                                 {'query': 'search string',
+                                  'video_id': fake_video.id},
+                                 HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
@@ -1415,8 +1424,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                           v.video_service_url)
         self.assertEqual(list(v.authors.all()), [user])
 
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertEqual(response.context[2]['page_obj'].object_list[0].id,
                           fake_video2.id)
 
@@ -1439,15 +1450,19 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
-        response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
-                          'feature': 'yes',
-                          'video_id': metasearch_video.id},
-                         HTTP_REFERER="http://www.getmiro.com/")
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_video_approve'),
+                                 {'query': 'search string',
+                                  'feature': 'yes',
+                                  'video_id': metasearch_video.id},
+                                 HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
@@ -1462,13 +1477,17 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
-        response = c.get(reverse('localtv_admin_search_video_display'),
-                         {'query': 'search string',
-                          'video_id': metasearch_video.id})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_video_display'),
+                                 {'query': 'search string',
+                                  'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/video_preview.html')
@@ -1483,9 +1502,11 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(reverse('localtv_admin_search_add'),
-                         {'query': 'search string'},
-                         HTTP_REFERER='http://www.getmiro.com/')
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_add'),
+                                 {'query': 'search string'},
+                                 HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://www.getmiro.com/')
 
@@ -1494,8 +1515,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(saved_search.site, self.site_settings.site)
         self.assertEqual(saved_search.user.username, 'admin')
 
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertTrue(response.context[2]['is_saved_search'])
 
     def test_GET_create_saved_search_authentication(self):
@@ -1709,7 +1732,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         # set some profile data, to make sure we're not erasing it
         Profile.objects.create(
             user=user,
-            logo=File(file(self._data_file('logo.png'))),
+            logo=File(self._data_file('logo.png')),
             description='Some description about the user')
 
         old_users = User.objects.values()
@@ -1750,7 +1773,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         # form-2 is user (1)
         POST_data['form-0-name'] = 'NewFirst NewLast'
         POST_data['form-0-role'] = 'user'
-        POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-logo'] = self._data_file('logo.png')
         POST_data['form-1-name'] = ''
         POST_data['form-1-website'] = 'http://google.com/ http://twitter.com/'
         POST_data['form-1-description'] = 'Superuser Description'
@@ -2027,7 +2050,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             'name': 'new category',
             'slug': 'newcategory',
             'description': 'A New User',
-            'logo': file(self._data_file('logo.png')),
+            'logo': self._data_file('logo.png'),
             'parent': 1,
             }
         response = c.post(self.url, POST_data)
@@ -2096,7 +2119,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_data['form-0-name'] = 'New Name'
         POST_data['form-0-slug'] = 'newslug'
-        POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-logo'] = self._data_file('logo.png')
         POST_data['form-1-description'] = 'New Description'
         POST_data['form-2-parent'] = 5
 
@@ -2117,7 +2140,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         new_logo = Category.objects.get(slug='miro')
         new_logo.logo.open()
         self.assertEqual(new_logo.logo.read(),
-                          file(self._data_file('logo.png')).read())
+                         self._data_file('logo.png').read())
         self.assertEqual(new_logo.description, 'New Description')
 
         new_parent = Category.objects.get(slug='linux')
@@ -3048,8 +3071,8 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'about_html': 'New About',
                 'sidebar_html': 'New Sidebar',
                 'footer_html': 'New Footer',
-                'logo': file(self._data_file('logo.png')),
-                'background': file(self._data_file('logo.png')),
+                'logo': self._data_file('logo.png'),
+                'background': self._data_file('logo.png'),
                 'display_submit_button': 'yes',
                 'submission_requires_login': 'yes',
                 'use_original_date': '',
@@ -3079,7 +3102,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(site_settings.screen_all_comments)
         self.assertTrue(site_settings.comments_required_login)
 
-        logo_data = file(self._data_file('logo.png')).read()
+        logo_data = self._data_file('logo.png').read()
         site_settings.logo.open()
         self.assertEqual(site_settings.logo.read(), logo_data)
         site_settings.background.open()
@@ -3094,8 +3117,8 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         self.POST_data.update({
-                'logo': File(file(self._data_file('logo.png')), name),
-                'background': File(file(self._data_file('logo.png')), name)
+                'logo': File(self._data_file('logo.png'), name),
+                'background': File(self._data_file('logo.png'), name)
                 })
         POST_response = c.post(self.url, self.POST_data)
 
@@ -3107,7 +3130,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
 
         site_settings = SiteSettings.objects.get(
             pk=self.site_settings.pk)
-        logo_data = file(self._data_file('logo.png')).read()
+        logo_data = self._data_file('logo.png').read()
         site_settings.logo.open()
         self.assertEqual(site_settings.logo.read(), logo_data)
         site_settings.background.open()
@@ -3138,7 +3161,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         should remove the background image and redirect back to the edit
         design view.
         """
-        self.site_settings.background = File(file(self._data_file('logo.png')))
+        self.site_settings.background = File(self._data_file('logo.png'))
         self.site_settings.save()
 
         c = Client()

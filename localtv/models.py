@@ -50,7 +50,6 @@ from django.core.signals import request_finished
 from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
-from django.template.loader import render_to_string
 import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -922,7 +921,7 @@ class OriginalVideo(VideoBase):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
-    def changed_fields(self, override_vidscraper_result=None):
+    def changed_fields(self):
         """
         Check our video for new data.
         """
@@ -935,22 +934,20 @@ class OriginalVideo(VideoBase):
 
         remote_video_was_deleted = False
         fields = ['title', 'description', 'tags', 'thumbnail_url']
-        if override_vidscraper_result is not None:
-            vidscraper_video = override_vidscraper_result
-        else:
-            try:
-                vidscraper_video = vidscraper.auto_scrape(
-                                                video.website_url,
-                                                fields=fields,
-                                                api_keys=lsettings.API_KEYS)
-            except vidscraper.errors.VideoDeleted:
-                remote_video_was_deleted = True
-            except urllib2.URLError:
-                # some kind of error Vidscraper couldn't handle; log it and
-                # move on.
-                logging.warning('exception while checking %r',
-                                video.website_url, exc_info=True)
-                return {}
+
+        try:
+            vidscraper_video = vidscraper.auto_scrape(
+                                            video.website_url,
+                                            fields=fields,
+                                            api_keys=lsettings.API_KEYS)
+        except vidscraper.errors.VideoDeleted:
+            remote_video_was_deleted = True
+        except urllib2.URLError:
+            # some kind of error Vidscraper couldn't handle; log it and
+            # move on.
+            logging.warning('exception while checking %r',
+                            video.website_url, exc_info=True)
+            return {}
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
@@ -1087,10 +1084,10 @@ class OriginalVideo(VideoBase):
             self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETE_PENDING
         self.save()
 
-    def update(self, override_vidscraper_result = None):
+    def update(self):
         from localtv.utils import get_or_create_tags
 
-        changed_fields = self.changed_fields(override_vidscraper_result)
+        changed_fields = self.changed_fields()
         if not changed_fields:
             return # don't need to do anything
 
