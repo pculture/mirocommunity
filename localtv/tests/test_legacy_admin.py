@@ -33,7 +33,7 @@ import feedparser
 from haystack.query import SearchQuerySet
 import mock
 from notification import models as notification
-from vidscraper.suites.base import VideoFeed
+from vidscraper.suites.base import VideoFeed, VideoSearch, registry
 from vidscraper.suites.youtube import YouTubeSuite
 
 from localtv import utils
@@ -1296,6 +1296,19 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
 
     url = reverse_lazy('localtv_admin_search')
 
+    def _search(self, query, *args, **kwargs):
+        suite = registry._suite_dict[YouTubeSuite]
+        search = VideoSearch(query, suite)
+        search.handle_first_response(feedparser.parse(self._data_file('youtube_search.rss')))
+        return list(search)
+
+    def _intersperse(self, videos, *args, **kwargs):
+        # Keep videos from loading and make them look real
+        for video in videos:
+            video._loaded = True
+            video.embed_code = 'fake!'
+            yield video
+
     def test_GET(self):
         """
         A GET request to the livesearch view should render the
@@ -1326,8 +1339,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/livesearch_table.html')
@@ -1346,14 +1361,18 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertEqual(response.context[2]['page_obj'].number, 1)
         self.assertEqual(len(response.context[2]['page_obj'].object_list), 10)
 
-        response2 = c.get(self.url,
-                         {'query': 'search string',
-                          'page': '2'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response2 = c.get(self.url,
+                                 {'query': 'search string',
+                                  'page': '2'})
         page_obj = response2.context[2]['page_obj']
         self.assertEqual(page_obj.number, 2)
         if page_obj.has_next():
@@ -1375,15 +1394,19 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         self.assertTrue(c.login(username='admin', password='admin'))
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         fake_video = response.context[2]['page_obj'].object_list[0]
         fake_video2 = response.context[2]['page_obj'].object_list[1]
 
-        response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
-                          'video_id': fake_video.id},
-                         HTTP_REFERER="http://www.getmiro.com/")
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_video_approve'),
+                                 {'query': 'search string',
+                                  'video_id': fake_video.id},
+                                 HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
@@ -1401,8 +1424,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                           v.video_service_url)
         self.assertEqual(list(v.authors.all()), [user])
 
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertEqual(response.context[2]['page_obj'].object_list[0].id,
                           fake_video2.id)
 
@@ -1425,15 +1450,19 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
-        response = c.get(reverse('localtv_admin_search_video_approve'),
-                         {'query': 'search string',
-                          'feature': 'yes',
-                          'video_id': metasearch_video.id},
-                         HTTP_REFERER="http://www.getmiro.com/")
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_video_approve'),
+                                 {'query': 'search string',
+                                  'feature': 'yes',
+                                  'video_id': metasearch_video.id},
+                                 HTTP_REFERER="http://www.getmiro.com/")
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], "http://www.getmiro.com/")
 
@@ -1448,13 +1477,17 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         metasearch_video = response.context[2]['page_obj'].object_list[0]
 
-        response = c.get(reverse('localtv_admin_search_video_display'),
-                         {'query': 'search string',
-                          'video_id': metasearch_video.id})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_video_display'),
+                                 {'query': 'search string',
+                                  'video_id': metasearch_video.id})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/video_preview.html')
@@ -1469,9 +1502,11 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(reverse('localtv_admin_search_add'),
-                         {'query': 'search string'},
-                         HTTP_REFERER='http://www.getmiro.com/')
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(reverse('localtv_admin_search_add'),
+                                 {'query': 'search string'},
+                                 HTTP_REFERER='http://www.getmiro.com/')
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'], 'http://www.getmiro.com/')
 
@@ -1480,8 +1515,10 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertEqual(saved_search.site, self.site_settings.site)
         self.assertEqual(saved_search.user.username, 'admin')
 
-        response = c.get(self.url,
-                         {'query': 'search string'})
+        with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
+            with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
+                response = c.get(self.url,
+                                 {'query': 'search string'})
         self.assertTrue(response.context[2]['is_saved_search'])
 
     def test_GET_create_saved_search_authentication(self):
