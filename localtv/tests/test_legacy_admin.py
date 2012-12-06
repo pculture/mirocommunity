@@ -614,16 +614,16 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         POST_data = self._POST_data_from_formset(formset)
 
         feed = Feed.objects.get(pk=POST_data['form-0-id'].split('-')[1])
-        feed.save_thumbnail_from_file(File(file(self._data_file('logo.png'))))
+        feed.save_thumbnail_from_file(File(self._data_file('logo.png')))
 
         POST_data.update({
-                'form-0-name': 'new name!',
-                'form-0-feed_url': 'http://pculture.org/',
-                'form-0-webpage': 'http://getmiro.com/',
-                'form-0-delete_thumbnail': 'yes',
-                'form-1-query_string': 'localtv',
-                'form-1-thumbnail': File(
-                    file(self._data_file('logo.png')))})
+            'form-0-name': 'new name!',
+            'form-0-feed_url': 'http://pculture.org/',
+            'form-0-webpage': 'http://getmiro.com/',
+            'form-0-delete_thumbnail': 'yes',
+            'form-1-query_string': 'localtv',
+            'form-1-thumbnail': File(self._data_file('logo.png'))
+        })
 
         POST_response = c.post(self.url, POST_data,
                                follow=True)
@@ -1709,7 +1709,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         # set some profile data, to make sure we're not erasing it
         Profile.objects.create(
             user=user,
-            logo=File(file(self._data_file('logo.png'))),
+            logo=File(self._data_file('logo.png')),
             description='Some description about the user')
 
         old_users = User.objects.values()
@@ -1750,7 +1750,7 @@ class UserAdministrationTestCase(AdministrationBaseTestCase):
         # form-2 is user (1)
         POST_data['form-0-name'] = 'NewFirst NewLast'
         POST_data['form-0-role'] = 'user'
-        POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-logo'] = self._data_file('logo.png')
         POST_data['form-1-name'] = ''
         POST_data['form-1-website'] = 'http://google.com/ http://twitter.com/'
         POST_data['form-1-description'] = 'Superuser Description'
@@ -2027,7 +2027,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
             'name': 'new category',
             'slug': 'newcategory',
             'description': 'A New User',
-            'logo': file(self._data_file('logo.png')),
+            'logo': self._data_file('logo.png'),
             'parent': 1,
             }
         response = c.post(self.url, POST_data)
@@ -2096,7 +2096,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
 
         POST_data['form-0-name'] = 'New Name'
         POST_data['form-0-slug'] = 'newslug'
-        POST_data['form-1-logo'] = file(self._data_file('logo.png'))
+        POST_data['form-1-logo'] = self._data_file('logo.png')
         POST_data['form-1-description'] = 'New Description'
         POST_data['form-2-parent'] = 5
 
@@ -2117,7 +2117,7 @@ class CategoryAdministrationTestCase(AdministrationBaseTestCase):
         new_logo = Category.objects.get(slug='miro')
         new_logo.logo.open()
         self.assertEqual(new_logo.logo.read(),
-                          file(self._data_file('logo.png')).read())
+                         self._data_file('logo.png').read())
         self.assertEqual(new_logo.description, 'New Description')
 
         new_parent = Category.objects.get(slug='linux')
@@ -3048,8 +3048,8 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
                 'about_html': 'New About',
                 'sidebar_html': 'New Sidebar',
                 'footer_html': 'New Footer',
-                'logo': file(self._data_file('logo.png')),
-                'background': file(self._data_file('logo.png')),
+                'logo': self._data_file('logo.png'),
+                'background': self._data_file('logo.png'),
                 'display_submit_button': 'yes',
                 'submission_requires_login': 'yes',
                 'use_original_date': '',
@@ -3079,7 +3079,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         self.assertTrue(site_settings.screen_all_comments)
         self.assertTrue(site_settings.comments_required_login)
 
-        logo_data = file(self._data_file('logo.png')).read()
+        logo_data = self._data_file('logo.png').read()
         site_settings.logo.open()
         self.assertEqual(site_settings.logo.read(), logo_data)
         site_settings.background.open()
@@ -3094,8 +3094,8 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         c = Client()
         c.login(username='admin', password='admin')
         self.POST_data.update({
-                'logo': File(file(self._data_file('logo.png')), name),
-                'background': File(file(self._data_file('logo.png')), name)
+                'logo': File(self._data_file('logo.png'), name),
+                'background': File(self._data_file('logo.png'), name)
                 })
         POST_response = c.post(self.url, self.POST_data)
 
@@ -3107,7 +3107,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
 
         site_settings = SiteSettings.objects.get(
             pk=self.site_settings.pk)
-        logo_data = file(self._data_file('logo.png')).read()
+        logo_data = self._data_file('logo.png').read()
         site_settings.logo.open()
         self.assertEqual(site_settings.logo.read(), logo_data)
         site_settings.background.open()
@@ -3138,7 +3138,7 @@ class EditSettingsAdministrationTestCase(AdministrationBaseTestCase):
         should remove the background image and redirect back to the edit
         design view.
         """
-        self.site_settings.background = File(file(self._data_file('logo.png')))
+        self.site_settings.background = File(self._data_file('logo.png'))
         self.site_settings.save()
 
         c = Client()

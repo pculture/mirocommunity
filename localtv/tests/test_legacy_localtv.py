@@ -45,6 +45,7 @@ from django.test.client import Client, RequestFactory
 from haystack import connections
 from haystack.query import SearchQuerySet
 
+import localtv
 import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
@@ -60,6 +61,8 @@ from tagging.models import Tag
 
 
 Profile = utils.get_profile_model()
+TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(localtv.__file__), 'tests', 'testdata'))
+
 
 class FakeRequestFactory(RequestFactory):
     """Constructs requests with any necessary attributes set."""
@@ -129,15 +132,20 @@ class BaseTestCase(TestCase):
             storage.default_storage
         shutil.rmtree(self.tmpdir)
 
-    def _data_file(self, filename):
+    @classmethod
+    def _data_path(cls, test_path):
         """
-        Returns the absolute path to a file in our testdata directory.
+        Given a path relative to localtv/tests/testdata, returns an absolute path.
+
         """
-        return os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                'testdata',
-                filename))
+        return os.path.join(TEST_DATA_DIR, test_path)
+
+    @classmethod
+    def _data_file(cls, test_path, mode='r'):
+        """
+        Returns the absolute path to a file in our legacy testdata directory.
+        """
+        return open(cls._data_path(test_path), mode)
 
     def assertStatusCodeEquals(self, response, status_code):
         """

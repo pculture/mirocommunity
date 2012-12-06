@@ -123,8 +123,7 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         WidgetSettings.objects.clear_cache()
 
         site_settings = SiteSettings.objects.get_current()
-        site_settings.logo = File(
-            file(self._data_file('logo.png')))
+        site_settings.logo = File(self._data_file('logo.png'))
         site_settings.save()
 
         widget_settings = WidgetSettings.objects.get_current()
