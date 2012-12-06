@@ -18,7 +18,7 @@
 from hashlib import sha1
 
 from localtv.contrib.contests.models import Contest, ContestVote, ContestVideo
-from localtv.tests.base import BaseTestCase as LocaltvBaseTestCase
+from localtv.tests import BaseTestCase as LocaltvBaseTestCase
 
 
 class BaseTestCase(LocaltvBaseTestCase):
