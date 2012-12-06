@@ -317,6 +317,7 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
         """Test that index updates are only run at the end of an update."""
         self.updates = 0
         self.removals = 0
+        self._clear_index()
 
         def count_update(sender, **kwargs):
             self.updates += 1
