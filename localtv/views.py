@@ -20,7 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve, Resolver404
 from django.conf import settings
 from django.db.models import Q
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView

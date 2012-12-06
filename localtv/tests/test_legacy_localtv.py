@@ -50,7 +50,7 @@ import localtv.templatetags.filters
 from localtv.middleware import UserIsAdminMiddleware
 from localtv import models
 from localtv.models import (Watch, Category, SiteSettings, Video,
-                            Feed, OriginalVideo, SavedSearch)
+                            Feed, OriginalVideo)
 from localtv import utils
 import localtv.feeds.views
 from localtv.search.utils import NormalizedVideoList
@@ -1497,7 +1497,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.save()
 
         with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
-            with mock.patch.object(video_save_thumbnail, 'delay') as vst_mock:
+            with mock.patch.object(video_save_thumbnail, 'delay'):
                 self.original.update()
 
         self.assertEqual(len(mail.outbox), 1)
@@ -1564,7 +1564,7 @@ you wish to support Miro yourself, please donate $10 today.</p>""",
         self.original.save()
 
         with mock.patch('vidscraper.auto_scrape', return_value=self.vidscraper_video):
-            with mock.patch.object(video_save_thumbnail, 'delay') as vst_mock:
+            with mock.patch.object(video_save_thumbnail, 'delay'):
                 self.original.update()
 
         self.assertEqual(len(mail.outbox), 1)

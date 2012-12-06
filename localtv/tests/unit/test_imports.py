@@ -24,8 +24,7 @@ import mock
 import vidscraper
 from vidscraper.suites.youtube import YouTubeSuite
 
-from localtv.models import (Source, Feed, FeedImport, Video, FeedImportIndex,
-                            FeedImportError)
+from localtv.models import Source, Feed, FeedImport, Video, FeedImportIndex
 from localtv.tasks import haystack_update, haystack_remove, video_save_thumbnail
 from localtv.tests import BaseTestCase
 

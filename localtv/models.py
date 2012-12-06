@@ -50,7 +50,6 @@ from django.core.signals import request_finished
 from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
-from django.template.loader import render_to_string
 import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _

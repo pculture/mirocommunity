@@ -580,10 +580,7 @@ class PlaylistModerationTestCase(BaseTestCase):
 
         notice_type = notification.NoticeType.objects.get(
             label='admin_new_playlist')
-        setting = notification.get_notification_setting(
-            User.objects.get(username='admin'),
-            notice_type,
-            "1")
+        setting = notification.get_notification_setting(admin, notice_type, "1")
         setting.send = True
         setting.save()
 

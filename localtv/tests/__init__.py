@@ -17,7 +17,6 @@
 
 import os
 from datetime import datetime, timedelta
-from socket import getaddrinfo
 import urlparse
 
 from django.conf import settings
@@ -28,7 +27,7 @@ from django.core.management import call_command
 from django.db import transaction
 from django.http import QueryDict
 from django.template.defaultfilters import slugify
-from django.test.testcases import (TestCase, _deferredSkip,
+from django.test.testcases import (TestCase,
                                    disable_transaction_methods,
                                    restore_transaction_methods,
                                    connections_support_transactions)
