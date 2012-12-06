@@ -29,10 +29,12 @@ from django.forms.models import model_to_dict
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.encoding import force_unicode
+import feedparser
 from haystack.query import SearchQuerySet
-
 import mock
 from notification import models as notification
+from vidscraper.suites.base import VideoFeed
+from vidscraper.suites.youtube import YouTubeSuite
 
 from localtv import utils
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings
@@ -1033,6 +1035,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
 class FeedAdministrationTestCase(BaseTestCase):
     url = reverse_lazy('localtv_admin_feed_add')
     feed_url = "http://qa.pculture.org/feeds_test/feed7.rss"
+    feed_data_path = "feed_with_relative_url.rss"
 
     def test_GET(self):
         """
@@ -1044,7 +1047,10 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': self.feed_url})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.get(self.url, {'feed_url': self.feed_url})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
@@ -1090,38 +1096,6 @@ class FeedAdministrationTestCase(BaseTestCase):
             self.assertEqual(response.status_code, 400,
                               '%r not stopped as a duplicate' % url)
 
-    def test_GET_vimeo(self):
-        """
-        A GET request to the add_feed view should render the
-        'localtv/admin/add_feed.html' template if the URL is a Vimeo
-        User RSS url.
-        """
-        url = 'http://www.vimeo.com/user1054395/videos/rss'
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': url})
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.templates[0].name,
-                          'localtv/admin/add_feed.html')
-        self.assertTrue(response.context[2]['form'].instance.feed_url,
-                        url)
-
-    def test_GET_vimeo_channel(self):
-        """
-        A GET request to the add_feed view should render the
-        'localtv/admin/add_feed.html' template if the URL is a Vimeo
-        Channel RSS url.
-        """
-        url = 'http://vimeo.com/channels/sparkyawards/videos/rss'
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': url})
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.templates[0].name,
-                          'localtv/admin/add_feed.html')
-        self.assertTrue(response.context[2]['form'].instance.feed_url,
-                        url)
-
     def test_POST_failure(self):
         """
         A POST request to the add_feed view should rerender the template with
@@ -1129,9 +1103,12 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                          {'feed_url': self.feed_url,
-                           'auto_categories': [1]})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                              {'feed_url': self.feed_url,
+                               'auto_categories': [1]})
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
@@ -1160,10 +1137,13 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                          {'feed_url': self.feed_url,
-                           'auto_approve': 'yes',
-                           'cancel': 'yes'})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                              {'feed_url': self.feed_url,
+                               'auto_approve': 'yes',
+                               'cancel': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -1181,9 +1161,12 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                          {'feed_url': self.feed_url,
-                           'auto_approve': 'yes'})
+        feed = VideoFeed(self.feed_url)
+        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
+            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+                              {'feed_url': self.feed_url,
+                               'auto_approve': 'yes'})
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
@@ -1197,7 +1180,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
         self.assertTrue(feed.auto_approve)
 
-    def test_GET_creates_user(self):
+    def test_POST_creates_user(self):
         """
         When creating a new feed from a feed for a user on a video service, a
         User object should be created with that username and should be set as
@@ -1207,9 +1190,11 @@ class FeedAdministrationTestCase(BaseTestCase):
                "?alt=rss&v=2&orderby=published")
         c = Client()
         c.login(username='admin', password='admin')
-        c.post(self.url + "?feed_url=%s" % url,
-               {'feed_url': url,
-                'auto_approve': 'yes'})
+        parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
+        with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
+            c.post(self.url + "?feed_url=%s" % url,
+                   {'feed_url': url,
+                    'auto_approve': 'yes'})
 
         feed = Feed.objects.get()
         user = User.objects.get(username='mphtower')
@@ -1217,13 +1202,12 @@ class FeedAdministrationTestCase(BaseTestCase):
 
         self.assertFalse(user.has_usable_password())
         self.assertEqual(user.email, '')
-        self.assertTrue(user.get_profile().website) # YouTube changes this
-                                                    # periodically, so just
-                                                    # check that it's there
+        self.assertEqual(user.get_profile().website,
+                         'http://www.youtube.com/channel/UCypx79omQfPsBsY46TrEn_w/videos')
         self.assertEqual(list(feed.auto_authors.all()),
                           [user])
 
-    def test_GET_reuses_existing_user(self):
+    def test_POST_reuses_existing_user(self):
         """
         When creating a feed from a feed for a user on a video servers, if a
         User already exists with the given username, it should be used instead
@@ -1238,9 +1222,11 @@ class FeedAdministrationTestCase(BaseTestCase):
                "?alt=rss&v=2&orderby=published")
         c = Client()
         c.login(username='admin', password='admin')
-        c.post(self.url + "?feed_url=%s" % url,
-               {'feed_url': url,
-                'auto_approve': 'yes'})
+        parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
+        with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
+            c.post(self.url + "?feed_url=%s" % url,
+                   {'feed_url': url,
+                    'auto_approve': 'yes'})
 
         user = User.objects.get(username='mphtower') # reload user
         self.assertTrue(user.has_usable_password())
