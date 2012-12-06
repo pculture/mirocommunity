@@ -141,7 +141,6 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware'
     'localtv.middleware.FixAJAXMiddleware',
     'localtv.middleware.UserIsAdminMiddleware',
-    'openid_consumer.middleware.OpenIDMiddleware',
 )
 
 ROOT_URLCONF = 'example_mc_project.urls'
