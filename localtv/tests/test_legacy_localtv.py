@@ -1332,59 +1332,6 @@ class WatchModelTestCase(BaseTestCase):
         self.assertEqual(Watch.objects.count(), 0)
 
 
-
-# -----------------------------------------------------------------------------
-# SavedSearch model tests
-# -----------------------------------------------------------------------------
-
-class SavedSearchImportTestCase(BaseTestCase):
-
-    fixtures = BaseTestCase.fixtures + ['savedsearches']
-
-    def test_update(self):
-        """
-        SavedSearch.update() should create new Video objects linked to
-        the search.
-        """
-        ss = SavedSearch.objects.get(pk=1)
-        self.assertEqual(ss.video_set.count(), 0)
-        ss.update()
-        self.assertNotEquals(ss.video_set.count(), 0)
-
-    def test_update_ignore_duplicates(self):
-        """
-        A search that includes the same video should should not add the video a
-        second time.
-        """
-        ss = SavedSearch.objects.get(pk=1)
-        ss.update()
-        count = ss.video_set.count()
-        ss.update()
-        self.assertEqual(ss.video_set.count(), count)
-
-    def test_attribution_auto(self):
-        """
-        If a SavedSearch has authors set, imported videos should be given that
-        authorship.
-        """
-        ss = SavedSearch.objects.get(pk=1)
-        ss.auto_authors = [User.objects.get(pk=1)]
-        ss.update()
-        video = ss.video_set.all()[0]
-        self.assertEqual(list(ss.auto_authors.all()),
-                          list(video.authors.all()))
-
-    def test_attribution_default(self):
-        """
-        If a SavedSearch has no author, imported videos should have a User
-        based on the user on the original video service.
-        """
-        ss = SavedSearch.objects.get(pk=1)
-        self.assertFalse(ss.auto_authors.all().exists())
-        ss.update()
-        video = ss.video_set.all()[0]
-        self.assertTrue(video.authors.all().exists())
-
 class OriginalVideoModelTestCase(BaseTestCase):
 
     BASE_URL = 'http://blip.tv/file/1077145/' # Miro sponsors
