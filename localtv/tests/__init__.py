@@ -357,27 +357,3 @@ class BaseTestCase(TestCase):
         if errors:
             errors = ['Dictionaries not equal', ''] + errors
             raise AssertionError('\n'.join(errors))
-
-
-def _have_internet_connection():
-    global HAVE_INTERNET_CONNECTION
-
-    if HAVE_INTERNET_CONNECTION is None:
-        try:
-            getaddrinfo("google.com", "http")
-        except IOError:
-            HAVE_INTERNET_CONNECTION = False
-        else:
-            HAVE_INTERNET_CONNECTION = True
-
-    return HAVE_INTERNET_CONNECTION
-
-
-def skipUnlessInternet():
-    """
-    Skip a test unless it seems like the machine running the test is
-    connected to the internet.
-
-    """
-    return _deferredSkip(lambda: not _have_internet_connection(),
-                         "Not connected to the internet.")
