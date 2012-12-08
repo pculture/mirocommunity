@@ -3,20 +3,20 @@ python:
   - "2.6"
   - "2.7"
 env:
-  - MC_TEST_USE_SOUTH= MC_TEST_USE_ES= MC_TEST_MYSQL=
-  - MC_TEST_USE_SOUTH=yes
-  - MC_TEST_USE_ES=yes
-  - MC_TEST_MYSQL=yes
+  -
+  - MIGRATIONS=yes
+  - SEARCH=elasticsearch
+  - DB=mysql
+  - DB=postgres
 before_install:
-  - test x$MC_TEST_USE_ES == xyes && sudo service elasticsearch start && sleep 3 || true
+  - test x$SEARCH == xelasticsearch && sudo service elasticsearch start && sleep 3 || true
 install:
   - pip install -q -e . --use-mirrors
-  - pip install -q --use-mirrors -r example_mc_project/requirements.txt
-  - test x$MC_TEST_USE_SOUTH == xyes && pip install -q --use-mirrors south || true
-  - test x$MC_TEST_USE_ES == xyes && pip install -q 'git+git://github.com/toastdriven/pyelasticsearch.git@7a358dc34#egg=pyelasticsearch' || true
-  - test x$MC_TEST_MYSQL == xyes && pip install -q --use-mirrors mysql-python || true
-before_script:
-  - mysql -e 'CREATE DATABASE miro_community_example CHARACTER SET utf8 COLLATE utf8_general_ci;'
+  - pip install -q --use-mirrors -r test_mc_project/requirements.txt
+  - test x$MIGRATIONS == xyes && pip install -q --use-mirrors south || true
+  - test x$SEARCH == xelasticsearch && pip install -q pyelasticsearch || true
+  - test x$DB == xmysql && pip install -q --use-mirrors mysql-python || true
+  - test x$DB == xpostgres && pip install -q --use-mirrors psycopg2 || true
 script:
-  - django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2
-  - django-admin.py test localtv.contrib.contests --settings=example_mc_project.settings --verbosity=2
+  - test_mc_project/manage.py test localtv --verbosity=2
+  - test_mc_project/manage.py test localtv.contrib.contests --verbosity=2
