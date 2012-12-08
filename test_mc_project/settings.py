@@ -31,7 +31,7 @@ if DB == 'mysql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'miro_community_example',
+            'NAME': 'mirocommunity_test',
             'USER': 'root',
             'TEST_CHARSET': 'utf8',
             'TEST_COLLATION': 'utf8_general_ci',
@@ -41,7 +41,7 @@ elif DB == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'miro_community_example',
+            'NAME': 'mirocommunity_test',
             'USER': 'postgres',
             'TEST_CHARSET': 'utf8',
         }

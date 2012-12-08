@@ -13,10 +13,13 @@ before_install:
 install:
   - pip install -q -e . --use-mirrors
   - pip install -q --use-mirrors -r test_mc_project/requirements.txt
-  - test x$MIGRATIONS == xyes && pip install -q --use-mirrors south || true
-  - test x$SEARCH == xelasticsearch && pip install -q pyelasticsearch || true
-  - test x$DB == xmysql && pip install -q --use-mirrors mysql-python || true
-  - test x$DB == xpostgres && pip install -q --use-mirrors psycopg2 || true
+  - sh -c "if [ '$MIGRATIONS' = 'yes' ]; then pip install -q --use-mirrors south; fi"
+  - sh -c "if [ '$SEARCH' = 'elasticsearch' ]; then pip install -q --use-mirrors pyelasticsearch; fi"
+  - sh -c "if [ '$DB' = 'mysql' ]; then pip install -q --use-mirrors mysql-python; fi"
+  - sh -c "if [ '$DB' = 'postgres' ]; then pip install -q --use-mirrors psycopg2; fi"
+before_script:
+  - sh -c "if [ '$DB' = 'postgres' ]; then psql -c 'CREATE DATABASE mirocommunity_test;' -U postgres; fi"
+  - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'CREATE DATABASE mirocommunity_test;'; fi"
 script:
   - test_mc_project/manage.py test localtv --verbosity=2
   - test_mc_project/manage.py test localtv.contrib.contests --verbosity=2
