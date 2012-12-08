@@ -16,7 +16,7 @@ install:
   - test x$MC_TEST_USE_ES == xyes && pip install -q 'git+git://github.com/toastdriven/pyelasticsearch.git@7a358dc34#egg=pyelasticsearch' || true
   - test x$MC_TEST_MYSQL == xyes && pip install -q --use-mirrors mysql-python || true
 before_script:
-  - mysql -e 'CREATE DATABASE miro_community_example CHARACTER SET utf8 COLLATE utf8_bin;'
+  - mysql -e 'CREATE DATABASE miro_community_example CHARACTER SET utf8 COLLATE utf8_general_ci;'
 script:
-  - django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2 --with-progressive
-  - django-admin.py test localtv.contrib.contests --settings=example_mc_project.settings --verbosity=2 --with-progressive
+  - django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2
+  - django-admin.py test localtv.contrib.contests --settings=example_mc_project.settings --verbosity=2
