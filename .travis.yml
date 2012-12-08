@@ -9,8 +9,9 @@ env:
   - DB=mysql
   - DB=postgres
 before_install:
-  - test x$SEARCH == xelasticsearch && sudo service elasticsearch start && sleep 3 || true
+  - sh -c "if [ '$SEARCH' = 'elasticsearch' ]; then sudo service elasticsearch start; sleep 3; fi"
 install:
+  - pip install . --no-deps
   - pip install --use-mirrors -r test_mc_project/requirements.txt
   - sh -c "if [ '$MIGRATIONS' = 'yes' ]; then pip install --use-mirrors south; fi"
   - sh -c "if [ '$SEARCH' = 'elasticsearch' ]; then pip install --use-mirrors pyelasticsearch; fi"
