@@ -6,5 +6,6 @@ recursive-include localtv/contrib/contests/templates *.html *.txt
 recursive-include localtv/fixtures *.json
 recursive-include localtv/static *.css *.js *.gif *.png
 recursive-include localtv/contrib/contests/static *.css *.js *.gif *.png
+recursive-include localtv/tests *.rss *.atom *.png *.json
 recursive-include docs *.py *.rst *.pdf *.bat Makefile
 prune docs/_build
