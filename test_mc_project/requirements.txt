@@ -6,7 +6,7 @@ git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_pyth
 git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
 hg+http://bitbucket.org/ubernostrum/django-registration/@tip#egg=django-registration
 beautifulsoup4==4.0.4
-Django==1.4.1
+Django==1.4.3
 Pillow==1.7.5
 lxml==2.3.4
 feedparser==5.1.2
@@ -24,7 +24,7 @@ mock==0.8.0
 django-notification==0.2
 whoosh==2.3.2
 httplib2==0.7.2
-requests==0.10.8
+requests==0.14.2
 vidscraper==0.5.2
 django-tastypie==0.9.11
 django_compressor==1.1.2
