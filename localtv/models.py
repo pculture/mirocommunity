@@ -146,7 +146,7 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = False
         delete_if_exists(self.thumbnail_path)
         try:
-            image = Image.objects.for_storage_path(self.thumbnail_path)
+            image = Image.objects.db_manager(self._state.db).for_storage_path(self.thumbnail_path)
         except Image.DoesNotExist:
             pass
         else:
