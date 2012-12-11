@@ -12,11 +12,11 @@ before_install:
   - sh -c "if [ '$SEARCH' = 'elasticsearch' ]; then sudo service elasticsearch start; sleep 3; fi"
 install:
   - pip install . --no-deps
-  - pip install --use-mirrors -r test_mc_project/requirements.txt
-  - sh -c "if [ '$MIGRATIONS' = 'yes' ]; then pip install --use-mirrors south; fi"
-  - sh -c "if [ '$SEARCH' = 'elasticsearch' ]; then pip install --use-mirrors pyelasticsearch; fi"
-  - sh -c "if [ '$DB' = 'mysql' ]; then pip install --use-mirrors mysql-python; fi"
-  - sh -c "if [ '$DB' = 'postgres' ]; then pip install --use-mirrors psycopg2; fi"
+  - pip install --use-mirrors --no-deps -r test_mc_project/requirements.txt
+  - sh -c "if [ '$MIGRATIONS' = 'yes' ]; then pip install --use-mirrors --no-deps south; fi"
+  - sh -c "if [ '$SEARCH' = 'elasticsearch' ]; then pip install --use-mirrors --no-deps pyelasticsearch; fi"
+  - sh -c "if [ '$DB' = 'mysql' ]; then pip install --use-mirrors --no-deps mysql-python; fi"
+  - sh -c "if [ '$DB' = 'postgres' ]; then pip install --use-mirrors --no-deps psycopg2; fi"
 before_script:
   - sh -c "if [ '$DB' = 'postgres' ]; then psql -c 'CREATE DATABASE mirocommunity_test;' -U postgres; fi"
   - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'CREATE DATABASE mirocommunity_test;'; fi"
