@@ -255,6 +255,23 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
                                     kwargs={'remove': expected})
         self.assertEqual(self.remove, expected)
 
+    def test_distinct_pks(self):
+        self._clear_index()
+        video1 = self.create_video(name='Video1', update_index=False)
+        self.create_watch(video1, days=5)
+        self.create_watch(video1, days=3)
+        self.create_watch(video1, days=2)
+        six_days_ago = datetime.now() - timedelta(6)
+
+        with mock.patch.object(haystack_update, 'delay') as delay:
+            haystack_batch_update.apply(args=(Video._meta.app_label,
+                                              Video._meta.module_name),
+                                        kwargs={'start': six_days_ago,
+                                                'date_lookup': 'watch__timestamp'})
+            delay.assert_called_once_with(Video._meta.app_label,
+                                          Video._meta.module_name,
+                                          [1], using='default', remove=True)
+
 
 class VideoSaveThumbnailTestCase(BaseTestCase):
     def test_thumbnail_not_200(self):
