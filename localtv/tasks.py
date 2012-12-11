@@ -403,7 +403,7 @@ def haystack_remove(app_label, model_name, pks, using='default'):
 
 @task(ignore_result=True)
 def haystack_batch_update(app_label, model_name, pks=None, start=None,
-                          end=None, date_lookup=None, batch_size=1000,
+                          end=None, date_lookup=None, batch_size=100,
                           remove=True, using='default'):
     """
     Batches haystack index updates for the given model. If no pks are given, a
