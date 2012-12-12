@@ -42,46 +42,14 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         self.create_user(username='admin', password='admin', is_superuser=True)
         self.client.login(username='admin', password='admin')
 
-    def test_GET(self):
-        """
-        A GET request to the add_feed() view should include a form to set the
-        auto_approve, category, and user fields on the newly created feed.  The
-        form should also have an instance of a Feed object with some
-        information about the feed.  There should be a `video_count` variable
-        in the context which has the number of videos in the feed.
-        """
-        response = self.client.get(self.url, {'feed_url': 'http://google.com/'})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['video_count'], 6)
-        form = response.context['form']
-        instance = form.instance
-        self.assertEqual(instance.id, None) # not created yet
-        self.assertEqual(instance.feed_url, 'http://google.com/')
-        self.assertEqual(instance.status, instance.INACTIVE)
-        self.assertEqual(instance.name, 'Yahoo Media TEST')
-        self.assertEqual(instance.description,
-                         """This is a PCF-governed RSS 2.0 feed to test Yahoo \
-media enclosures. All contents of this feed are for example only.""")
-
-        self.assertFalse(form.is_bound)
-
-    def test_GET_invalid_url(self):
-        """
-        If the URL isn't valid, the view should return a 400 code with some
-        description about the error.
-        """
-        response = self.client.get(self.url, {'feed_url':
-                                                  'foo://example.invalid/'})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, '* Enter a valid URL.')
-
     def test_POST(self):
         """
         Submitting a POST request to the add URL should create the feed for
         real, import the feed, and redirect back to the admin page.
         """
-        response = self.client.post('%s?feed_url=%s' % (self.url,
-                                                        'http://google.com/'))
+        feed_url = 'http://google.com/'
+        self.assertRaises(Feed.DoesNotExist, Feed.objects.get)
+        response = self.client.post(self.url, {'feed_url': feed_url})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'],
                           'http://testserver%s' % (reverse('localtv_admin_manage_page')))
@@ -91,7 +59,13 @@ media enclosures. All contents of this feed are for example only.""")
             time.sleep(0.3)
             feed = Feed.objects.get()
 
+        self.assertEqual(feed.feed_url, feed_url)
         self.assertEqual(feed.status, Feed.ACTIVE)
+        self.assertEqual(feed.name, u'Yahoo Media TEST')
+        self.assertEqual(feed.description, u'This is a PCF-governed RSS 2.0 feed to '
+                                           u'test Yahoo media enclosures. All '
+                                           u'contents of this feed are for example only.')
+        self.assertEqual(feed.webpage, u'http://qa.pculture.org/feeds_test/feed1')
         feed_import = feed.imports.get()
         self.assertEqual(feed_import.status, feed_import.COMPLETE)
         self.assertEqual(feed_import.total_videos, 6)
@@ -107,9 +81,9 @@ media enclosures. All contents of this feed are for example only.""")
         Submitting a POST request with 'auto_approve' set to True should
         approve all the videos.
         """
-        response = self.client.post('%s?feed_url=%s' % (self.url,
-                                                        'http://google.com/'),
-                                    {'auto_approve': 'yes'})
+        response = self.client.post(self.url,
+                                    {'feed_url': 'http://google.com/',
+                                     'auto_approve': 'yes'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'],
                          'http://testserver%s' % (reverse('localtv_admin_manage_page')))

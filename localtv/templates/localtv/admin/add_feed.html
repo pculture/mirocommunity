@@ -18,58 +18,30 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load pagetabs i18n %}
+{% load i18n %}
 
-{% block title %}{{ block.super }} - {% trans "Admin - Add a Source" %}{% endblock %}
+{% block title %}{% trans "Add a Feed" %} – {% trans "Admin" %} – {{ block.super }}{% endblock %}
 
-{% block body_class %}addingfeed{% endblock body_class %}
+{% block body_class %}admin add_feed{% endblock body_class %}
 
 {% block content %}
-<form method="post" action="{{ request.get_full_path }}">{% csrf_token %}
-
-<button class="reject_button floatright" type="submit" name="cancel"><span>Cancel</span></button>
-<button class="add" type="submit"><span>Add Source</span></button>
-
-<h2>Review Feed Before Adding</h2>
-
-<div class="floatleft">
-          <h3>{{ form.instance.name }}</h3>
-          {{ form.instance.feed_url }}
-          {% if form.instance.video_service %}
-          <span class="video_service">{{ form.instance.video_service }} User</span>
-          {% endif %}
-          <div class="video_count">
-            <span>Found approximately {{ video_count }} video{{ video_count|pluralize }}</span>
-            <div>
-              <label for="id_auto_approve_0">
-                <input type="radio" id="id_auto_approve_0" name="auto_approve" value="True"/>
-                Approve All (current and future)
-              </label>
-              <label for="id_auto_approve_1">
-                <input type="radio" id="id_auto_approve_1" name="auto_approve" value="False" checked="checked"/>
-                Review them first
-              </label>
-            </div>
-          </div>
-
-
-</div>
-
-<div class="input_field">
-	<ul>
-		<li class="scrollable">
-			{{ form.auto_categories.errors }}
-			<label class="padding">Categories</label>
-			{{ form.auto_categories }}
-		</li>
-		<li class="scrollable right">
-			{{ form.auto_authors.errors }}
-			<label class="padding">Users</label>
-			{{ form.auto_authors }}
-		</li>
-		<li style="float: none; clear:both;"></li>
-	</ul>
-</div>
+  <form action='{{ request.path }}' method='post'>{% csrf_token %}
+    <h2>Add a feed</h2>
+    <div class="input_field">
+      <ul>
+        {% for field in form %}
+        <li>
+            {{ field.label_tag }}
+            {{ field.errors }}
+            {{ field }}
+            {% if field.help_text %}
+            <span class="form_help">{{ field.help_text }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <button type="submit" class="approve_button"><span>Add feed</span></button>
+    <a href="{% url localtv_admin_manage_page %}" class="reject_button"><span>Cancel</span></a>
   </form>
-
-{% endblock content %}
+{% endblock %}

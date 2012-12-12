@@ -33,7 +33,8 @@ import feedparser
 from haystack.query import SearchQuerySet
 import mock
 from notification import models as notification
-from vidscraper.suites.base import VideoFeed, VideoSearch, registry
+from vidscraper.suites.base import (VideoFeed, VideoSearch, registry,
+                                    Video as VidscraperVideo)
 from vidscraper.suites.youtube import YouTubeSuite
 
 from localtv import utils
@@ -1037,120 +1038,25 @@ class FeedAdministrationTestCase(BaseTestCase):
     feed_url = "http://qa.pculture.org/feeds_test/feed7.rss"
     feed_data_path = "feed_with_relative_url.rss"
 
-    def test_GET(self):
-        """
-        A GET request to the add_feed view should render the
-        'localtv/admin/add_feed.html' template.  Context:
-
-        * form: a SourceForm to allow setting auto categories/authors
-        * video_count: the number of videos we think we can get out of the feed
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        feed = VideoFeed(self.feed_url)
-        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
-        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
-            response = c.get(self.url, {'feed_url': self.feed_url})
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.templates[0].name,
-                          'localtv/admin/add_feed.html')
-        self.assertTrue(response.context[2]['form'].instance.feed_url,
-                        self.feed_url)
-        self.assertEqual(response.context[2]['video_count'], 1)
-
-    def test_GET_fail_existing(self):
-        """
-        A GET request to the add_feed view should fail if the feed already
-        exists.
-        """
-        Feed.objects.create(
-            site=self.site_settings.site,
-            last_updated=datetime.datetime.now(),
-            status=Feed.INACTIVE,
-            feed_url=self.feed_url)
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.get(self.url, {'feed_url': self.feed_url})
-        self.assertStatusCodeEquals(response, 400) # bad request
-
-    def test_GET_fail_existing_youtube(self):
-        """
-        We accept a few different kinds of YouTube URLs.  We should make sure
-        we only have one feed per base URL.
-        """
-        urls = [
-            ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
-             'alt=rss&v=2'),
-            ('http://gdata.youtube.com/feeds/base/users/CLPPrj/uploads?'
-             'alt=rss&v=2&orderby=published'),
-            'http://www.youtube.com/rss/user/CLPPrj/videos.rss']
-        Feed.objects.create(
-            site=self.site_settings.site,
-            last_updated=datetime.datetime.now(),
-            status=Feed.INACTIVE,
-            feed_url=urls[0])
-        c = Client()
-        c.login(username='admin', password='admin')
-        for url in urls:
-            response = c.get(self.url, {'feed_url': url})
-            self.assertEqual(response.status_code, 400,
-                              '%r not stopped as a duplicate' % url)
-
     def test_POST_failure(self):
         """
         A POST request to the add_feed view should rerender the template with
-        the form incluing the errors.
+        the form including the errors.
         """
         c = Client()
         c.login(username='admin', password='admin')
         feed = VideoFeed(self.feed_url)
         feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
         with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
-            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+            response = c.post(self.url,
                               {'feed_url': self.feed_url,
                                'auto_categories': [1]})
-        self.assertStatusCodeEquals(response, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name,
                           'localtv/admin/add_feed.html')
-        self.assertTrue(response.context[0]['form'].instance.feed_url,
-                        self.feed_url)
+        self.assertEqual(response.context[0]['form'].instance.feed_url,
+                         self.feed_url)
         self.assertFalse(response.context[0]['form'].is_valid())
-        self.assertEqual(response.context[0]['video_count'], 1)
-
-    def test_POST_failure_bad_url(self):
-        """
-        A POST request to the add_feed view with a non-feed URL should display
-        an error message.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        response = c.post(self.url + "?feed_url=http://www.google.com",
-                          {'feed_url': "http://www.google.com",
-                           'auto_categories': [1]})
-        self.assertStatusCodeEquals(response, 400)
-
-    def test_POST_cancel(self):
-        """
-        A POST request to the add_feed view with POST['cancel'] set should
-        redirect the user to the localtv_admin_manage_page view.  No objects
-        should be created.
-        """
-        c = Client()
-        c.login(username='admin', password='admin')
-        feed = VideoFeed(self.feed_url)
-        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
-        with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
-            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
-                              {'feed_url': self.feed_url,
-                               'auto_approve': 'yes',
-                               'cancel': 'yes'})
-        self.assertStatusCodeEquals(response, 302)
-        self.assertEqual(response['Location'],
-                          'http://%s%s' % (
-                'testserver',
-                reverse('localtv_admin_manage_page')))
-
-        self.assertEqual(Feed.objects.count(), 0)
 
     def test_POST_succeed(self):
         """
@@ -1164,7 +1070,7 @@ class FeedAdministrationTestCase(BaseTestCase):
         feed = VideoFeed(self.feed_url)
         feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
         with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
-            response = c.post(self.url + "?feed_url=%s" % self.feed_url,
+            response = c.post(self.url,
                               {'feed_url': self.feed_url,
                                'auto_approve': 'yes'})
         self.assertStatusCodeEquals(response, 302)
@@ -1180,11 +1086,13 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
         self.assertTrue(feed.auto_approve)
 
-    def test_POST_creates_user(self):
+    def test_POST_creates_no_user(self):
         """
         When creating a new feed from a feed for a user on a video service, a
-        User object should be created with that username and should be set as
-        the auto-author for that feed.
+        User object should *not* be created with that username and should *not*
+        be set as the auto-author for that feed. The user will be created
+        when the individual videos are actually processed.
+
         """
         url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
                "?alt=rss&v=2&orderby=published")
@@ -1192,51 +1100,16 @@ class FeedAdministrationTestCase(BaseTestCase):
         c.login(username='admin', password='admin')
         parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
         with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
-            c.post(self.url + "?feed_url=%s" % url,
-                   {'feed_url': url,
-                    'auto_approve': 'yes'})
+            with mock.patch.object(VidscraperVideo, 'load'):
+                c.post(self.url + "?feed_url=%s" % url,
+                       {'feed_url': url,
+                        'auto_approve': 'yes'})
 
         feed = Feed.objects.get()
-        user = User.objects.get(username='mphtower')
-        self.assertEqual(feed.name, 'mphtower')
-
-        self.assertFalse(user.has_usable_password())
-        self.assertEqual(user.email, '')
-        self.assertEqual(user.get_profile().website,
-                         'http://www.youtube.com/channel/UCypx79omQfPsBsY46TrEn_w/videos')
+        self.assertRaises(User.DoesNotExist, User.objects.get, username='mphtower')
+        self.assertEqual(feed.name, 'Uploads by mphtower')
         self.assertEqual(list(feed.auto_authors.all()),
-                          [user])
-
-    def test_POST_reuses_existing_user(self):
-        """
-        When creating a feed from a feed for a user on a video servers, if a
-        User already exists with the given username, it should be used instead
-        of creating a new object.
-        """
-        user = User.objects.create_user('mphtower', 'mph@tower.com',
-                                        'password')
-        Profile.objects.create(user=user,
-                               website='http://www.mphtower.com/')
-
-        url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
-               "?alt=rss&v=2&orderby=published")
-        c = Client()
-        c.login(username='admin', password='admin')
-        parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
-        with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
-            c.post(self.url + "?feed_url=%s" % url,
-                   {'feed_url': url,
-                    'auto_approve': 'yes'})
-
-        user = User.objects.get(username='mphtower') # reload user
-        self.assertTrue(user.has_usable_password())
-        self.assertEqual(user.email, 'mph@tower.com')
-        self.assertEqual(user.get_profile().website,
-                          'http://www.mphtower.com/')
-
-        feed = Feed.objects.get()
-        self.assertEqual(list(feed.auto_authors.all()),
-                          [user])
+                         [])
 
     def test_GET_auto_approve(self):
         """

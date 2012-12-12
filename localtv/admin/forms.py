@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import re
 import os.path
 import urlparse
 
@@ -43,7 +42,6 @@ from localtv.settings import API_KEYS
 from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
-from vidscraper.errors import CantIdentifyUrl
 from vidscraper import auto_feed
 
 Profile = utils.get_profile_model()
@@ -991,61 +989,25 @@ AuthorFormSet = modelformset_factory(User,
                                      extra=0)
 
 
-class AddFeedForm(forms.Form):
-    SERVICE_PROFILES = (
-        (re.compile(
-                r'^(http://)?(www\.)?youtube\.com/profile(_videos)?'
-                r'\?(\w+=\w+&)*user=(?P<name>\w+)'),
-         'youtube'),
-        (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
-                    r'(?P<name>\w+)'),
-         'youtube'),
-        (re.compile(r'^(http://)?([^/]*)blip\.tv'), 'blip'),
-        (re.compile(
-                r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
-         'vimeo'),
-        (re.compile(
-                r'^(http://)?(www\.)?dailymotion\.com/(\w+/)*(?P<name>\w+)/1'),
-         'dailymotion'),
-        )
+class AddFeedForm(forms.ModelForm):
+    auto_categories = BulkChecklistField(required=False,
+                                         queryset=models.Category.objects.filter(
+                                         site=settings.SITE_ID))
+    auto_authors = BulkChecklistField(required=False,
+                                      queryset=User.objects.order_by('username'))
+    auto_approve = BooleanRadioField(required=False)
 
-    def _blip_add_rss_skin(url):
-        if '?' in url:
-            return url + '&skin=rss'
-        else:
-            return url + '?skin=rss'
-
-    SERVICE_FEEDS = {
-        'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
-                    'uploads?alt=rss&v=2&orderby=published'),
-        'blip': _blip_add_rss_skin,
-        'vimeo': 'http://www.vimeo.com/%s/videos/rss',
-        'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
-        }
-
-    feed_url = forms.URLField(required=True,
-                              widget=forms.TextInput(
-            attrs={'class': 'livesearch_feed_url'}))
-
-    @staticmethod
-    def _feed_url_key(feed_url):
-        return 'localtv:add_feed_form:%i' % hash(feed_url)
+    class Meta:
+        model = models.Feed
+        fields = ('feed_url', 'auto_categories', 'auto_authors', 'auto_approve')
 
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
-        try:
-            scraped_feed = auto_feed(url, api_keys=API_KEYS)
-            url = scraped_feed.url
-        except CantIdentifyUrl:
-            raise forms.ValidationError('It does not appear that %s is an '
-                                        'RSS/Atom feed URL.' % url)
-
-        site = Site.objects.get_current()
-        if models.Feed.objects.filter(feed_url=url,
-                                      site=site):
-            raise forms.ValidationError(
-                'That feed already exists on this site.')
-
-        self.cleaned_data['scraped_feed'] = scraped_feed
-
+        # Get a canonical URL from vidscraper
+        scraped_feed = auto_feed(url, api_keys=API_KEYS)
+        url = scraped_feed.url
         return url
+
+    def _post_clean(self):
+        self.instance.last_updated = datetime.datetime.now()
+        super(AddFeedForm, self)._post_clean()
