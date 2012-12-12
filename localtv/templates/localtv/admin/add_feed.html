@@ -30,7 +30,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
     <div class="input_field">
       <ul>
         {% for field in form %}
-        <li>
+        <li{% if field.name == 'auto_categories' or field.name == 'auto_authors' %} class='scrollable'{% endif %}>
             {{ field.label_tag }}
             {{ field.errors }}
             {{ field }}
