@@ -71,7 +71,7 @@ class SiteRelatedManager(models.Manager):
         self._cache = {}
 
     def _post_save(self, sender, instance, created, raw, using, **kwargs):
-        self._cache[(using, instance.pk)] = instance
+        self._cache[(using, instance.site_id)] = instance
 
     def contribute_to_class(self, model, name):
         # In addition to the normal contributions, we also attach a post-save

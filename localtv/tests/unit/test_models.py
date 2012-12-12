@@ -26,76 +26,89 @@ from localtv.tests import BaseTestCase
 
 
 class SiteRelatedManagerTestCase(BaseTestCase):
-	def setUp(self):
-		BaseTestCase.setUp(self)
-		self.assertIsInstance(SiteSettings.objects, SiteRelatedManager)
+    def setUp(self):
+        BaseTestCase.setUp(self)
+        self.assertIsInstance(SiteSettings.objects, SiteRelatedManager)
 
-	def test_get_cached__cached(self):
-		"""
-		If the instance is already cached, we shouldn't need any queries.
+    def test_post_save(self):
+        """
+        When an object is saved, it should be cached according to the site's pk,
+        not its own.
 
-		"""
-		site = Site.objects.get_current()
-		site_settings = SiteSettings.objects.create(site=site)
-		using = site_settings._state.db
+        """
+        site = Site.objects.get_current()
+        site_settings = SiteSettings.objects.create(site=site, pk=site.pk + 1)
+        using = site_settings._state.db
+        cache = SiteSettings.objects._cache
+        self.assertTrue((using, site.pk) in cache)
+        self.assertTrue(cache[(using, site.pk)] is site_settings)
 
-		with self.assertNumQueries(0):
-			site_settings2 = SiteSettings.objects.get_cached(site.pk, using)
-			self.assertTrue(site_settings2 is site_settings)
+    def test_get_cached__cached(self):
+        """
+        If the instance is already cached, we shouldn't need any queries.
 
-	def test_get_cached__fetch(self):
-		"""
-		If the instance exists but isn't cached, we should need one query.
+        """
+        site = Site.objects.get_current()
+        site_settings = SiteSettings.objects.create(site=site)
+        using = site_settings._state.db
 
-		"""
-		site = Site.objects.get_current()
-		site_settings = SiteSettings.objects.create(site=site)
-		SiteSettings.objects.clear_cache()
-		using = site_settings._state.db
+        with self.assertNumQueries(0):
+            site_settings2 = SiteSettings.objects.get_cached(site.pk, using)
+            self.assertTrue(site_settings2 is site_settings)
 
-		with self.assertNumQueries(1):
-			site_settings2 = SiteSettings.objects.get_cached(site.pk, using)
-			self.assertFalse(site_settings2 is site_settings)
-			self.assertEqual(site_settings2, site_settings)
+    def test_get_cached__fetch(self):
+        """
+        If the instance exists but isn't cached, we should need one query.
 
-	def test_get_cached__create(self):
-		"""
-		If the instance doesn't exist, we should need three queries: one
-		attempt to fetch, one fetch of the site, and one creation.
+        """
+        site = Site.objects.get_current()
+        site_settings = SiteSettings.objects.create(site=site)
+        SiteSettings.objects.clear_cache()
+        using = site_settings._state.db
 
-		"""
-		site = Site.objects.get_current()
-		using = 'default'
+        with self.assertNumQueries(1):
+            site_settings2 = SiteSettings.objects.get_cached(site.pk, using)
+            self.assertFalse(site_settings2 is site_settings)
+            self.assertEqual(site_settings2, site_settings)
 
-		with self.assertNumQueries(3):
-			site_settings = SiteSettings.objects.get_cached(site.pk, using)
-			self.assertEqual(site_settings._state.db, using)
-			self.assertEqual(site_settings.site, site)
+    def test_get_cached__create(self):
+        """
+        If the instance doesn't exist, we should need three queries: one
+        attempt to fetch, one fetch of the site, and one creation.
 
-	def test_get_current(self):
-		"""
-		get_current should return a cached instance related to the current
-		site.
+        """
+        site = Site.objects.get_current()
+        using = 'default'
 
-		"""
-		site = Site.objects.get_current()
+        with self.assertNumQueries(3):
+            site_settings = SiteSettings.objects.get_cached(site.pk, using)
+            self.assertEqual(site_settings._state.db, using)
+            self.assertEqual(site_settings.site, site)
 
-		# At first, there isn't even a database object.
-		with self.assertNumQueries(3):
-			site_settings = SiteSettings.objects.get_current()
+    def test_get_current(self):
+        """
+        get_current should return a cached instance related to the current
+        site.
 
-		SiteSettings.objects.clear_cache()
+        """
+        site = Site.objects.get_current()
 
-		with self.assertNumQueries(1):
-			site_settings2 = SiteSettings.objects.get_current()
+        # At first, there isn't even a database object.
+        with self.assertNumQueries(3):
+            site_settings = SiteSettings.objects.get_current()
 
-		with self.assertNumQueries(0):
-			site_settings3 = SiteSettings.objects.get_current()
+        SiteSettings.objects.clear_cache()
 
-		self.assertEqual(site_settings, site_settings2)
-		self.assertTrue(site_settings2 is site_settings3)
-		self.assertEqual(site_settings.site, site)
-		self.assertEqual(site_settings._state.db, 'default')
+        with self.assertNumQueries(1):
+            site_settings2 = SiteSettings.objects.get_current()
+
+        with self.assertNumQueries(0):
+            site_settings3 = SiteSettings.objects.get_current()
+
+        self.assertEqual(site_settings, site_settings2)
+        self.assertTrue(site_settings2 is site_settings3)
+        self.assertEqual(site_settings.site, site)
+        self.assertEqual(site_settings._state.db, 'default')
 
 
 class WidgetSettingsModelTestCase(BaseTestCase):
@@ -137,16 +150,16 @@ class WidgetSettingsModelTestCase(BaseTestCase):
 
 
 class ThumbnailableTestCase(BaseTestCase):
-	def save_thumbnail__deletes(self):
-		"""
-		Saving a new thumbnail should delete all cached thumbnail resizes.
+    def save_thumbnail__deletes(self):
+        """
+        Saving a new thumbnail should delete all cached thumbnail resizes.
 
-		"""
-		video = self.create_video()
-		video.save_thumbnail_from_file(File(self._data_file('logo.png')))
-		image1 = Image.objects.for_storage_path(video.thumbnail_path)
-		AdjustedImage.objects.adjust(image1, width=image1.width / 2)
-		self.assertTrue(image1.adjustedimage_set.all())
-		video.save_thumbnail_from_file(File(self._data_file('logo.png')))
-		image2 = Image.objects.for_storage_path(video.thumbnail_path)
-		self.assertFalse(image2.adjustedimage_set.all())
+        """
+        video = self.create_video()
+        video.save_thumbnail_from_file(File(self._data_file('logo.png')))
+        image1 = Image.objects.for_storage_path(video.thumbnail_path)
+        AdjustedImage.objects.adjust(image1, width=image1.width / 2)
+        self.assertTrue(image1.adjustedimage_set.all())
+        video.save_thumbnail_from_file(File(self._data_file('logo.png')))
+        image2 = Image.objects.for_storage_path(video.thumbnail_path)
+        self.assertFalse(image2.adjustedimage_set.all())
