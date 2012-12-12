@@ -20,7 +20,6 @@ import datetime
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
-from django.db.models.sql.aggregates import Aggregate
 
 
 EMPTY = object()
@@ -83,34 +82,6 @@ class SiteRelatedManager(models.Manager):
             models.signals.post_save.connect(self._post_save, sender=model)
 
 
-class WatchCount(models.Aggregate):
-    def __init__(self, since):
-        models.Aggregate.__init__(self, "watch", since=since)
-
-    def add_to_query(self, query, alias, col, source, is_summary):
-        aggregate = WatchCountAggregateSQL(col, source=source,
-                                           is_summary=is_summary,
-                                           **self.extra)
-        query.aggregates[alias] = aggregate
-
-
-class WatchCountAggregateSQL(Aggregate):
-    is_ordinal = True
-    sql_template = ('(SELECT COUNT(*) FROM %s WHERE '
-                    '%s.%s = %s.%s AND %s.%s > "%s")')
-
-    def as_sql(self, qn, connection):
-        localtv_watch = qn("localtv_watch")
-        localtv_video = qn("localtv_video")
-        id_ = qn("id")
-        video_id = qn("video_id")
-        timestamp = qn("timestamp")
-        return self.sql_template % (
-            localtv_watch, localtv_watch, video_id, localtv_video, id_,
-            localtv_watch, timestamp,
-            connection.ops.value_to_db_datetime(self.extra['since']))
-
-
 class VideoQuerySet(models.query.QuerySet):
 
     def with_best_date(self, use_original_date=True):
@@ -122,15 +93,29 @@ class VideoQuerySet(models.query.QuerySet):
 COALESCE(%slocaltv_video.when_approved,
 localtv_video.when_submitted)""" % published})
 
-    def with_watch_count(self, since=EMPTY):
-        """
-        Returns a QuerySet of videos annotated with a ``watch_count`` of all
-        watches since ``since`` (a datetime, which defaults to seven days ago).
-        """
+    def _popular_q(self, since=EMPTY):
         if since is EMPTY:
             since = datetime.datetime.now() - datetime.timedelta(days=7)
 
-        return self.annotate(watch_count=WatchCount(since))
+        return models.Q(watch__timestamp__gte=since)
+
+    def popular(self, since=EMPTY):
+        """
+        Returns a QuerySet of videos which have been watched since ``since``,
+        sorted by the number of watches since then.
+
+        """
+        return self.filter(self._popular_q(since)
+                  ).distinct().annotate(watch_count=models.Count('watch')
+                  ).order_by('-watch_count')
+
+    def not_popular(self, since=EMPTY):
+        """
+        Returns a QuerySet of videos which have not been watched since
+        ``since``.
+
+        """
+        return self.filter(~self._popular_q(since)).distinct()
 
 
 class VideoManager(models.Manager):

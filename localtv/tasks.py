@@ -413,7 +413,7 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
     model_class = get_model(app_label, model_name)
     index = connections[using].get_unified_index().get_index(model_class)
 
-    pk_qs = index.batch_update_queryset().using(using)
+    pk_qs = index.index_queryset().using(using)
     if pks is not None:
         pk_qs = pk_qs.filter(pk__in=pks)
 
