@@ -104,87 +104,73 @@ class TokenizeTestCase(BaseTestCase):
 
 
 class AutoQueryTestCase(BaseTestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(AutoQueryTestCase, cls).setUpClass()
-        cls._start_test_transaction()
-        cls._disable_index_updates()
-        cls.blender_videos = (
-            cls.create_video(name='Blender'),
-            cls.create_video(name='b2', description='Foo bar a blender.'),
-            cls.create_video(name='b3',
+    def setUp(self):
+        super(AutoQueryTestCase, self).setUp()
+        self._disable_index_updates()
+        self.blender_videos = (
+            self.create_video(name='Blender'),
+            self.create_video(name='b2', description='Foo bar a blender.'),
+            self.create_video(name='b3',
                              description='<h1>Foo</h1> <p>bar <span class="ro'
                              'cket">a blender</span></p>'),
-            cls.create_video(name='b4', tags='blender'),
-            cls.create_video(name='b5',
-                          categories=[cls.create_category(name='Blender',
+            self.create_video(name='b4', tags='blender'),
+            self.create_video(name='b5',
+                          categories=[self.create_category(name='Blender',
                                                            slug='tender')]),
-            cls.create_video(name='b6', video_service_user='blender'),
-            cls.create_video(name='b7',
-                             feed=cls.create_feed('feed1', name='blender')),
+            self.create_video(name='b6', video_service_user='blender'),
+            self.create_video(name='b7',
+                             feed=self.create_feed('feed1', name='blender')),
         )
-        cls.blender_users = (
-            cls.create_user(username='blender'),
-            cls.create_user(username='test1', first_name='Blender'),
-            cls.create_user(username='test2', last_name='Blender'),
+        self.blender_users = (
+            self.create_user(username='blender'),
+            self.create_user(username='test1', first_name='Blender'),
+            self.create_user(username='test2', last_name='Blender'),
         )
-        cls.blender_user_videos = ()
-        for user in cls.blender_users:
-            cls.blender_user_videos += (
-                cls.create_video(name='b8u%s' % user.username, user=user),
-                cls.create_video(name='b9a%s' % user.username, authors=[user])
+        self.blender_user_videos = ()
+        for user in self.blender_users:
+            self.blender_user_videos += (
+                self.create_video(name='b8u%s' % user.username, user=user),
+                self.create_video(name='b9a%s' % user.username, authors=[user])
             )
 
-        cls.rocket_videos = (
-            cls.create_video(name='Rocket'),
-            cls.create_video(name='r2', description='Foo bar a rocket.'),
-            cls.create_video(name='r3',
+        self.rocket_videos = (
+            self.create_video(name='Rocket'),
+            self.create_video(name='r2', description='Foo bar a rocket.'),
+            self.create_video(name='r3',
                              description='<h1>Foo</h1> <p>bar <span class="bl'
                              'ender">a rocket</span></p>'),
-            cls.create_video(name='r4', tags='rocket'),
-            cls.create_video(name='r5',
-                             categories=[cls.create_category(name='Rocket',
+            self.create_video(name='r4', tags='rocket'),
+            self.create_video(name='r5',
+                             categories=[self.create_category(name='Rocket',
                                                              slug='pocket')]),
-            cls.create_video(name='r6', video_service_user='rocket'),
-            cls.create_video(name='r7',
-                             feed=cls.create_feed('feed2', name='rocket')),
+            self.create_video(name='r6', video_service_user='rocket'),
+            self.create_video(name='r7',
+                             feed=self.create_feed('feed2', name='rocket')),
         )
-        cls.rocket_users = (
-            cls.create_user(username='rocket'),
-            cls.create_user(username='test3', first_name='Rocket'),
-            cls.create_user(username='test4', last_name='Rocket'),
+        self.rocket_users = (
+            self.create_user(username='rocket'),
+            self.create_user(username='test3', first_name='Rocket'),
+            self.create_user(username='test4', last_name='Rocket'),
         )
-        cls.rocket_user_videos = ()
-        for user in cls.rocket_users:
-            cls.rocket_user_videos += (
-                cls.create_video(name='r8u%s' % user.username, user=user),
-                cls.create_video(name='r9a%s' % user.username, authors=[user])
+        self.rocket_user_videos = ()
+        for user in self.rocket_users:
+            self.rocket_user_videos += (
+                self.create_video(name='r8u%s' % user.username, user=user),
+                self.create_video(name='r9a%s' % user.username, authors=[user])
             )
 
-        cls.search_videos = (
-            cls.create_video(name='s1', search=cls.create_search("rogue")),
+        self.search_videos = (
+            self.create_video(name='s1', search=self.create_search("rogue")),
         )
-        cls.playlist = cls.create_playlist(cls.blender_users[0])
-        cls.playlist.add_video(cls.blender_videos[0])
-        cls.playlist.add_video(cls.rocket_videos[0])
+        self.playlist = self.create_playlist(self.blender_users[0])
+        self.playlist.add_video(self.blender_videos[0])
+        self.playlist.add_video(self.rocket_videos[0])
 
-        cls.all_videos = set((cls.blender_videos + cls.blender_user_videos +
-                              cls.rocket_videos + cls.rocket_user_videos +
-                              cls.search_videos))
-        cls._enable_index_updates()
-        cls._rebuild_index()
-
-    @classmethod
-    def tearDownClass(cls):
-        super(AutoQueryTestCase, cls).tearDownClass()
-        cls._clear_index()
-        cls._end_test_transaction()
-
-    def _fixture_setup(self):
-        pass
-
-    def _fixture_teardown(self):
-        pass
+        self.all_videos = set((self.blender_videos + self.blender_user_videos +
+                              self.rocket_videos + self.rocket_user_videos +
+                              self.search_videos))
+        self._enable_index_updates()
+        self._rebuild_index()
 
     def assertQueryResults(self, query, expected):
         """
