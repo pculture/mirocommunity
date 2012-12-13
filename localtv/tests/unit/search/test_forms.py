@@ -26,6 +26,7 @@ from localtv.tests import BaseTestCase
 
 class DateTimeFilterFieldTestCase(BaseTestCase):
     def setUp(self):
+        self._clear_index()
         self.field = DateTimeFilterField(field_lookups=('last_featured',),
                                          label='')
         # We create the video which was never featured first because of whoosh
