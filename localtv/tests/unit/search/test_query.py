@@ -193,7 +193,7 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         results = SmartSearchQuerySet().auto_query(query)
-        results = dict((unicode(r.pk), r.object.name) for r in results)
+        results = dict((unicode(r.pk), r.object.name) for r in results if r.object is not None)
         expected = dict((unicode(v.pk), v.name) for v in expected)
 
         result_pks = set(results.items())

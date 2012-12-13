@@ -23,7 +23,7 @@ oauth==1.0.1
 oauth2==1.5.211
 mock==0.8.0
 django-notification==0.2
-whoosh==2.3.2
+whoosh==2.4.1
 httplib2==0.7.2
 requests==0.14.2
 vidscraper==0.5.2
