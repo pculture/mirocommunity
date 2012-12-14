@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns(
     'localtv.admin.views',
@@ -47,15 +47,22 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.admin.sources_views',
-    (r'^manage/$', 'manage_sources',
-     {}, 'localtv_admin_manage_page'))
+    url(r'^manage/$', 'manage_sources',
+        name='localtv_admin_manage_page'),
+    url(r'^manage/search/(?P<pk>\d+)$', 'edit_search',
+        name='localtv_admin_search_edit'),
+    url(r'^manage/search/(?P<pk>\d+)/delete$', 'delete_search',
+        name='localtv_admin_search_delete'))
 
-urlpatterns += patterns(
-    'localtv.admin.feed_views',
-    (r'^manage/feed/add$', 'add_feed',
-     {}, 'localtv_admin_feed_add'),
-    (r'^manage/feed/auto_approve/(\d+)$', 'feed_auto_approve',
-     {}, 'localtv_admin_feed_auto_approve'))
+urlpatterns += patterns('localtv.admin.feed_views',
+    url(r'^manage/feed/add$', 'add_feed',
+        name='localtv_admin_feed_add'),
+    url(r'^manage/feed/auto_approve/(?P<pk>\d+)$', 'feed_auto_approve',
+        name='localtv_admin_feed_auto_approve'),
+    url(r'^manage/feed/(?P<pk>\d+)$', 'edit_feed',
+        name='localtv_admin_feed_edit'),
+    url(r'^manage/feed/(?P<pk>\d+)/delete$', 'delete_feed',
+        name='localtv_admin_feed_delete'))
 
 urlpatterns += patterns(
     'localtv.admin.livesearch.views',

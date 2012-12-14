@@ -19,12 +19,14 @@ import re
 
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage
+from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
+from django.views.generic import UpdateView, DeleteView
 
 from localtv.decorators import require_site_admin
 from localtv.models import SiteSettings, Feed, SavedSearch, Category, VIDEO_SERVICE_REGEXES
@@ -151,7 +153,7 @@ def manage_sources(request):
     else:
         formset = forms.SourceFormset(queryset=MockQueryset(page.object_list))
 
-    return render_to_response('localtv/admin/manage_sources.html',
+    return render_to_response('localtv/admin/sources/manage.html',
                               {
             'add_feed_form': forms.AddFeedForm(),
             'page': page,
@@ -164,3 +166,25 @@ def manage_sources(request):
             'successful': 'successful' in request.GET,
             'formset': formset},
                               context_instance=RequestContext(request))
+
+
+class EditSearchView(UpdateView):
+    model = SavedSearch
+    form_class = forms.EditSearchForm
+    context_object_name = 'search'
+    template_name = 'localtv/admin/sources/search_edit.html'
+
+    def get_success_url(self):
+        return self.request.path
+
+
+class DeleteSearchView(DeleteView):
+    model = SavedSearch
+    success_url = reverse_lazy('localtv_admin_manage_page')
+
+    def get(self, *args, **kwargs):
+        return self.delete(*args, **kwargs)
+
+
+edit_search = require_site_admin(csrf_protect(EditSearchView.as_view()))
+delete_search = require_site_admin(csrf_protect(DeleteSearchView.as_view()))

@@ -29,7 +29,9 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.urlresolvers import resolve
+from django.db.models.fields.files import FileField, FieldFile
 from django.http import Http404
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
@@ -1022,3 +1024,49 @@ class AddFeedForm(forms.ModelForm):
                           using=CELERY_USING,
                           clear_rejected=True)
         return instance
+
+
+class EditThumbnailableForm(forms.ModelForm):
+    thumbnail = forms.ImageField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(EditThumbnailableForm, self).__init__(*args, **kwargs)
+        if self.instance.has_thumbnail:
+            path = self.instance.thumbnail_path
+            if default_storage.exists(path):
+                # Fake this being a field.
+                self.initial['thumbnail'] = FieldFile(self.instance, FileField(), path)
+
+    def save(self, commit=True):
+        if 'thumbnail' in self.cleaned_data:
+            if self.cleaned_data['thumbnail']:
+                self.instance.save_thumbnail_from_file(self.cleaned_data['thumbnail'], update=False)
+            else:
+                self.instance.delete_thumbnail()
+        return super(EditThumbnailableForm, self).save(commit)
+
+
+class EditSourceForm(EditThumbnailableForm):
+    auto_categories = BulkChecklistField(required=False,
+                                         queryset=models.Category.objects.filter(
+                                         site=settings.SITE_ID))
+    auto_authors = BulkChecklistField(required=False,
+                                      queryset=User.objects.order_by('username'))
+    auto_approve = BooleanRadioField(required=False)
+
+
+class EditFeedForm(EditSourceForm):
+    class Meta:
+        model = models.Feed
+        fields = ('name', 'feed_url', 'webpage', 'thumbnail',
+                  'auto_categories', 'auto_authors', 'auto_approve')
+
+
+class EditSearchForm(EditSourceForm):
+    query_string = forms.CharField()
+
+    class Meta:
+        model = models.SavedSearch
+        fields = ('query_string', 'thumbnail', 'auto_categories',
+                  'auto_authors', 'auto_approve')
+

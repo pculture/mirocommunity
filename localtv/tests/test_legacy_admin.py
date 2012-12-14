@@ -474,7 +474,7 @@ class SourcesAdministrationTestCase(AdministrationBaseTestCase):
         response = c.get(self.url)
         self.assertStatusCodeEquals(response, 200)
         self.assertEqual(response.templates[0].name,
-                          'localtv/admin/manage_sources.html')
+                          'localtv/admin/sources/manage.html')
         self.assertTrue('add_feed_form' in response.context[0])
         self.assertTrue('page' in response.context[0])
         self.assertTrue('headers' in response.context[0])
@@ -1054,7 +1054,7 @@ class FeedAdministrationTestCase(BaseTestCase):
                                'auto_categories': [1]})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name,
-                          'localtv/admin/add_feed.html')
+                          'localtv/admin/sources/feed_edit.html')
         self.assertEqual(response.context[0]['form'].instance.feed_url,
                          self.feed_url)
         self.assertFalse(response.context[0]['form'].is_valid())

@@ -173,14 +173,14 @@ margin-top: 20px;
 }
 
 
-.input_field ul li label{
+.input_field ul li label:first-child{
 float: left;
 width: 110px;
 line-height: 2.6em;
 }
 
 
-.input_field ul li input,
+.input_field ul li input[type=text],
 .input_field ul li textarea{
 float: left;
 border: 1px solid #ccc;

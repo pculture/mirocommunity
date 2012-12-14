@@ -20,13 +20,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% load i18n %}
 
-{% block title %}{% trans "Add a Feed" %} – {% trans "Admin" %} – {{ block.super }}{% endblock %}
+{% block title %}{% if search.pk %}{% blocktrans with name=search.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "Add search" %}{% endif %} – {% trans "Admin" %} – {{ block.super }}{% endblock %}
 
-{% block body_class %}admin add_feed{% endblock body_class %}
+{% block body_class %}admin edit_search{% endblock body_class %}
 
 {% block content %}
-  <form action='{{ request.path }}' method='post'>{% csrf_token %}
-    <h2>Add a feed</h2>
+  {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
+  <form action='{{ request.path }}' method='post' enctype="multipart/form-data">{% csrf_token %}
+    <h2>{% if search.pk %}{% blocktrans with name=search.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "Add search" %}{% endif %}</h2>
     <div class="input_field">
       <ul>
         {% for field in form %}
@@ -41,7 +42,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
         {% endfor %}
       </ul>
     </div>
-    <button type="submit" class="approve_button"><span>Add feed</span></button>
+    <button type="submit" class="approve_button"><span>{% if search.pk %}{% trans "Save changes" %}{% else %}{% trans "Add search" %}{% endif %}</span></button>
     <a href="{% url localtv_admin_manage_page %}" class="reject_button"><span>Cancel</span></a>
   </form>
 {% endblock %}
