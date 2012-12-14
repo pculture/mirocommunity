@@ -335,37 +335,35 @@ background: url(../images/admin_sprites.png) 0 -77px no-repeat;
 }
 
 
+.reject_button, .approve_button, .plain_button{
+  border: 0;
+  float: left;
+  text-decoration: none;
+  color: #fff;
+  font-size: 12px;
+  margin: 0 0 25px 10px;
+  margin-left: 10px;
+  margin-bottom: 25px;
+  padding: 0 15px 0 0;
+  cursor: pointer;
+}
 
-
+  .reject_button span, .approve_button span, .plain_button span{
+    padding: 9px 0px 9px 35px;
+    float: right;
+    text-shadow: 0 1px 1px rgba(0,0,0,1);
+  }
 
 
 .reject_button{
-    border: 0;
-float: left;
-text-decoration: none;
-color: #fff;
-margin-left: 10px;
-margin-bottom: 25px;
-padding: 0 15px 0 0;
-background: url(../images/admin_sprites.png) right -331px no-repeat;
-}
-
-button.reject_button {
-    background-position: right -330px;
+  background: url(../images/admin_sprites.png) right -331px no-repeat;
 }
 
 .reject_button:hover{
-background: url(../images/admin_sprites.png) right -408px no-repeat;
-}
-
-button.reject_button:hover {
-    background-position: right -407px;
+  background: url(../images/admin_sprites.png) right -408px no-repeat;
 }
 
 .reject_button span {
-	padding: 9px 0px 9px 35px;
-	float: right;
-	text-shadow: 0 1px 1px rgba(0,0,0,1);
 	background: url(../images/admin_sprites.png) left -297px no-repeat;
 }
 
@@ -374,60 +372,37 @@ button.reject_button:hover {
 background: url(../images/admin_sprites.png) left -374px no-repeat;
 }
 
-
-
-
-
-
 .approve_button {
-	float: left;
-	text-decoration: none;
-	color: #fff;
-	margin-left: 10px;
-	margin-bottom: 25px;
-	padding-right: 18px;
 	background: url(../images/admin_sprites.png) right -185px no-repeat;
-}
-
-
-
-button.approve_button{
-padding-right: 14px;
-border: 0;
-cursor: pointer;
-}
-
-.simple_overlay button.approve_button{
-
-float: right;
-}
-
-
-button.approve_button span{
-padding: 8px 4px 8px 35px;
-}
-
-button.approve_button:hover{
-curosor: pointer !important;
-background: url(../images/admin_sprites.png) right -260px no-repeat;
 }
 
 .approve_button:hover{
 background: url(../images/admin_sprites.png) right -262px no-repeat;
 }
 
-
-
 .approve_button span {
-	padding: 9px 0px 9px 35px;
-	float: right;
-	text-shadow: 0 1px 1px rgba(0,0,0,1);
-	background: url(../images/admin_sprites.png) left -151px no-repeat;
+  background: url(../images/admin_sprites.png) left -151px no-repeat;
+}
+.approve_button:hover span{
+  background: url(../images/admin_sprites.png) left -228px no-repeat;
+}
+.plain_button{
+  color: #333;
+  background: url(../images/admin_sprites.png) right -477px no-repeat;
+}
+.plain_button:hover{
+  background: url(../images/admin_sprites.png) right -554px no-repeat;
+}
+.plain_button span {
+  padding-left: 20px;
+  background: url(../images/admin_sprites.png) 0 -443px no-repeat;
+}
+.plain_button:hover span{
+  background: url(../images/admin_sprites.png) left -520px no-repeat;
 }
 
-
-.approve_button:hover span{
-background: url(../images/admin_sprites.png) left -228px no-repeat;
+.simple_overlay button.approve_button{
+  float: right;
 }
 
 
@@ -438,34 +413,6 @@ width: 100%;
 
 
 
-.plain_button{
-float: left;
-text-decoration: none;
-color: #333;
-margin-left: 10px;
-margin-bottom: 25px;
-padding-right: 18px;
-background: url(../images/admin_sprites.png) right -477px no-repeat;
-}
-
-
-
-.plain_button:hover{
-background: url(../images/admin_sprites.png) right -554px no-repeat;
-}
-
-
-.plain_button span {
-	padding: 9px 0px 9px 20px;
-	float: right;
-	background: url(../images/admin_sprites.png) 0 -443px no-repeat;
-}
-
-
-
-.plain_button:hover span{
-background: url(../images/admin_sprites.png) left -520px no-repeat;
-}
 
 .download_theme{
 padding: 0 0 0 18px;
