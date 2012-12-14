@@ -126,11 +126,11 @@ $(document).ready(function() {
   {% if form.instance.feed_url %}
     <a href="{% url localtv_admin_feed_edit pk=form.instance.pk %}">Edit</a>
     <a href="{% url localtv_admin_feed_delete pk=form.instance.pk %}">Delete</a>
+    <a href="{{ form.instance.get_absolute_url }}">View</a>
   {% else %}
     <a href="{% url localtv_admin_search_edit pk=form.instance.pk %}">Edit</a>
     <a href="{% url localtv_admin_search_delete pk=form.instance.pk %}">Delete</a>
   {% endif %}
-    <a href="{{ form.instance.get_absolute_url }}">View</a>
 </div>
 </td>
 <td>
