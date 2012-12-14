@@ -20,6 +20,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
+from django.conf import settings
 from django.core.files.base import File
 from django.core.paginator import Page
 from django.core import mail
@@ -1070,20 +1071,26 @@ class FeedAdministrationTestCase(BaseTestCase):
         feed = VideoFeed(self.feed_url)
         feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
         with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
-            response = c.post(self.url,
-                              {'feed_url': self.feed_url,
-                               'auto_approve': 'yes'})
+            # we intentionally keep the actual feed update from running.
+            with mock.patch('localtv.admin.forms.feed_update') as feed_update:
+                response = c.post(self.url,
+                                  {'feed_url': self.feed_url,
+                                   'auto_approve': 'yes'})
+                feed = Feed.objects.get()
+                feed_update.delay.assert_called_once_with(feed.pk,
+                                                          using='default',
+                                                          clear_rejected=True)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],
                           'http://%s%s' % (
                 'testserver',
                 reverse('localtv_admin_manage_page')))
 
-        feed = Feed.objects.get()
-        self.assertEqual(feed.name, 'Valid Feed with Relative Links')
+        self.assertEqual(feed.name, self.feed_url)
         self.assertEqual(feed.feed_url, self.feed_url)
-        # if CELERY_ALWAYS_EAGER is True, we'll have imported the feed here
-        self.assertTrue(feed.status in (Feed.INACTIVE, Feed.ACTIVE))
+        self.assertEqual(feed.site_id, settings.SITE_ID)
+        self.assertEqual(feed.user, User.objects.get(username='admin'))
+        self.assertEqual(feed.status, Feed.INACTIVE)
         self.assertTrue(feed.auto_approve)
 
     def test_POST_creates_no_user(self):

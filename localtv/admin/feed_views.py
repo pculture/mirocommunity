@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -23,7 +22,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.generic import CreateView
 
 from localtv.decorators import require_site_admin, referrer_redirect
-from localtv import tasks, utils
+from localtv import utils
 from localtv.models import Feed, SiteSettings
 from localtv.admin import forms
 
@@ -37,14 +36,10 @@ class AddFeedView(CreateView):
     template_name = 'localtv/admin/add_feed.html'
     success_url = reverse_lazy('localtv_admin_manage_page')
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.site_id = settings.SITE_ID
-        response = super(AddFeedView, self).form_valid(form)
-        tasks.feed_update.delay(self.object.pk,
-                                using=tasks.CELERY_USING,
-                                clear_rejected=True)
-        return response
+    def get_form_kwargs(self):
+        kwargs = super(AddFeedView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 add_feed = require_site_admin(csrf_protect(AddFeedView.as_view()))

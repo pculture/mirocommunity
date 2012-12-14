@@ -160,6 +160,8 @@ $(document).ready(function() {
     {% endif %}
   {% endif %}
   {% if latest_import.status == latest_import.PENDING %}<br/>Indexing in progress.{% endif %}
+{% else %}
+  Import pending...
 {% endif %}
 {% endwith %}</td>
 {% if form.instance.query_string %}

@@ -39,7 +39,7 @@ from tagging.forms import TagField
 
 from localtv import models, utils
 from localtv.settings import API_KEYS
-from localtv.tasks import video_save_thumbnail, CELERY_USING
+from localtv.tasks import video_save_thumbnail, feed_update, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper import auto_feed
@@ -1001,6 +1001,10 @@ class AddFeedForm(forms.ModelForm):
         model = models.Feed
         fields = ('feed_url', 'auto_categories', 'auto_authors', 'auto_approve')
 
+    def __init__(self, user=None, *args, **kwargs):
+        self.user = user
+        super(AddFeedForm, self).__init__(*args, **kwargs)
+
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
         # Get a canonical URL from vidscraper
@@ -1008,6 +1012,13 @@ class AddFeedForm(forms.ModelForm):
         url = scraped_feed.url
         return url
 
-    def _post_clean(self):
+    def save(self, commit=True):
         self.instance.last_updated = datetime.datetime.now()
-        super(AddFeedForm, self)._post_clean()
+        self.instance.user = self.user
+        self.instance.site_id = settings.SITE_ID
+        self.instance.name = self.instance.feed_url
+        instance = super(AddFeedForm, self).save(commit)
+        feed_update.delay(instance.pk,
+                          using=CELERY_USING,
+                          clear_rejected=True)
+        return instance
