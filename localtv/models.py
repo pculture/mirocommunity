@@ -522,9 +522,15 @@ class Feed(Source):
         self.etag = getattr(video_iter, 'etag', None) or ''
         self.last_updated = datetime.datetime.now()
         if self.status == self.INACTIVE:
-            self.name = video_iter.title or ''
-            self.webpage = video_iter.webpage or ''
-            self.description = video_iter.description or ''
+            # If these fields have already been changed, don't
+            # override those changes. Don't unset the name field
+            # if no further data is available.
+            if self.name == self.feed_url:
+                self.name = video_iter.title or self.name
+            if not self.webpage:
+                self.webpage = video_iter.webpage or ''
+            if not self.description:
+                self.description = video_iter.description or ''
         self.save()
 
         super(Feed, self).update(video_iter, source_import=feed_import,
