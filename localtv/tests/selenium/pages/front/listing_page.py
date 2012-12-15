@@ -20,7 +20,7 @@
 """The /listing pages.
 
 """
-from ..page import Page
+from localtv.tests.selenium.pages import Page
 import time
 
 

@@ -17,11 +17,11 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from localtv.tests.selenium.webdriver_base import WebdriverTestCase
-from localtv.tests.selenium.front_pages import search_page 
-from localtv.tests.selenium.front_pages import video_page
-from localtv.tests.selenium.front_pages import listing_page
-from localtv.tests.selenium.admin_pages import manage_page
+from localtv.tests.selenium import WebdriverTestCase
+from localtv.tests.selenium.pages.front import search_page 
+from localtv.tests.selenium.pages.front import video_page
+from localtv.tests.selenium.pages.front import listing_page
+from localtv.tests.selenium.pages.admin import manage_page
 from django.core import management
 
 

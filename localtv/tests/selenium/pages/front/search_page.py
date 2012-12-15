@@ -21,7 +21,7 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from localtv.tests.selenium.front_pages.user_nav import NavPage
+from localtv.tests.selenium.pages.front.user_nav import NavPage
 import time
 
 

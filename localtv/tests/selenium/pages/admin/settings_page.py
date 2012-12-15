@@ -19,7 +19,7 @@
 """The Admin settings page.
 
 """
-from localtv.tests.selenium.admin_pages.admin_nav import AdminNav
+from localtv.tests.selenium.pages.admin.admin_nav import AdminNav
 
 class SettingsPage(AdminNav):
     """Describes elements and functions for the Admin Settings page.

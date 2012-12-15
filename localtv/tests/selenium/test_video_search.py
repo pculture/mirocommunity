@@ -17,9 +17,9 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from localtv.tests.selenium.webdriver_base import WebdriverTestCase
+from localtv.tests.selenium import WebdriverTestCase
 
-from localtv.tests.selenium.front_pages import search_page
+from localtv.tests.selenium.pages.front import search_page
 
 
 class VideoSearch(WebdriverTestCase):

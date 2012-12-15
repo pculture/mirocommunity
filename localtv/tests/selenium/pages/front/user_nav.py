@@ -18,8 +18,8 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from localtv.tests.selenium.page import Page
-from localtv.tests.selenium.front_pages.login import Login
+from localtv.tests.selenium.pages import Page
+from localtv.tests.selenium.pages.front.login import Login
 
 
 class NavPage(Login, Page):

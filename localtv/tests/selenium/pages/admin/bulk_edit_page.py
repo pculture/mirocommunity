@@ -19,7 +19,7 @@
 """The Bulk Edit Admin page.
 
 """
-from localtv.tests.selenium.admin_pages.admin_nav import AdminNav
+from localtv.tests.selenium.pages.admin.admin_nav import AdminNav
 
 
 

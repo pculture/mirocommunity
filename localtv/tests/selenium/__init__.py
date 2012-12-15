@@ -15,8 +15,45 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-from localtv.tests.selenium.submit_video import *
-from localtv.tests.selenium.video_search import *
-from localtv.tests.selenium.submit_feeds import *
-from localtv.tests.selenium.user_auth import *
-from localtv.tests.selenium.listing_pages import *
+import time
+import os
+from django.core import management
+from django.test import LiveServerTestCase
+from localtv.tests import BaseTestCase
+from selenium import webdriver
+from django.conf import settings
+
+
+class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(WebdriverTestCase, cls).setUpClass()
+        cls.results_dir = getattr(settings, "TEST_RESULTS_DIR")
+        if not os.path.exists(cls.results_dir):
+            os.makedirs(cls.results_dir)
+
+    def setUp(self):
+        super(WebdriverTestCase, self).setUp()
+        self._clear_index()
+        LiveServerTestCase.setUp(self)
+        setattr(self, 'base_url', self.live_server_url + '/')
+        self.browser = getattr(webdriver, getattr(settings, 'TEST_BROWSER'))()
+        BaseTestCase.setUp(self)
+        self.admin_user = 'seleniumTestAdmin' 
+        self.admin_pass = 'password'
+        self.normal_user = 'seleniumTestUser'
+        self.normal_pass = 'password'
+        self.create_user(username=self.admin_user,
+                         password=self.admin_pass, is_superuser=True)
+        self.create_user(username=self.normal_user, password=self.normal_pass)
+        self.base_url = self.live_server_url + '/'
+        self.browser.get(self.base_url)
+
+    def tearDown(self):
+        time.sleep(1)
+        try:
+            screenshot_name = "%s.png" % self.id()
+            filename = os.path.join(self.results_dir, screenshot_name)
+            self.browser.get_screenshot_as_file(filename)
+        finally:
+            self.browser.quit()

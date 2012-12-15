@@ -19,7 +19,7 @@
 """The Admin Mange page which controls the feeds.
 
 """
-from localtv.tests.selenium.admin_pages.admin_nav import AdminNav
+from localtv.tests.selenium.pages.admin.admin_nav import AdminNav
 import time
 
 

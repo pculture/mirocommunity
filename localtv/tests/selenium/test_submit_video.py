@@ -18,10 +18,10 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from nose.tools import assert_false
-from localtv.tests.selenium.webdriver_base import WebdriverTestCase
-from localtv.tests.selenium.front_pages import submit_page
-from localtv.tests.selenium.front_pages import video_page
-from localtv.tests.selenium.front_pages import user_nav
+from localtv.tests.selenium import WebdriverTestCase
+from localtv.tests.selenium.pages.front import submit_page
+from localtv.tests.selenium.pages.front import video_page
+from localtv.tests.selenium.pages.front import user_nav
 
 
 class SubmitVideo(WebdriverTestCase):

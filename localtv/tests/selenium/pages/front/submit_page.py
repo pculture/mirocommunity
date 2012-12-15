@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import time
-from ..page import Page
+from localtv.tests.selenium.pages import Page
 
 
 class SubmitPage(Page):

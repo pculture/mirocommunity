@@ -19,7 +19,7 @@
 
 """
 
-from ..page import Page
+from localtv.tests.selenium.pages import Page
 
 class Google(Page):
     """Google login pages.

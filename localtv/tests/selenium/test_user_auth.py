@@ -19,8 +19,8 @@ import time
 
 from django.conf import settings
 from django.core import mail
-from localtv.tests.selenium.webdriver_base import WebdriverTestCase
-from localtv.tests.selenium.front_pages import user_nav
+from localtv.tests.selenium import WebdriverTestCase
+from localtv.tests.selenium.pages.front import user_nav
 
 
 class UserAuth(WebdriverTestCase):
@@ -31,20 +31,6 @@ class UserAuth(WebdriverTestCase):
     def setUp(self):
         WebdriverTestCase.setUp(self)
         self.nav_pg = user_nav.NavPage(self)
-
-    def _auth_settings_not_configured(self, setting):
-        """Verify secret keys are configured for fb and twitter auth.
-
-        """
-        if getattr(settings, setting) is None:
-            return True
-
-    def login_failed_at(self):
-        """Return url where login failed.
-
-        """
-        msg = "Login failed at %s" % self.nav_pg.current_url()
-        return msg
 
     def test_login__valid_site(self):
         """Login with valid site creds.
@@ -59,7 +45,8 @@ class UserAuth(WebdriverTestCase):
         """Login with facebook creds.
 
         """
-        if self._auth_settings_not_configured('FACEBOOK_SECRET_KEY'):
+        if (getattr(settings, 'FACEBOOK_APP_ID', None) is None or
+            getattr(settings, 'FACEBOOK_API_SECRET', None) is None):
             self.skipTest("Skipping, facebook auth not configured")
 
         kwargs = {'user': 'seleniumTestUser',
@@ -74,7 +61,8 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'http://pcf-web-qa.myopenid.com/',
                   'passw': 'pcf.web.qa',
                   'kind': 'openid'}
-        self.assertTrue(self.nav_pg.login(**kwargs), self.login_failed_at())
+        self.assertTrue(self.nav_pg.login(**kwargs),
+                        "Login failed at {0}".format(self.nav_pg.current_url()))
 
     def test_login__google(self):
         """Login with google creds.
@@ -89,13 +77,15 @@ class UserAuth(WebdriverTestCase):
         """Login with twitter creds.
 
         """
-        if self._auth_settings_not_configured('TWITTER_CONSUMER_SECRET'):
+        if (getattr(settings, 'TWITTER_CONSUMER_SECRET', None) is None or
+            getattr(settings, 'TWITTER_CONSUMER_KEY', None) is None):
             self.skipTest("Skipping, twitter auth not configured")
 
         kwargs = {'user': 'PCFQA',
                   'passw': 'MiroCommunity',
                   'kind': 'twitter'}
-        self.assertTrue(self.nav_pg.login(**kwargs), self.login_failed_at())
+        self.assertTrue(self.nav_pg.login(**kwargs),
+                        "Login failed at {0}".format(self.nav_pg.current_url()))
 
     def test_login__bad_password(self):
         """Login with invalid password

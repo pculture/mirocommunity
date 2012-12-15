@@ -20,11 +20,11 @@
 """The login form page.
 
 """
-from ..page import Page
-from ..web import facebook
-from ..web import twitter
-from ..web import google
-from ..web import openid
+from localtv.tests.selenium.pages import Page
+from localtv.tests.selenium.pages.web import facebook
+from localtv.tests.selenium.pages.web import twitter
+from localtv.tests.selenium.pages.web import google
+from localtv.tests.selenium.pages.web import openid
 
 
 class Login(Page):
@@ -36,28 +36,32 @@ class Login(Page):
     _LOGIN_PAGE_TITLE = "h1.page-title"
     _ERROR = "ul.errorlist li"
     _FORGOT_PASS_ERROR = "div a[href='/accounts/password/reset/']"
-    _TABS = {'site':
-             {"css": ".login_tab_user",
-                 "text": "Login/Sign Up"},
-
-             'signup':
-             {"css": ".login_tab_user",
-                 "text": "Login/Sign Up"},
-
-             'facebook':
-             {"css": ".login_tab_facebook",
-                 "text": "Facebook"},
-             'twitter':
-             {"css": ".login_tab_twitter",
-                 "text": "Twitter"},
-             'google':
-             {"css": ".login_tab_google",
-                 "text": "Google"},
-             'openid':
-             {"css": ".login_tab_openid",
-                 "text": "OpenID"},
-
-             }
+    _TABS = {
+        'site': {
+            "css": "a[href='#login']",
+            "text": "Login/Sign Up"
+        },
+        'signup': {
+            "css": "a[href='#login']",
+            "text": "Login/Sign Up"
+        },
+        'facebook': {
+            "css": "a[href='#facebook']",
+            "text": "Facebook"
+        },
+        'twitter': {
+            "css": "a[href='#twitter']",
+            "text": "Twitter"
+        },
+        'google': {
+            "css": "a[href='#google']",
+            "text": "Google"
+        },
+        'openid': {
+            "css": "a[href='#openid']",
+            "text": "OpenID"
+        },
+    }
     #SITE LOGIN FORM
     _LOGIN_SIDE = 'form[action*="login"] '
     _SITE_USERNAME = _LOGIN_SIDE + 'input#id_username'
@@ -73,11 +77,11 @@ class Login(Page):
     _SIGNUP_SUBMIT = _REGISTER_SIDE + 'div.controls > button'
 
     #SOCIAL MEDIA LOGIN TABS
-    _FB_LOGIN = "div#FacebookForm.tab-pane div.content-box a img"
-    _TWITTER_LOGIN = "div#TwitterForm.tab-pane div.content-box a img"
-    _OPEN_ID_URL = "div#OpenIDForm.tab-pane input#openid_url.openid"
-    _OPEN_ID_SUBMIT = "div#OpenIDForm.tab-pane div.controls button"
-    _GOOGLE = "div#GoogleForm.tab-pane input.button"
+    _FB_LOGIN = "#facebook a"
+    _TWITTER_LOGIN = "#twitter a"
+    _OPEN_ID_URL = "#openid input"
+    _OPEN_ID_SUBMIT = "#openid button"
+    _GOOGLE = "#google input"
 
     def site(self, **kwargs):
         auth = {}

@@ -18,7 +18,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 """
-from ..page import Page
+from localtv.tests.selenium.pages import Page
 
 
 class VideoPage(Page):

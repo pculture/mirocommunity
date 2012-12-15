@@ -1,4 +1,4 @@
-from ..page import Page
+from localtv.tests.selenium.pages import Page
 
 class FacebookAuth(Page):
     _FB_LOGIN_PAGE = "html#facebook"
