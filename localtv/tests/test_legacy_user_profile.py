@@ -29,7 +29,7 @@ from django.core.urlresolvers import reverse
 
 from notification import models as notification
 
-from localtv.tests.legacy_localtv import BaseTestCase
+from localtv.tests.test_legacy_localtv import BaseTestCase
 from localtv.user_profile import forms
 from localtv import utils
 
@@ -176,8 +176,7 @@ class ProfileViewTestCase(BaseTestCase):
         If the 'delete_logo' POST argument is present, the logo should be
         deleted.
         """
-        self.profile.logo = File(
-            file(self._data_file('logo.png')))
+        self.profile.logo = File(self._data_file('logo.png'))
         self.profile.save()
         self.assertTrue(self.profile.logo)
 

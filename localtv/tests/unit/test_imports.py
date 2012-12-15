@@ -18,13 +18,15 @@
 import datetime
 
 from celery.signals import task_postrun
+import feedparser
 from haystack.query import SearchQuerySet
-from vidscraper.suites import Video as VidscraperVideo
+import mock
+import vidscraper
+from vidscraper.suites.youtube import YouTubeSuite
 
-from localtv.models import (Source, Feed, FeedImport, Video, FeedImportIndex,
-                            FeedImportError)
-from localtv.tasks import haystack_update, haystack_remove
-from localtv.tests.base import BaseTestCase
+from localtv.models import Source, Feed, FeedImport, Video, FeedImportIndex
+from localtv.tasks import haystack_update, haystack_remove, video_save_thumbnail
+from localtv.tests import BaseTestCase
 
 
 class SourceImportUnitTestCase(BaseTestCase):
@@ -66,7 +68,7 @@ class FeedImportUnitTestCase(BaseTestCase):
     def create_vidscraper_video(self, url='http://youtube.com/watch/?v=fake',
                                 loaded=True, embed_code='hi', title='Test',
                                 **field_data):
-        video = VidscraperVideo(url)
+        video = vidscraper.Video(url)
         video._loaded = loaded
         field_data.update({'embed_code': embed_code, 'title': title})
         for key, value in field_data.items():
@@ -314,6 +316,7 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
         """Test that index updates are only run at the end of an update."""
         self.updates = 0
         self.removals = 0
+        self._clear_index()
 
         def count_update(sender, **kwargs):
             self.updates += 1
@@ -335,3 +338,63 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
         self.assertEqual(self.updates, 1)
         self.assertEqual(self.removals, 0)
         self.assertEqual(SearchQuerySet().count(), len(video_iter))
+
+
+class SavedSearch(BaseTestCase):
+    def _search(self, query, *args, **kwargs):
+        suite = vidscraper.registry._suite_dict[YouTubeSuite]
+        search = vidscraper.VideoSearch(query, suite)
+        search.handle_first_response(feedparser.parse(self._data_file('feeds/youtube_search.rss')))
+        return {suite: search}
+
+    def _load(self, video):
+        video.embed_code = 'haha!'
+
+    def test_update(self):
+        """
+        SavedSearch.update() should create new Video objects linked to
+        the search. Updating a second time shouldn't re-add videos.
+        """
+        search = self.create_search('blah rocket')
+        self.assertEqual(search.video_set.count(), 0)
+        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+            with mock.patch.object(vidscraper, 'auto_search', self._search):
+                with mock.patch.object(video_save_thumbnail, 'delay'):
+                    search.update()
+        # See http://bugzilla.pculture.org/show_bug.cgi?id=19740.
+        # 3 of the videos can't be pulled in because their "usernames"
+        # don't make valid user_urls - but the usernames are not correct.
+        # There should actually be 25 videos - but the bug is in vidscraper.
+        self.assertEqual(search.video_set.count(), 22)
+        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+            with mock.patch.object(vidscraper, 'auto_search', self._search):
+                with mock.patch.object(video_save_thumbnail, 'delay'):
+                    search.update()
+        self.assertEqual(search.video_set.count(), 22)
+
+    def test_update_auto_authors(self):
+        """
+        If a SavedSearch has authors set, imported videos should be given that
+        authorship.
+        """
+        search = self.create_search('blah rocket')
+        user = self.create_user()
+        search.auto_authors = [user]
+        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+            with mock.patch.object(vidscraper, 'auto_search', self._search):
+                with mock.patch.object(video_save_thumbnail, 'delay'):
+                    search.update()
+        self.assertTrue(user in list(search.video_set.all()[0].authors.all()))
+
+    def test_attribution_default(self):
+        """
+        If a SavedSearch has no author, imported videos should have a User
+        based on the user on the original video service.
+        """
+        search = self.create_search('blah rocket')
+        self.assertFalse(search.auto_authors.all().exists())
+        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+            with mock.patch.object(vidscraper, 'auto_search', self._search):
+                with mock.patch.object(video_save_thumbnail, 'delay'):
+                    search.update()
+        self.assertTrue(search.video_set.all()[0].authors.all().exists())

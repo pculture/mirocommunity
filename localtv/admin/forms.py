@@ -16,7 +16,6 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import re
 import os.path
 import urlparse
 
@@ -30,7 +29,9 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.urlresolvers import resolve
+from django.db.models.fields.files import FileField, FieldFile
 from django.http import Http404
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
@@ -40,10 +41,9 @@ from tagging.forms import TagField
 
 from localtv import models, utils
 from localtv.settings import API_KEYS
-from localtv.tasks import video_save_thumbnail, CELERY_USING
+from localtv.tasks import video_save_thumbnail, feed_update, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
-from vidscraper.errors import CantIdentifyUrl
 from vidscraper import auto_feed
 
 Profile = utils.get_profile_model()
@@ -991,61 +991,82 @@ AuthorFormSet = modelformset_factory(User,
                                      extra=0)
 
 
-class AddFeedForm(forms.Form):
-    SERVICE_PROFILES = (
-        (re.compile(
-                r'^(http://)?(www\.)?youtube\.com/profile(_videos)?'
-                r'\?(\w+=\w+&)*user=(?P<name>\w+)'),
-         'youtube'),
-        (re.compile(r'^(http://)?(www\.)?youtube\.com/((rss/)?user/)?'
-                    r'(?P<name>\w+)'),
-         'youtube'),
-        (re.compile(r'^(http://)?([^/]*)blip\.tv'), 'blip'),
-        (re.compile(
-                r'^(http://)?(www\.)?vimeo\.com/(?P<name>(channels/)?\w+)$'),
-         'vimeo'),
-        (re.compile(
-                r'^(http://)?(www\.)?dailymotion\.com/(\w+/)*(?P<name>\w+)/1'),
-         'dailymotion'),
-        )
+class AddFeedForm(forms.ModelForm):
+    auto_categories = BulkChecklistField(required=False,
+                                         queryset=models.Category.objects.filter(
+                                         site=settings.SITE_ID))
+    auto_authors = BulkChecklistField(required=False,
+                                      queryset=User.objects.order_by('username'))
+    auto_approve = BooleanRadioField(required=False)
 
-    def _blip_add_rss_skin(url):
-        if '?' in url:
-            return url + '&skin=rss'
-        else:
-            return url + '?skin=rss'
+    class Meta:
+        model = models.Feed
+        fields = ('feed_url', 'auto_categories', 'auto_authors', 'auto_approve')
 
-    SERVICE_FEEDS = {
-        'youtube': ('http://gdata.youtube.com/feeds/base/users/%s/'
-                    'uploads?alt=rss&v=2&orderby=published'),
-        'blip': _blip_add_rss_skin,
-        'vimeo': 'http://www.vimeo.com/%s/videos/rss',
-        'dailymotion': 'http://www.dailymotion.com/rss/%s/1',
-        }
-
-    feed_url = forms.URLField(required=True,
-                              widget=forms.TextInput(
-            attrs={'class': 'livesearch_feed_url'}))
-
-    @staticmethod
-    def _feed_url_key(feed_url):
-        return 'localtv:add_feed_form:%i' % hash(feed_url)
+    def __init__(self, user=None, *args, **kwargs):
+        self.user = user
+        super(AddFeedForm, self).__init__(*args, **kwargs)
 
     def clean_feed_url(self):
         url = self.cleaned_data['feed_url']
-        try:
-            scraped_feed = auto_feed(url, api_keys=API_KEYS)
-            url = scraped_feed.url
-        except CantIdentifyUrl:
-            raise forms.ValidationError('It does not appear that %s is an '
-                                        'RSS/Atom feed URL.' % url)
-
-        site = Site.objects.get_current()
-        if models.Feed.objects.filter(feed_url=url,
-                                      site=site):
-            raise forms.ValidationError(
-                'That feed already exists on this site.')
-
-        self.cleaned_data['scraped_feed'] = scraped_feed
-
+        # Get a canonical URL from vidscraper
+        scraped_feed = auto_feed(url, api_keys=API_KEYS)
+        url = scraped_feed.url
         return url
+
+    def save(self, commit=True):
+        self.instance.last_updated = datetime.datetime.now()
+        self.instance.user = self.user
+        self.instance.site_id = settings.SITE_ID
+        self.instance.name = self.instance.feed_url
+        instance = super(AddFeedForm, self).save(commit)
+        feed_update.delay(instance.pk,
+                          using=CELERY_USING,
+                          clear_rejected=True)
+        return instance
+
+
+class EditThumbnailableForm(forms.ModelForm):
+    thumbnail = forms.ImageField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(EditThumbnailableForm, self).__init__(*args, **kwargs)
+        if self.instance.has_thumbnail:
+            path = self.instance.thumbnail_path
+            if default_storage.exists(path):
+                # Fake this being a field.
+                self.initial['thumbnail'] = FieldFile(self.instance, FileField(), path)
+
+    def save(self, commit=True):
+        if 'thumbnail' in self.cleaned_data:
+            if self.cleaned_data['thumbnail']:
+                self.instance.save_thumbnail_from_file(self.cleaned_data['thumbnail'], update=False)
+            else:
+                self.instance.delete_thumbnail()
+        return super(EditThumbnailableForm, self).save(commit)
+
+
+class EditSourceForm(EditThumbnailableForm):
+    auto_categories = BulkChecklistField(required=False,
+                                         queryset=models.Category.objects.filter(
+                                         site=settings.SITE_ID))
+    auto_authors = BulkChecklistField(required=False,
+                                      queryset=User.objects.order_by('username'))
+    auto_approve = BooleanRadioField(required=False)
+
+
+class EditFeedForm(EditSourceForm):
+    class Meta:
+        model = models.Feed
+        fields = ('name', 'feed_url', 'webpage', 'thumbnail',
+                  'auto_categories', 'auto_authors', 'auto_approve')
+
+
+class EditSearchForm(EditSourceForm):
+    query_string = forms.CharField()
+
+    class Meta:
+        model = models.SavedSearch
+        fields = ('query_string', 'thumbnail', 'auto_categories',
+                  'auto_authors', 'auto_approve')
+

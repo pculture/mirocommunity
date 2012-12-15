@@ -21,11 +21,12 @@ from haystack.query import SearchQuerySet
 
 from localtv.models import Video
 from localtv.search.forms import DateTimeFilterField, SearchForm
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class DateTimeFilterFieldTestCase(BaseTestCase):
     def setUp(self):
+        self._clear_index()
         self.field = DateTimeFilterField(field_lookups=('last_featured',),
                                          label='')
         # We create the video which was never featured first because of whoosh

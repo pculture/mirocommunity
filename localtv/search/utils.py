@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+import itertools
 import operator
 
 from django.db.models.query import Q
@@ -180,5 +181,7 @@ class PopularSort(Sort):
 
     def sort(self, queryset):
         if not isinstance(queryset, SearchQuerySet):
-            queryset = queryset.with_watch_count()
+            popular = queryset.popular()
+            not_popular = queryset.not_popular()
+            return itertools.chain(popular, not_popular)
         return super(PopularSort, self).sort(queryset)

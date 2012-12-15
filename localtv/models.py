@@ -50,7 +50,6 @@ from django.core.signals import request_finished
 from django.core.validators import ipv4_re
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
-from django.template.loader import render_to_string
 import django.utils.html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -147,7 +146,7 @@ class Thumbnailable(models.Model):
         self.has_thumbnail = False
         delete_if_exists(self.thumbnail_path)
         try:
-            image = Image.objects.for_storage_path(self.thumbnail_path)
+            image = Image.objects.db_manager(self._state.db).for_storage_path(self.thumbnail_path)
         except Image.DoesNotExist:
             pass
         else:
@@ -471,7 +470,7 @@ class Feed(Source):
     feed_url = models.URLField(verify_exists=False)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
@@ -509,7 +508,7 @@ class Feed(Source):
 
         video_iter = vidscraper.auto_feed(
             self.feed_url,
-            crawl=(getattr(self, 'status', True) == 0),
+            crawl=True if self.status == self.INACTIVE else False,
             api_keys=lsettings.API_KEYS,
         )
 
@@ -521,8 +520,17 @@ class Feed(Source):
             return
 
         self.etag = getattr(video_iter, 'etag', None) or ''
-        self.last_updated = (getattr(video_iter, 'last_modified', None) or
-                                 datetime.datetime.now())
+        self.last_updated = datetime.datetime.now()
+        if self.status == self.INACTIVE:
+            # If these fields have already been changed, don't
+            # override those changes. Don't unset the name field
+            # if no further data is available.
+            if self.name == self.feed_url:
+                self.name = video_iter.title or self.name
+            if not self.webpage:
+                self.webpage = video_iter.webpage or ''
+            if not self.description:
+                self.description = video_iter.description or ''
         self.save()
 
         super(Feed, self).update(video_iter, source_import=feed_import,
@@ -922,7 +930,7 @@ class OriginalVideo(VideoBase):
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
-    def changed_fields(self, override_vidscraper_result=None):
+    def changed_fields(self):
         """
         Check our video for new data.
         """
@@ -935,22 +943,20 @@ class OriginalVideo(VideoBase):
 
         remote_video_was_deleted = False
         fields = ['title', 'description', 'tags', 'thumbnail_url']
-        if override_vidscraper_result is not None:
-            vidscraper_video = override_vidscraper_result
-        else:
-            try:
-                vidscraper_video = vidscraper.auto_scrape(
-                                                video.website_url,
-                                                fields=fields,
-                                                api_keys=lsettings.API_KEYS)
-            except vidscraper.errors.VideoDeleted:
-                remote_video_was_deleted = True
-            except urllib2.URLError:
-                # some kind of error Vidscraper couldn't handle; log it and
-                # move on.
-                logging.warning('exception while checking %r',
-                                video.website_url, exc_info=True)
-                return {}
+
+        try:
+            vidscraper_video = vidscraper.auto_scrape(
+                                            video.website_url,
+                                            fields=fields,
+                                            api_keys=lsettings.API_KEYS)
+        except vidscraper.errors.VideoDeleted:
+            remote_video_was_deleted = True
+        except urllib2.URLError:
+            # some kind of error Vidscraper couldn't handle; log it and
+            # move on.
+            logging.warning('exception while checking %r',
+                            video.website_url, exc_info=True)
+            return {}
 
         # Now that we have the "scraped_data", analyze it: does it look like
         # a skeletal video, with no data? Then we infer it was deleted.
@@ -1087,10 +1093,10 @@ class OriginalVideo(VideoBase):
             self.remote_video_was_deleted = OriginalVideo.VIDEO_DELETE_PENDING
         self.save()
 
-    def update(self, override_vidscraper_result = None):
+    def update(self):
         from localtv.utils import get_or_create_tags
 
-        changed_fields = self.changed_fields(override_vidscraper_result)
+        changed_fields = self.changed_fields()
         if not changed_fields:
             return # don't need to do anything
 
@@ -1397,7 +1403,7 @@ class Video(Thumbnailable, VideoBase):
         def save_m2m():
             if authors:
                 instance.authors = authors
-            elif video.user:
+            if video.user:
                 name = video.user
                 if ' ' in name:
                     first, last = name.split(' ', 1)
@@ -1412,7 +1418,7 @@ class Video(Thumbnailable, VideoBase):
                     author.save()
                     utils.get_profile_model()._default_manager.db_manager(using
                         ).create(user=author, website=video.user_url or '')
-                instance.authors = [author]
+                instance.authors.add(author)
             if categories:
                 instance.categories = categories
             if video.tags:

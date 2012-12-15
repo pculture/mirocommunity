@@ -88,7 +88,10 @@ class DateTimeFilterField(FilterMixin, forms.BooleanField):
             # Backwards-compat until 2.0: Also exclude max datetimes
             # with this filter.
             values = [DATETIME_NULL_PLACEHOLDER,
-                      datetime.datetime.max]
+                      datetime.datetime.max,
+                      # MySQL doesn't support microsecond resolution,
+                      # so we need to hit that separately.
+                      datetime.datetime.max.replace(microsecond=0)]
         else:
             values = [None]
         return queryset.exclude(self._make_qs(queryset, values))

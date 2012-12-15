@@ -23,7 +23,7 @@ from django.core import mail
 from django.test.client import Client
 from django.http import Http404
 
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 from localtv.models import SiteSettings
 
 from localtv.playlists.models import Playlist, PlaylistItem
@@ -580,10 +580,7 @@ class PlaylistModerationTestCase(BaseTestCase):
 
         notice_type = notification.NoticeType.objects.get(
             label='admin_new_playlist')
-        setting = notification.get_notification_setting(
-            User.objects.get(username='admin'),
-            notice_type,
-            "1")
+        setting = notification.get_notification_setting(admin, notice_type, "1")
         setting.send = True
         setting.save()
 

@@ -59,19 +59,11 @@ $(document).ready(function() {
 
 {% block pre-labels %}
 <a href="#" rel="#admin_search_sources" class="add"><span>Search For Video</span></a>
-<a href="#" rel="#admin_feed_add" class="add"><span>Add Feed</span></a>
+<a href="{% url localtv_admin_feed_add %}" class="add"><span>Add Feed</span></a>
 <h2>Videos | Manage Your Video Sources</h2>
 <div class="helpful clear rounded">Videos imported from sources become available once the import has completed. You can see a source's import status in the "import" column. Videos may be skipped if they have been imported before, or if they do not have basic information &#8211; for example, if they don't have either embed code or a link to a video file.</div>
 {% if successful %}<div class="successful clear rounded">Your changes were saved successfully.</div>{% endif %}
 {% if formset.errors %}<div class="unsuccessful clear rounded">There were problems with your edits.</div>{% endif %}
-<div id="admin_feed_add" class="simple_overlay displaynone">
-  <form method="get" action="{% url localtv_admin_feed_add %}">
-    <strong>Add Sources of Video</strong>
-    {{ add_feed_form.feed_url }}
-    <button type="submit" class="med_button"><span>Add</span></button>
-  </form>
-  <p>Sources let you automatically import video onto your site from video hosting accounts (ie YouTube users) or RSS. Just paste in a video URL or RSS feed.</p>
-</div>
 
 <div id="admin_search_sources" class="simple_overlay displaynone">
   <form method="get" action="{% url localtv_admin_search %}">
@@ -131,7 +123,14 @@ $(document).ready(function() {
 </span>
  
 <div class="actions">
-  <a href="#" onclick="return showEdit(this, true);">Edit</a> <a href="#" onclick="return toggleDelete(this);" class="delete_icon">Delete</a> {{ form.DELETE.as_hidden }} <a href="{{ form.instance.get_absolute_url }}" class="view_icon">View</a>
+  {% if form.instance.feed_url %}
+    <a href="{% url localtv_admin_feed_edit pk=form.instance.pk %}">Edit</a>
+    <a href="{% url localtv_admin_feed_delete pk=form.instance.pk %}">Delete</a>
+    <a href="{{ form.instance.get_absolute_url }}">View</a>
+  {% else %}
+    <a href="{% url localtv_admin_search_edit pk=form.instance.pk %}">Edit</a>
+    <a href="{% url localtv_admin_search_delete pk=form.instance.pk %}">Delete</a>
+  {% endif %}
 </div>
 </td>
 <td>
@@ -168,6 +167,8 @@ $(document).ready(function() {
     {% endif %}
   {% endif %}
   {% if latest_import.status == latest_import.PENDING %}<br/>Indexing in progress.{% endif %}
+{% else %}
+  Import pending...
 {% endif %}
 {% endwith %}</td>
 {% if form.instance.query_string %}
