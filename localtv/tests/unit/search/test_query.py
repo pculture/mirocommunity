@@ -15,10 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.contrib.auth.models import User
+from haystack import connections
+
+from localtv.models import Category, Feed, SavedSearch
+from localtv.playlists.models import Playlist
 from localtv.search.query import SmartSearchQuerySet
 from localtv.tests import BaseTestCase
 
-from haystack import connections
 
 class TokenizeTestCase(BaseTestCase):
     """
@@ -249,9 +253,10 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         expected = self.blender_videos[4:5]
+        category = Category.objects.get(slug='tender')
         self.assertQueryResults('category:blender', expected)
         self.assertQueryResults('category:tender', expected)
-        self.assertQueryResults('category:1', expected)
+        self.assertQueryResults('category:{0}'.format(category.pk), expected)
 
     def test_search_keyword__user(self):
         """
@@ -260,8 +265,9 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         expected = self.blender_user_videos[0:2]
+        user = User.objects.get(username='blender')
         self.assertQueryResults('user:Blender', expected)
-        self.assertQueryResults('user:1', expected)
+        self.assertQueryResults('user:{0}'.format(user.pk), expected)
 
     def test_search_keyword__feed(self):
         """
@@ -270,8 +276,9 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         expected = self.blender_videos[6:7]
+        feed = Feed.objects.get(feed_url='feed1')
         self.assertQueryResults('feed:Blender', expected)
-        self.assertQueryResults('feed:1', expected)
+        self.assertQueryResults('feed:{0}'.format(feed.pk), expected)
 
     def test_search_keyword__playlist(self):
         """
@@ -280,8 +287,9 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         expected = self.blender_videos[:1] + self.rocket_videos[:1]
+        playlist = Playlist.objects.get(user=self.blender_users[0])
         self.assertQueryResults('playlist:blender/playlist', expected)
-        self.assertQueryResults('playlist:1', expected)
+        self.assertQueryResults('playlist:{0}'.format(playlist.pk), expected)
 
     def test_search_keyword__search(self):
         """
@@ -290,7 +298,8 @@ class AutoQueryTestCase(BaseTestCase):
 
         """
         expected = self.search_videos
-        self.assertQueryResults('search:1', expected)
+        search = SavedSearch.objects.get(query_string="rogue")
+        self.assertQueryResults('search:{0}'.format(search.pk), expected)
         self.assertQueryResults('search:rogue', expected)
         self.assertQueryResults('search:"rogue"', expected)
 
