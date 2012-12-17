@@ -112,8 +112,7 @@ class Page(object):
         try:
             elem = self.browser.find_element_by_css_selector(element)
         except:
-            self.record_error()
-            raise Exception(elem + "not found")
+            self.record_error(elem + "not found")
         if no_wait:
             elem.send_keys(Keys.ENTER)
         else:
@@ -129,7 +128,6 @@ class Page(object):
             elem = self.browser.find_element_by_css_selector(element)
         except:
             self.record_error()
-            raise Exception(elem + "not found")
         elem.clear()
 
     def click_link_text(self, text, wait_for_element=None):
@@ -268,31 +266,40 @@ class Page(object):
             if text == element_text:
                 return True
             else:
-                self.record_error()
-                raise Exception('found:' + element_text +
+                self.record_error('found:' + element_text +
                                 'but was expecting: ' + text)
                 return False
 
-    def wait_for_element_present(self, element):
-        """Wait for element (by css) present on page, within 20 seconds.
+
+    def wait_for_element_present(self, element, wait_time=5):
+        """Wait for element (by css) present on page, within x seconds.
+
+           Settings the default to 5 since we shouldn't have to wait long for 
+           most things.  If using implicit_wait in webdriver_base so this
+           is multiplied by the implicit wait value.
 
         """
-        for i in range(20):
+        for i in range(wait_time):
             try:
                 time.sleep(1)
                 if self.is_element_present(element):
-                    break
+                    return self.browser.find_element_by_css_selector(element) 
             except:
                 pass
         else:
-            raise Exception("Element %s is not present." % element)
+            self.record_error("Element %s is not present." % element)
 
-    def wait_for_element_not_present(self, element):
-        """Wait for element (by css) to disappear on page, within 20 seconds.
+
+    def wait_for_element_not_present(self, element, wait_time=10):
+        """Wait for element (by css) to disappear on page, within 10 seconds.
+
+           Settings the default to 10 since we shouldn't have to wait long for 
+           most things.  If using implicit_wait in webdriver_base so this
+           is a multiplied by the implicit wait value.
 
         """
 
-        for i in range(20):
+        for i in range(wait_time):
             try:
                 time.sleep(1)
                 if self.is_element_present(element) is False:
@@ -300,7 +307,8 @@ class Page(object):
             except:
                 pass
         else:
-            raise Exception("%s is still present" % element)
+            self.record_error("Element %s is still present." % element)
+
 
     def wait_for_text_not_present(self, text):
         """Wait for text to disappear on page, within 20 seconds.
@@ -326,8 +334,7 @@ class Page(object):
             if self.is_element_visible(element):
                 break
         else:
-            self.record_error()
-            raise Exception(element + ' has not appeared')
+            self.record_error(element + ' has not appeared')
 
     def wait_for_element_not_visible(self, element):
         """Wait for element (by css) to be hidden on page, within 20 seconds.
@@ -341,8 +348,7 @@ class Page(object):
             except:
                 break
         else:
-            self.record_error()
-            raise Exception(element + ' has not disappeared')
+            self.record_error(element + ' has not disappeared')
 
     def get_absolute_url(self, url):
         """Return the full url.
@@ -395,17 +401,15 @@ class Page(object):
                 elem = self.browser.find_element_by_css_selector(elements)
         elem.send_keys("PAGE_DOWN")
 
-    def record_error(self):
+
+
+    def record_error(self, e=None):
         """
             Records an error.
         """
-        curr_url = self.browser.current_url.split('/')[-1]
-        #filename = curr_url + ".png"
+        if not e:
+            e = 'webdriver error' + self.browser.current_url
         print '-------------------'
         print 'Error at ' + self.browser.current_url
         print '-------------------'
-#        filename = file_name + '_' + str(time.time()).split('.')[0] + '.png'
-
-        #print 'Screenshot of error in file ' + filename
-        #self.browser.get_screenshot_as_file(filename)
-        return self.browser.current_url
+        raise ValueError(str(e))
