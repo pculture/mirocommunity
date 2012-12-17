@@ -3,16 +3,12 @@ python:
   - "2.6"
   - "2.7"
 env:
-  - SELENIUM=no
-  - SELENIUM=no MIGRATIONS=yes
-  - SELENIUM=no SEARCH=elasticsearch
-  - SELENIUM=no DB=mysql
-  - SELENIUM=yes
+  -
+  - MIGRATIONS=yes
+  - SEARCH=elasticsearch
+  - DB=mysql
 before_install:
   - if [ $SEARCH == 'elasticsearch' ]; then sudo service elasticsearch start; sleep 3; fi
-  - if [ $SELENIUM == 'yes' ]; then sh -e /etc/init.d/xvfb start; fi
-  - if [ $SELENIUM == 'yes' ]; then sleep 3; fi # give xvfb some time to start
-  - if [ $SELENIUM == 'yes' ]; then export DISPLAY=:99.0; fi
 install:
   - pip install . --no-deps
   - pip install --use-mirrors --no-deps -r test_mc_project/requirements.txt
@@ -24,9 +20,8 @@ before_script:
   - if [ $DB == 'mysql' ]; then mysql -e 'CREATE DATABASE mirocommunity_test;'; fi
 script:
   - cd test_mc_project
-  - if [ $SELENIUM == 'no' ]; then ./manage.py test localtv.tests.functional --verbosity=2; fi
-  - if [ $SELENIUM == 'no' ]; then ./manage.py test localtv.tests.integration --verbosity=2; fi
-  - if [ $SELENIUM == 'no' ]; then ./manage.py test localtv.tests.legacy --verbosity=2; fi
-  - if [ $SELENIUM == 'no' ]; then ./manage.py test localtv.tests.unit --verbosity=2; fi
-  - if [ $SELENIUM == 'no' ]; then ./manage.py test localtv.contrib.contests --verbosity=2; fi
-  - if [ $SELENIUM == 'yes' ]; then ./manage.py test localtv.tests.selenium --verbosity=2; fi
+  - ./manage.py test localtv.tests.unit --verbosity=2; fi
+  - ./manage.py test localtv.tests.functional --verbosity=2; fi
+  - ./manage.py test localtv.tests.integration --verbosity=2; fi
+  - ./manage.py test localtv.tests.legacy --verbosity=2; fi
+  - ./manage.py test localtv.contrib.contests --verbosity=2
