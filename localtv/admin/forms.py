@@ -1012,6 +1012,12 @@ class AddFeedForm(forms.ModelForm):
         # Get a canonical URL from vidscraper
         scraped_feed = auto_feed(url, api_keys=API_KEYS)
         url = scraped_feed.url
+        try:
+            models.Feed.objects.get(feed_url=url, site=settings.SITE_ID)
+        except models.Feed.DoesNotExist:
+            pass
+        else:
+            raise ValidationError("Feed with this URL already exists.")
         return url
 
     def save(self, commit=True):

@@ -37,6 +37,7 @@ class AddFeedView(CreateView):
     template_name = 'localtv/admin/sources/feed_edit.html'
     success_url = reverse_lazy('localtv_admin_manage_page')
     context_object_name = 'feed'
+    initial = {'auto_approve': False}
 
     def get_form_kwargs(self):
         kwargs = super(AddFeedView, self).get_form_kwargs()
