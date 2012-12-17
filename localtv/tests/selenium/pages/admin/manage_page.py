@@ -29,13 +29,13 @@ class ManagePage(AdminNav):
     """
 
     _URL = 'admin/manage/'
-    _SEARCH_VIDEO = 'a[rel="#admin_search_sources"]'
-    _ADD_FEED = 'a[rel="#admin_feed_add"]'
+    _SEARCH_VIDEO = 'a[rel="#admin_search_sources"] span'
+    _ADD_FEED = 'a[href*="feed/add"] span'
 
     _CLOSE_OVERLAY = 'div.close'
     # ADD FEED OVERLAY
-    _FEED_URL = 'div#admin_feed_add input#id_feed_url'
-    _SUBMIT_FEED = 'div#admin_feed_add button[type="submit"]'
+    _FEED_URL = 'input#id_feed_url'
+    _SUBMIT_FEED = 'button[type="submit"]'
 
     # REVIEW SUBMITTED FEED
     _FEED_NAME = 'div.floatleft h3'
@@ -96,16 +96,14 @@ class ManagePage(AdminNav):
         feed_data = default_data
         feed_data.update(kwargs)
         self.click_by_css(self._ADD_FEED)
-        self._add_feed_form(feed_data['feed url'])
+        self._add_feed_form(**feed_data)
         if feed_data['feed source'] is 'invalid':
             expected_error_txt = self._INVALID_FEED_TEXT % feed_data[
                 'feed url']
             found_error_txt = self.get_text_by_css("body")
             if found_error_txt in expected_error_txt:
                 return True
-        else:
-            self._review_feed_form(feed_data['approve all'])
-            return self._feed_in_table(feed_data['feed name'])
+        return self._feed_in_table(feed_data['feed name'])
 
     def delete_all_feeds(self):
         """Delete all the feeds on the page.
@@ -124,25 +122,17 @@ class ManagePage(AdminNav):
             source_type = self._URL
         self.click_by_css(self._VIDEO_SOURCE_FILTER % source_type)
 
-    def _add_feed_form(self, url):
+    def _add_feed_form(self, **kwargs):
         """Enter the feed url in the form field.
 
         """
-        self.type_by_css(self._FEED_URL, url)
+        self.type_by_css(self._FEED_URL, kwargs['feed url'])
+        if kwargs['approve all']:
+            self.check(self._APPROVE_ALL)
+        else:
+            self.check(self._REVIEW_FIRST)
         self.click_by_css(self._SUBMIT_FEED)
-        time.sleep(2)
 
-    def _review_feed_form(self, auto_approve):
-        """Enter the feed option in the reivew feed form.
-
-        """
-        if not self._duplicate_feed():
-        #FIX ME - Verify displayed data
-            if auto_approve is True:
-                self.check(self._APPROVE_ALL)
-            else:
-                self.check(self._REVIEW_FIRST)
-            self.click_by_css(self._REVIEW_SUBMIT)
 
     def _duplicate_feed(self):
         """Return True if the feed is a duplicated.
@@ -190,5 +180,7 @@ class ManagePage(AdminNav):
         Action must be one of display links for the feed: Edit, View, Delete
         """
         feed_el = self.feed_table_element(feedname)
+        if not feed_el:
+            self.record_error('feed not found in table')
         parent_el = feed_el.parent
         parent_el.find_element_by_link_text(action).click()
