@@ -90,7 +90,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
                     'description': ('Saw Prometheus? What if I told you there '
                                     'are creatures on Earth that are just as '
                                     'freaky?'),
-                    'source': 'Reel Science'
+                    'source': 'reelscience'
                     }
 
         self.submit_feed(testcase)
@@ -120,13 +120,13 @@ class SubmitVideoFeeds(WebdriverTestCase):
  
         """
         testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
-                    'feed name': 'janet',
+                    'feed name': 'Videos janet likes on Vimeo',
                     'title': 'WADDICT - Kiteskate Edit',
                     'search': 'Kiteskate',
                     'description': ('In addition to WADDICT part I & II, '
                                     'we have done an edit dedicated to '
                                     'kiteskating.'),
-                    'source': 'janet'
+                    'source': 'spocky'
                     }
         self.submit_feed(testcase)
         self.verify_video_page(testcase)
@@ -136,13 +136,13 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
         """
         testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
-                    'feed name': 'janet',
+                    'feed name': 'Videos janet likes on Vimeo',
                     'title': 'WADDICT - Kiteskate Edit',
                     'search': 'Kiteskate',
                     'description': ('In addition to WADDICT part I & II, '
                                     'we have done an edit dedicated to '
                                     'kiteskating.'),
-                    'source': 'janet'
+                    'source': 'spocky'
                     }
         self.submit_feed(testcase)
         self.manage_pg.click_feed_action(testcase['feed name'], "View")
