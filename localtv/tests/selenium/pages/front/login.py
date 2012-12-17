@@ -79,9 +79,9 @@ class Login(Page):
     #SOCIAL MEDIA LOGIN TABS
     _FB_LOGIN = "#facebook a"
     _TWITTER_LOGIN = "#twitter a"
-    _OPEN_ID_URL = "#openid input"
-    _OPEN_ID_SUBMIT = "#openid button"
-    _GOOGLE = "#google input"
+    _OPEN_ID_URL = "input#openid_identifier"
+    _OPEN_ID_SUBMIT = "form[action*='openid'] div div.cmntrols button"
+    _GOOGLE = "form[action*='google'] p input"
 
     def site(self, **kwargs):
         auth = {}
@@ -147,8 +147,8 @@ class Login(Page):
 
         """
         self.wait_for_element_present(self._OPEN_ID_URL)
-        self.type_by_css(self._OPEN_ID_URL, user)
-        self.click_by_css(self._OPEN_ID_SUBMIT)
+        self.submit_form_text_by_css(self._OPEN_ID_URL, user)
+        #self.click_by_css(self._OPEN_ID_SUBMIT)
         openid_pg = openid.MyOpenIDAuth(self)
         openid_pg.myopenid_login(user, passw)
 
@@ -196,4 +196,4 @@ class Login(Page):
         """Wait for the login page to be gone.
 
         """
-        self.wait_for_element_not_present(self._TABS['site']['css'])
+        self.wait_for_element_not_visible(self._TABS['site']['css'])
