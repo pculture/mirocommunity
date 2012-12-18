@@ -211,8 +211,9 @@ class ModelFilterFieldUnitTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self._clear_index()
         site2 = Site.objects.create(name='example.com', domain='example.com')
-        self.user_field = forms.SearchForm.base_fields['author']
-        self.category_field = forms.SearchForm.base_fields['category']
+        form = forms.SearchForm()
+        self.user_field = form.fields['author']
+        self.category_field = form.fields['category']
         self.user1 = self.create_user(username='user1')
         self.user2 = self.create_user(username='user2')
         self.category1 = self.create_category(name='category1')
