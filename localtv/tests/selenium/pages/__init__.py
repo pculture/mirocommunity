@@ -254,21 +254,17 @@ class Page(object):
             else:
                 return False
 
-    def verify_text_present(self, element, text):
+    def verify_text_present(self, element, expected_text):
         """Verify element (by css) text is present.
 
         """
         elements_found = self.browser.find_elements_by_css_selector(element)
-        if len(elements_found) > 1:
-            raise Exception(MULTIPLE_ELS % element)
-        else:
-            element_text = elements_found[0].text
-            if text == element_text:
+        for el in elements_found:
+            print el.text
+            if expected_text == el.text:
                 return True
-            else:
-                self.record_error('found:' + element_text +
-                                'but was expecting: ' + text)
-                return False
+        else:
+            self.record_error('did not find %s' % expected_text)
 
 
     def wait_for_element_present(self, element, wait_time=5):

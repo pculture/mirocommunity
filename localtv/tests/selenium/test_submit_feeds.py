@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 # Miro Community - Easiest way to make a video website
 #
 # Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
@@ -165,16 +165,24 @@ class SubmitVideoFeeds(WebdriverTestCase):
         self.submit_feed(testcase)
         self.verify_video_page(testcase)
 
-    def test_submit_feed__invalid(self):
-        """Submit an invalid feed url.
+    def test_submit_feed__duplicate(self):
+        """Submit a duplicate feed url.
 
         """
-        kwargs = {'feed url': ('http://www.dailymotion.com/relevance/'
-                              'searchvela+luka/1'),
-                  'feed source': 'invalid'
-                  }
+        testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
+                    'feed name': 'Videos janet likes on Vimeo',
+                    'title': 'WADDICT - Kiteskate Edit',
+                    'search': 'Kiteskate',
+                    'description': ('In addition to WADDICT part I & II, '
+                                    'we have done an edit dedicated to '
+                                    'kiteskating.'),
+                    'source': 'spocky'
+                    }
+        self.submit_feed(testcase)
+
+        testcase['feed source'] = 'duplicate'
         self.manage_pg.open_manage_page()
-        self.assertTrue(self.manage_pg.submit_feed(**kwargs))
+        self.assertTrue(self.manage_pg.submit_feed(**testcase))
 
     def test_submit_feed__update(self):
         """Verify videos are updated when feed updates.

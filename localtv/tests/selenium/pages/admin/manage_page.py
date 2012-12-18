@@ -97,12 +97,9 @@ class ManagePage(AdminNav):
         feed_data.update(kwargs)
         self.click_by_css(self._ADD_FEED)
         self._add_feed_form(**feed_data)
-        if feed_data['feed source'] is 'invalid':
-            expected_error_txt = self._INVALID_FEED_TEXT % feed_data[
-                'feed url']
-            found_error_txt = self.get_text_by_css("body")
-            if found_error_txt in expected_error_txt:
-                return True
+        if feed_data['feed source'] is 'duplicate':
+            print '*** Expected this to be a duplicate feed. ***'
+            return self._duplicate_feed()
         return self._feed_in_table(feed_data['feed name'])
 
     def delete_all_feeds(self):
@@ -138,10 +135,10 @@ class ManagePage(AdminNav):
         """Return True if the feed is a duplicated.
 
         """
-        dup_feed_message = '* That feed already exists on this site.'
+        dup_feed_message = 'Feed with this URL already exists.'
  
-        if self.is_text_present('body', dup_feed_message):
-            self.open_manage_page() #Return to the sources page.
+        if self.verify_text_present('li', dup_feed_message):
+            print '*** got dup feed message *** '
             return True
 
     def _bulk_edit_action(self, action):
