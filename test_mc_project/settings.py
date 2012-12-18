@@ -216,6 +216,17 @@ if os.environ.get('MIGRATIONS'):
     SOUTH_TESTS_MIGRATE = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+#Nose configs
+NOSE_ARGS = ['--with-xunit',
+             '--xunit-file=nosetests.xml', 
+             '--nocapture',
+             #'--collect-only',
+             '--nologcapture', 
+             '--logging-filter=remote_connection', 
+             '--verbosity=2'
+            ]
+
+
 # Webdriver test settings
 TEST_BROWSER = 'Firefox'
 TEST_RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'webdriver_results')
