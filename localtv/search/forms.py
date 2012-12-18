@@ -169,7 +169,7 @@ class SearchForm(HaystackForm):
 
     tag = TagFilterField()
     category = ModelFilterField(
-                            Category.objects.filter(site=settings.SITE_ID),
+                            Category.objects.all(),
                             to_field_name='slug',
                             field_lookups=('categories',))
     author = ModelFilterField(
@@ -177,15 +177,21 @@ class SearchForm(HaystackForm):
                             field_lookups=('authors', 'user'),
                             label=_('Authors'))
     playlist = ModelFilterField(
-                            Playlist.objects.filter(site=settings.SITE_ID),
+                            Playlist.objects.all(),
                             field_lookups=('playlists',))
-    feed = ModelFilterField(Feed.objects.filter(
-                            site=settings.SITE_ID),
+    feed = ModelFilterField(Feed.objects.all(),
                             field_lookups=('feed',))
     featured = DateTimeFilterField(
                             required=False,
                             field_lookups=('last_featured',),
                             label=_('Featured videos'))
+
+    def __init__(self, *args, **kwargs):
+        super(SearchForm, self).__init__(*args, **kwargs)
+        # Avoid triggering app loading here; sometimes causes a circular import.
+        self.fields['category'].queryset = Category.objects.filter(site=settings.SITE_ID)
+        self.fields['playlist'].queryset = Playlist.objects.filter(site=settings.SITE_ID)
+        self.fields['feed'].queryset = Feed.objects.filter(site=settings.SITE_ID)
 
     def get_queryset(self, use_haystack=USE_HAYSTACK):
         """Return the base queryset for this form."""
