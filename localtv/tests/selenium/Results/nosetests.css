@@ -136,8 +136,8 @@ tr#verify #screenshot a img#thumb
 div#err_message a span {display: none;}
 
 div#err_message a:hover span {display: block;
-   width: 480px; 
-   height: 240px; 
+   width: 640px; 
+   height: 800px; 
    padding:1px; 
    border: 1px solid silver;
    position: absolute; left: 35px; 

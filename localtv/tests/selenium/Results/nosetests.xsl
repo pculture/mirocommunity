@@ -29,7 +29,7 @@
                     <link rel="stylesheet" type="text/css" href="nosetests.css"/>
                </head>
                <body>
-                <h2>AMARA WEBRIVER TESTS</h2>
+                <h2>MiroCommunity Test Results</h2><br/>
                 
                <h3 class="summary">total tests: <xsl:value-of select="testsuite/@tests"/>
                <xsl:variable name="errs" select="testsuite/@errors"/>
@@ -53,6 +53,7 @@
                   <tr>
                     <th>Screenshot</th>
                     <th>Test Case</th>
+                    <th>Known Bugs</th>
                   </tr>                
  
                   <xsl:for-each select="testsuite/testcase">
@@ -85,6 +86,8 @@
                      <xsl:with-param name="status" select="$status"/>
                      <xsl:with-param name="message" select="$message"/>
                      <xsl:with-param name="class" select="$class"/>
+                     <xsl:with-param name="bug" select="./bug"/>
+
                    </xsl:call-template>    
                   </xsl:for-each>
                  </table>
@@ -99,7 +102,8 @@
      <xsl:param name="status"/>
      <xsl:param name="message"/>
      <xsl:param name="class"/>
-  
+     <xsl:param name="bug"/>
+ 
     <tr><xsl:attribute name="id"><xsl:value-of select="$status"/></xsl:attribute>
           
      <xsl:variable name="screenshot_name">
@@ -137,8 +141,26 @@
       </xsl:otherwise>
      </xsl:choose>
      </td>
+     <td> 
+          <xsl:call-template name="tickets">
+              <xsl:with-param name="bug" select="$bug"/>
+          </xsl:call-template> 
+
+     </td>
     </tr>
     </xsl:template>
+  
+   <xsl:template name="tickets">
+      <xsl:param name="bug"/>
+          <xsl:for-each select="$bug">
+                         <a>
+                         <xsl:attribute 
+                          name="href">https://buzilla.pculture.org/show_bug.cgi?id=<xsl:value-of select="."/>
+                         </xsl:attribute>
+                          i<xsl:value-of select="."/>
+                         </a>, 
+          </xsl:for-each>
+   </xsl:template>
 
     
 </xsl:stylesheet>
