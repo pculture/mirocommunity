@@ -22,6 +22,14 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 
 <ul class="navigation-list">
+	<li class="nav-item nav-about">
+		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
+	</li>
+	{% if site_settings.display_submit_button %}
+		<li class="nav-item nav-submit">
+			<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
+		</li>
+	{% endif %}
 	{% if browse_modules %}
 		<li class="nav-item nav-item-dropdown">
 			<a href="#">{% trans "Browse" %}</a>
@@ -36,12 +44,26 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			<a href="{% url 'localtv_list_new' %}">{% trans "All Videos" %}</a>
 		</li>
 	{% endif %}
-	{% if site_settings.display_submit_button %}
-		<li class="nav-item nav-submit">
-			<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
+	{% if request.user.is_authenticated %}
+		<li class="nav-item nav-item-dropdown nav-auth">
+			<a href="#">{% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user }}{% endif %}</a>
+			<ul class="dropdown-list">
+				<li class="footer-nav-item">
+					<a href="{% url 'localtv_user_profile' %}">{% trans 'Your Profile' %}</a>
+				</li>
+				{% if user_is_admin %}
+					<li class="nav-admin">
+						<a href="{% url 'localtv_admin_index' %}">{% trans 'Admin' %}</a>
+					</li>
+				{% endif %}
+				<li class="nav-logout">
+					<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
+				</li>
+			</ul>
+		</li>
+	{% else %}{# if not request.user.is_authentication #}
+		<li class="nav-item nav-login">
+			<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
 		</li>
 	{% endif %}
-	<li class="nav-item nav-about">
-		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
-	</li>
 </ul>
