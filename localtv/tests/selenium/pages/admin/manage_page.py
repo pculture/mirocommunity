@@ -128,7 +128,8 @@ class ManagePage(AdminNav):
             self.check(self._APPROVE_ALL)
         else:
             self.check(self._REVIEW_FIRST)
-        self.click_by_css(self._SUBMIT_FEED)
+        elem = self.browser.find_element_by_css_selector(self._SUBMIT_FEED)
+        elem.submit()
 
 
     def _duplicate_feed(self):
