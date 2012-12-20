@@ -3,7 +3,7 @@
 {% block body_class %}themes{% endblock body_class %}
 
 
-{% load i18n %} 
+{% load i18n daguerre %} 
 
 {% block title %}{{ block.super }} - {% trans "Admin - Upload Templates" %}{% endblock %}
 
@@ -16,15 +16,7 @@
   </div>
 
 
-  <a href="#" rel="#uploader" class="add"><span>Add Theme</span></a>
-  <div class="simple_overlay" id="uploader" style="display: none; background: #fff;">
-    <form method="post" action="" enctype="multipart/form-data">{% csrf_token %}
-      <h2>Upload a Custom Theme</h2>
-      <p>Download/modify any existing theme and upload it as a ZIP file.</p>
-      <div class="upload_form">{{ form.as_p }}</div>
-      <button type="submit" class="approve_button" value="Upload"><span>Upload</span></button> 
-    </form>
-  </div>
+  <a href="{% url uploadtemplate-create %}" class="add"><span>Add Theme</span></a>
 
   {% if default %}
   
@@ -34,14 +26,12 @@
   <div id="default_theme" class="theme">
   
   <span id="check_bubble"></span>
-  {% if default.thumbnail %}<img src="{{ default.thumbnail.url }}" alt="Thumbnail for {{ default.name }}" />{% endif %}
+  {% if default.thumbnail %}<img src="{% adjust default.thumbnail width=200 %}" />{% endif %}
  
   <h3>{{ default.name }}</h3>
   <div class="description">{{ default.description }}</div>
-    {% if default and theme != default %}
-      <a class="remove_theme" href="{% url uploadtemplate-unset_default %}">Deactivate (Return to Default Theme)</a>
-    {% endif %}
-    <a class="download_theme" href="{% url uploadtemplate-download default.pk %}">Download This Theme</a>
+    <a class="edit_theme" href="{% url uploadtemplate-update pk=default.pk %}">Edit</a>
+    <a class="remove_theme" href="{% url uploadtemplate-unset_default %}">Deactivate (Return to Default Theme)</a>
   </div>
   {% endif %}
   {% if themes|length > 1 or not default %}
@@ -50,12 +40,12 @@
       {% for theme in themes %}
         {% if theme != default %}
           <li class="theme">
-            {% if theme.thumbnail %}<img src="{{ theme.thumbnail.url }}" alt="Thumbnail for {{ theme.name }}" />{% endif %}
+            {% if theme.thumbnail %}<img src="{% adjust theme.thumbnail width=200 %}" />{% endif %}
             <h3>{{ theme.name }}</h3>
             <div class="description">{{ theme.description }}</div>
-            <a class="activate_theme" href="{{ theme.get_absolute_url }}">Activate</a>
+            <a class="activate_theme" href="{% url uploadtemplate-set_default theme.pk %}">Activate</a>
+            <a class="edit_theme" href="{% url uploadtemplate-update pk=theme.pk %}">Edit</a>
             <a class="remove_theme" href="{% url uploadtemplate-delete theme.pk %}">Remove</a>
-            <a class="download_theme" href="{% url uploadtemplate-download theme.pk %}">Download</a>
           </li>
         {% endif %}
       {% endfor %}

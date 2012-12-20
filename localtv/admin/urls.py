@@ -95,13 +95,20 @@ urlpatterns += patterns(
 
 urlpatterns += patterns(
     'localtv.admin.upload_views',
-    (r'^themes/$', 'index', {}, 'uploadtemplate-index'),
-    (r'^themes/delete/(\d+)$', 'delete', {}, 'uploadtemplate-delete'),
-    (r'^themes/download/(\d+)$', 'download', {}, 'uploadtemplate-download'),
-    (r'^themes/unset_default$', 'unset_default', {},
-     'uploadtemplate-unset_default'),
-    (r'^themes/set_default/(\d+)$', 'set_default', {},
-     'uploadtemplate-set_default'))
+    url(r'^themes/$', 'index',
+        name='uploadtemplate-index'),
+    url(r'^themes/add/$', 'create',
+        name='uploadtemplate-create'),
+    url(r'^themes/(?P<pk>\d+)/edit$', 'update',
+        name='uploadtemplate-update'),
+    url(r'^themes/(\d+)/delete$', 'delete',
+        name='uploadtemplate-delete'),
+    url(r'^themes/download/(\d+)$', 'download',
+        name='uploadtemplate-download'),
+    url(r'^themes/unset_default$', 'unset_default',
+        name='uploadtemplate-unset_default'),
+    url(r'^themes/set_default/(\d+)$', 'set_default',
+        name='uploadtemplate-set_default'))
 
 urlpatterns += patterns(
     'localtv.admin.flatpages_views',
