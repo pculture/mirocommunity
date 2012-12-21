@@ -1,7 +1,7 @@
 git+http://git.participatoryculture.org/djpagetabs@master#egg=djpagetabs
 git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share
-git+http://git.participatoryculture.org/django-uploadtemplate@master#egg=django_uploadtemplate
-git+git://github.com/pculture/djvideo.git@354d55786b5882eae6a7ee6d676cf02737010fc9#egg=djvideo
+git+http://git.participatoryculture.org/django-uploadtemplate@2a429693f343514d4d9ca824c7093990ffc87f51#egg=django_uploadtemplate
+git+git://github.com/pculture/djvideo.git@4e4135fd488af3d7e2db8f685ac885c8ba487e3e#egg=djvideo
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
 git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
 hg+http://bitbucket.org/ubernostrum/django-registration/@tip#egg=django-registration
