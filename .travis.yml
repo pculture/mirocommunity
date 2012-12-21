@@ -20,8 +20,8 @@ before_script:
   - if [ $DB == 'mysql' ]; then mysql -e 'CREATE DATABASE mirocommunity_test;'; fi
 script:
   - cd test_mc_project
-  - ./manage.py test localtv.tests.unit --verbosity=2; fi
-  - ./manage.py test localtv.tests.functional --verbosity=2; fi
-  - ./manage.py test localtv.tests.integration --verbosity=2; fi
-  - ./manage.py test localtv.tests.legacy --verbosity=2; fi
+  - ./manage.py test localtv.tests.unit --verbosity=2
+  - ./manage.py test localtv.tests.functional --verbosity=2
+  - ./manage.py test localtv.tests.integration --verbosity=2
+  - ./manage.py test localtv.tests.legacy --verbosity=2
   - ./manage.py test localtv.contrib.contests --verbosity=2
