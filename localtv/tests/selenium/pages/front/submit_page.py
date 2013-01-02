@@ -169,4 +169,5 @@ class SubmitPage(Page):
         """Submit the form.
 
         """
-        self.click_by_css(self._SUBMIT)
+        elem = self.browser.find_element_by_css_selector(self._SUBMIT)
+        elem.submit()
