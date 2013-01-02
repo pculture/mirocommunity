@@ -56,7 +56,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         """
 
         self.use_sauce = os.environ.get('USE_SAUCE', False)
-        self.base_url = os.environ.get('TEST_URL', 'http://127.0.0.1:8081')
+        self.base_url = os.environ.get('TEST_URL', 'http://127.0.0.1:8081/')
         self._clear_index()
         #If we are using sauce - check if we are running on jenkins.
         if self.use_sauce:
