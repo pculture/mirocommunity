@@ -62,7 +62,7 @@ class ApiV1TestCase(BaseTestCase):
             'etag': '',
         }
         feed = self.create_feed(
-            thumbnail=File(file(self._data_file('logo.png'))),
+            thumbnail=File(self._data_file('logo.png')),
             **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
@@ -85,7 +85,7 @@ class ApiV1TestCase(BaseTestCase):
             'query_string': 'dead -parrot',
         }
         search = self.create_search(
-            thumbnail=File(file(self._data_file('logo.png'))),
+            thumbnail=File(self._data_file('logo.png')),
             **expected_data)
         # get the data from the database; this makes sure the datetimes are the
         # same when we're using MySQL.
@@ -109,7 +109,7 @@ class ApiV1TestCase(BaseTestCase):
             'tags': '',
         }
         video = self.create_video(
-            thumbnail=File(file(self._data_file('logo.png'))),
+            thumbnail=File(self._data_file('logo.png')),
             update_index=False,
             **expected_data)
         # get the data from the database; this makes sure the datetimes are the

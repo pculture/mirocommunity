@@ -16,7 +16,9 @@ from django.test.testcases import (TestCase,
                                    connections_support_transactions)
 from django.test.client import Client, RequestFactory
 from haystack import connections
+from requests.models import Response
 from tagging.models import Tag
+import vidscraper
 
 import localtv
 from localtv import models
@@ -29,6 +31,7 @@ from localtv.playlists.models import Playlist
 HAVE_INTERNET_CONNECTION = None
 
 TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(localtv.__file__), 'tests', 'data'))
+VIDSCRAPER_TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(vidscraper.__file__), 'tests', 'data'))
 
 
 class FakeRequestFactory(RequestFactory):
@@ -245,6 +248,15 @@ class BaseTestCase(TestCase):
 
         return Site.objects.create(domain=domain, name=name)
 
+    @staticmethod
+    def get_response(content, code=200):
+        response = Response()
+        if hasattr(content, 'read'):
+            content = content.read()
+        response._content = content
+        response.status_code = code
+        return response
+
     @classmethod
     def _data_path(cls, test_path):
         """
@@ -260,6 +272,22 @@ class BaseTestCase(TestCase):
 
         """
         return open(cls._data_path(test_path), mode)
+
+    @classmethod
+    def _vidscraper_data_path(cls, test_path):
+        """
+        Given a path relative to vidscraper/tests/data, returns an absolute path.
+
+        """
+        return os.path.join(VIDSCRAPER_TEST_DATA_DIR, test_path)
+
+    @classmethod
+    def _vidscraper_data_file(cls, test_path, mode='r'):
+        """
+        Given a path relative to vidscraper/tests/data, returns an open file.
+
+        """
+        return open(cls._vidscraper_data_path(test_path), mode)
 
     def assertRedirects(self, response, target_path, netloc='testserver'):
         """

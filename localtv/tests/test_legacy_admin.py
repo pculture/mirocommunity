@@ -17,11 +17,12 @@ import feedparser
 from haystack.query import SearchQuerySet
 import mock
 from notification import models as notification
-from vidscraper.suites.base import (VideoFeed, VideoSearch, registry,
-                                    Video as VidscraperVideo)
-from vidscraper.suites.youtube import YouTubeSuite
+from vidscraper import registry
+from vidscraper.suites.youtube import Suite as YouTubeSuite
+from vidscraper.utils.search import intersperse_results
 
 from localtv import utils
+from localtv.admin.livesearch.views import LiveSearchView
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings
 from localtv.tests.test_legacy_localtv import BaseTestCase
 import localtv.admin.user_views
@@ -1030,8 +1031,8 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        feed = VideoFeed(self.feed_url)
-        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        feed = registry.get_feed(self.feed_url)
+        feed._response = feedparser.parse(self._data_file(self.feed_data_path))
         with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
             response = c.post(self.url,
                               {'feed_url': self.feed_url,
@@ -1052,8 +1053,10 @@ class FeedAdministrationTestCase(BaseTestCase):
         """
         c = Client()
         c.login(username='admin', password='admin')
-        feed = VideoFeed(self.feed_url)
-        feed.handle_first_response(feedparser.parse(self._data_file(self.feed_data_path)))
+        feed = registry.get_feed(self.feed_url)
+        response = feedparser.parse(self._data_file(self.feed_data_path))
+        with mock.patch.object(feed, 'get_page', return_value=response):
+            feed._next_page()
         with mock.patch('localtv.admin.forms.auto_feed', return_value=feed):
             # we intentionally keep the actual feed update from running.
             with mock.patch('localtv.admin.forms.feed_update') as feed_update:
@@ -1076,31 +1079,6 @@ class FeedAdministrationTestCase(BaseTestCase):
         self.assertEqual(feed.user, User.objects.get(username='admin'))
         self.assertEqual(feed.status, Feed.INACTIVE)
         self.assertTrue(feed.auto_approve)
-
-    def test_POST_creates_no_user(self):
-        """
-        When creating a new feed from a feed for a user on a video service, a
-        User object should *not* be created with that username and should *not*
-        be set as the auto-author for that feed. The user will be created
-        when the individual videos are actually processed.
-
-        """
-        url = ("http://gdata.youtube.com/feeds/base/users/mphtower/uploads"
-               "?alt=rss&v=2&orderby=published")
-        c = Client()
-        c.login(username='admin', password='admin')
-        parsed = feedparser.parse(self._data_file('feed__mphtower.rss'))
-        with mock.patch.object(YouTubeSuite, 'get_feed_response', return_value=parsed):
-            with mock.patch.object(VidscraperVideo, 'load'):
-                c.post(self.url + "?feed_url=%s" % url,
-                       {'feed_url': url,
-                        'auto_approve': 'yes'})
-
-        feed = Feed.objects.get()
-        self.assertRaises(User.DoesNotExist, User.objects.get, username='mphtower')
-        self.assertEqual(feed.name, 'Uploads by mphtower')
-        self.assertEqual(list(feed.auto_authors.all()),
-                         [])
 
     def test_GET_auto_approve(self):
         """
@@ -1157,18 +1135,18 @@ class FeedAdministrationTestCase(BaseTestCase):
 
 
 class SearchAdministrationTestCase(AdministrationBaseTestCase):
-
     url = reverse_lazy('localtv_admin_search')
 
     def _search(self, query, *args, **kwargs):
-        suite = registry._suite_dict[YouTubeSuite]
-        search = VideoSearch(query, suite)
-        search.handle_first_response(feedparser.parse(self._data_file('youtube_search.rss')))
-        return list(search)
+        search = YouTubeSuite.search_class(query)
+        response = self.get_response(self._vidscraper_data_file('youtube/search.json'))
+        with mock.patch.object(search, 'get_page', return_value=response):
+            search._next_page()
+        return [search]
 
-    def _intersperse(self, videos, *args, **kwargs):
+    def _intersperse(self, *args, **kwargs):
         # Keep videos from loading and make them look real
-        for video in videos:
+        for video in intersperse_results(*args, **kwargs):
             video._loaded = True
             video.embed_code = 'fake!'
             yield video
@@ -1213,11 +1191,12 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
         self.assertIsInstance(response.context['current_video'],
                               Video)
         self.assertEqual(response.context['page_obj'].number, 1)
-        self.assertEqual(len(response.context['page_obj'].object_list), 10)
+        self.assertEqual(len(response.context['page_obj'].object_list), 5)
         self.assertEqual(response.context['query_string'], 'search string')
         self.assertEqual(response.context['order_by'], 'latest')
         self.assertEqual(response.context['is_saved_search'], False)
 
+    @mock.patch.object(LiveSearchView, 'paginate_by', 3)
     def test_GET_query_pagination(self):
         """
         A GET request to the livesearch view with GET['query'] and GET['page']
@@ -1229,8 +1208,9 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
             with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
                 response = c.get(self.url,
                                  {'query': 'search string'})
-        self.assertEqual(response.context[2]['page_obj'].number, 1)
-        self.assertEqual(len(response.context[2]['page_obj'].object_list), 10)
+        page_obj = response.context[2]['page_obj']
+        self.assertEqual(page_obj.number, 1)
+        self.assertEqual(len(page_obj.object_list), 3)
 
         with mock.patch('localtv.admin.livesearch.forms.auto_search', self._search):
             with mock.patch('localtv.admin.livesearch.forms.intersperse_results', self._intersperse):
@@ -1239,10 +1219,7 @@ class SearchAdministrationTestCase(AdministrationBaseTestCase):
                                   'page': '2'})
         page_obj = response2.context[2]['page_obj']
         self.assertEqual(page_obj.number, 2)
-        if page_obj.has_next():
-            self.assertEqual(len(page_obj.object_list), 10)
-        else:
-            self.assertTrue(page_obj.object_list)
+        self.assertEqual(len(page_obj.object_list), 2)
 
         self.assertNotEqual([v.id for v in
                              response.context[2]['page_obj'].object_list],

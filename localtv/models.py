@@ -874,7 +874,7 @@ class OriginalVideo(VideoBase):
                                             video.website_url,
                                             fields=fields,
                                             api_keys=lsettings.API_KEYS)
-        except vidscraper.errors.VideoDeleted:
+        except vidscraper.exceptions.VideoDeleted:
             remote_video_was_deleted = True
         except urllib2.URLError:
             # some kind of error Vidscraper couldn't handle; log it and

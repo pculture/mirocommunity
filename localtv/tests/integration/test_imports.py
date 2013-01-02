@@ -1,9 +1,26 @@
+# Miro Community - Easiest way to make a video website
+#
+# Copyright (C) 2010, 2011, 2012 Participatory Culture Foundation
+#
+# Miro Community is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# Miro Community is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+
 import time
 
 from django.core.urlresolvers import reverse
 import feedparser
 from mock import patch
-from vidscraper import VideoFeed
+from vidscraper.suites.generic import Feed as GenericFeed
 
 from localtv import tasks
 from localtv.models import Video, Feed
@@ -16,7 +33,7 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         self.url = reverse('localtv_admin_feed_add')
         with self._data_file('feeds/qa1.rss') as f:
             feed = feedparser.parse(f.read())
-        patcher = patch.object(VideoFeed, 'get_url_response', lambda *args, **kwargs: feed)
+        patcher = patch.object(GenericFeed, 'get_page', lambda *args, **kwargs: feed)
         patcher.start()
         self.addCleanup(patcher.stop)
         patcher = patch.object(tasks, 'video_save_thumbnail')

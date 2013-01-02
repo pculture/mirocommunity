@@ -1,12 +1,12 @@
 import datetime
 
 from celery.signals import task_postrun
-import feedparser
 from haystack.query import SearchQuerySet
 import mock
 import vidscraper
-from vidscraper.suites.youtube import YouTubeSuite
-from vidscraper.videos import VideoFile as VidscraperVideoFile
+from vidscraper.suites.youtube import Suite as YouTubeSuite
+from vidscraper.videos import (Video as VidscraperVideo,
+                               VideoFile as VidscraperVideoFile)
 
 from localtv.models import Source, Feed, FeedImport, Video, FeedImportIndex
 from localtv.tasks import haystack_update, haystack_remove, video_save_thumbnail
@@ -52,7 +52,7 @@ class FeedImportUnitTestCase(BaseTestCase):
     def create_vidscraper_video(self, url='http://youtube.com/watch/?v=fake',
                                 loaded=True, embed_code='hi', title='Test',
                                 **field_data):
-        video = vidscraper.Video(url)
+        video = vidscraper.videos.Video(url)
         video._loaded = loaded
         field_data.update({'embed_code': embed_code, 'title': title})
         for key, value in field_data.items():
@@ -326,12 +326,14 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
 
 class SavedSearch(BaseTestCase):
     def _search(self, query, *args, **kwargs):
-        suite = vidscraper.registry._suite_dict[YouTubeSuite]
-        search = vidscraper.VideoSearch(query, suite)
-        search.handle_first_response(feedparser.parse(self._data_file('feeds/youtube_search.rss')))
-        return {suite: search}
+        search = YouTubeSuite.search_class(query)
+        response = self.get_response(self._vidscraper_data_file('youtube/search.json'))
+        with mock.patch.object(search, 'get_page', return_value=response):
+            search._next_page()
+        return [search]
 
-    def _load(self, video):
+    @staticmethod
+    def _load(video):
         video.embed_code = 'haha!'
 
     def test_update(self):
@@ -341,20 +343,16 @@ class SavedSearch(BaseTestCase):
         """
         search = self.create_search('blah rocket')
         self.assertEqual(search.video_set.count(), 0)
-        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+        with mock.patch.object(VidscraperVideo, 'load', self._load):
             with mock.patch.object(vidscraper, 'auto_search', self._search):
                 with mock.patch.object(video_save_thumbnail, 'delay'):
                     search.update()
-        # See http://bugzilla.pculture.org/show_bug.cgi?id=19740.
-        # 3 of the videos can't be pulled in because their "usernames"
-        # don't make valid user_urls - but the usernames are not correct.
-        # There should actually be 25 videos - but the bug is in vidscraper.
-        self.assertEqual(search.video_set.count(), 22)
-        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+        self.assertEqual(search.video_set.count(), 5)
+        with mock.patch.object(VidscraperVideo, 'load', self._load):
             with mock.patch.object(vidscraper, 'auto_search', self._search):
                 with mock.patch.object(video_save_thumbnail, 'delay'):
                     search.update()
-        self.assertEqual(search.video_set.count(), 22)
+        self.assertEqual(search.video_set.count(), 5)
 
     def test_update_auto_authors(self):
         """
@@ -364,7 +362,7 @@ class SavedSearch(BaseTestCase):
         search = self.create_search('blah rocket')
         user = self.create_user()
         search.auto_authors = [user]
-        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+        with mock.patch.object(VidscraperVideo, 'load', self._load):
             with mock.patch.object(vidscraper, 'auto_search', self._search):
                 with mock.patch.object(video_save_thumbnail, 'delay'):
                     search.update()
@@ -377,7 +375,7 @@ class SavedSearch(BaseTestCase):
         """
         search = self.create_search('blah rocket')
         self.assertFalse(search.auto_authors.all().exists())
-        with mock.patch.object(YouTubeSuite, 'load_video_data', self._load):
+        with mock.patch.object(VidscraperVideo, 'load', self._load):
             with mock.patch.object(vidscraper, 'auto_search', self._search):
                 with mock.patch.object(video_save_thumbnail, 'delay'):
                     search.update()

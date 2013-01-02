@@ -27,6 +27,7 @@ from django.test.client import Client, RequestFactory
 
 from haystack import connections
 from haystack.query import SearchQuerySet
+from requests.models import Response
 
 import localtv
 import localtv.templatetags.filters
@@ -45,6 +46,7 @@ from tagging.models import Tag
 
 Profile = utils.get_profile_model()
 TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(localtv.__file__), 'tests', 'testdata'))
+VIDSCRAPER_TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(vidscraper.__file__), 'tests', 'data'))
 
 
 class FakeRequestFactory(RequestFactory):
@@ -115,6 +117,15 @@ class BaseTestCase(TestCase):
             storage.default_storage
         shutil.rmtree(self.tmpdir)
 
+    @staticmethod
+    def get_response(content, code=200):
+        response = Response()
+        if hasattr(content, 'read'):
+            content = content.read()
+        response._content = content
+        response.status_code = code
+        return response
+
     @classmethod
     def _data_path(cls, test_path):
         """
@@ -129,6 +140,22 @@ class BaseTestCase(TestCase):
         Returns the absolute path to a file in our legacy testdata directory.
         """
         return open(cls._data_path(test_path), mode)
+
+    @classmethod
+    def _vidscraper_data_path(cls, test_path):
+        """
+        Given a path relative to vidscraper/tests/data, returns an absolute path.
+
+        """
+        return os.path.join(VIDSCRAPER_TEST_DATA_DIR, test_path)
+
+    @classmethod
+    def _vidscraper_data_file(cls, test_path, mode='r'):
+        """
+        Given a path relative to vidscraper/tests/data, returns an open file.
+
+        """
+        return open(cls._vidscraper_data_path(test_path), mode)
 
     def assertStatusCodeEquals(self, response, status_code):
         """
@@ -1347,7 +1374,7 @@ you wish to support Miro yourself, please donate $10 today.""",
             name=self.BASE_DATA['name'],
             description=self.BASE_DATA['description'],
             thumbnail_url=self.BASE_DATA['thumbnail_url'])
-        self.vidscraper_video = vidscraper.Video(url=self.BASE_URL)
+        self.vidscraper_video = vidscraper.videos.Video(url=self.BASE_URL)
         self.vidscraper_video.__dict__.update({
             'link': self.BASE_URL,
             'title': self.BASE_DATA['name'],
@@ -1574,7 +1601,7 @@ you wish to support Miro yourself, please donate $10 today.""",
         lines (rather than crash).
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_video = vidscraper.Video(self.BASE_URL) # all fields None
+        vidscraper_video = vidscraper.videos.Video(self.BASE_URL) # all fields None
         vidscraper_video._loaded = True
 
         with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
@@ -1606,7 +1633,7 @@ you wish to support Miro yourself, please donate $10 today.""",
         and reset the remote_video_was_deleted flag.
         """
         # For vimeo, at least, this is what remote video deletion looks like:
-        vidscraper_video = vidscraper.Video(self.BASE_URL)
+        vidscraper_video = vidscraper.videos.Video(self.BASE_URL)
         vidscraper_video._loaded = True
 
         with mock.patch('vidscraper.auto_scrape', return_value=vidscraper_video):
