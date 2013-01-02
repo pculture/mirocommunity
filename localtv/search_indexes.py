@@ -179,16 +179,6 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
         """
         model = self.get_model()
-        return model._default_manager.filter(status=model.ACTIVE
-                                  ).with_watch_count()
-
-    def batch_update_queryset(self):
-        """
-        Custom queryset; batch updates don't need the watch count, and it
-        screws things up on mysql.
-
-        """
-        model = self.get_model()
         return model._default_manager.filter(status=model.ACTIVE)
 
     def read_queryset(self):
@@ -225,11 +215,8 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return self._prepare_rel_field(video, 'playlists')
 
     def prepare_watch_count(self, video):
-        try:
-            return video.watch_count
-        except AttributeError:
-            since = datetime.now() - timedelta(7)
-            return video.watch_set.filter(timestamp__gt=since).count()
+        since = datetime.now() - timedelta(7)
+        return video.watch_set.filter(timestamp__gt=since).count()
 
     def prepare_best_date(self, video):
         return video.when_approved or video.when_submitted

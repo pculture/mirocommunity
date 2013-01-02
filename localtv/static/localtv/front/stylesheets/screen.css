@@ -297,8 +297,8 @@ ol > li { list-style-type: decimal; }
 
 .browse-box-section > ul > li { min-width: 33%; float: left; }
 
-.open > a, .open > a:hover { position: relative; z-index: 1339; border-width: 1px; border-style: solid; border-bottom: 0; padding-bottom: 1px; margin-bottom: -1px; margin-right: -1px; padding-top: 3px; margin-top: -4px; -webkit-border-radius: 4px 4px 0 0; -moz-border-radius: 4px 4px 0 0; -ms-border-radius: 4px 4px 0 0; -o-border-radius: 4px 4px 0 0; border-radius: 4px 4px 0 0; }
-.open > .dropdown-list, .open > .dropdown-box { display: block; }
+.open > a, .open > a:hover { position: relative; z-index: 1339; border-width: 1px; border-style: solid; border-bottom: 0; padding-bottom: 1px; margin-bottom: -1px; margin-right: -1px; padding-top: 3px; margin-top: -4px; margin-left: -1px; -webkit-border-radius: 4px 4px 0 0; -moz-border-radius: 4px 4px 0 0; -ms-border-radius: 4px 4px 0 0; -o-border-radius: 4px 4px 0 0; border-radius: 4px 4px 0 0; }
+.open > .dropdown-list, .open > .dropdown-box { display: block; margin-left: -1px; }
 
 @media screen and (max-width: 740px) { .dropdown-list, .dropdown-box { position: static; -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; } }
 .pagetabs { overflow: hidden; *zoom: 1; margin-bottom: 18px; }

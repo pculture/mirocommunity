@@ -7,7 +7,6 @@ env:
   - MIGRATIONS=yes
   - SEARCH=elasticsearch
   - DB=mysql
-  - DB=postgres
 before_install:
   - if [ $SEARCH = 'elasticsearch' ]; then sudo service elasticsearch start; sleep 3; fi
 install:

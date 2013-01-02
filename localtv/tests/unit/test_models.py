@@ -13,6 +13,19 @@ class SiteRelatedManagerTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self.assertIsInstance(SiteSettings.objects, SiteRelatedManager)
 
+    def test_post_save(self):
+        """
+        When an object is saved, it should be cached according to the site's pk,
+        not its own.
+
+        """
+        site = Site.objects.get_current()
+        site_settings = SiteSettings.objects.create(site=site, pk=site.pk + 1)
+        using = site_settings._state.db
+        cache = SiteSettings.objects._cache
+        self.assertTrue((using, site.pk) in cache)
+        self.assertTrue(cache[(using, site.pk)] is site_settings)
+
     def test_get_cached__cached(self):
         """
         If the instance is already cached, we shouldn't need any queries.
@@ -120,7 +133,7 @@ class WidgetSettingsModelTestCase(BaseTestCase):
 
 
 class ThumbnailableTestCase(BaseTestCase):
-    def test_save_thumbnail__deletes(self):
+    def save_thumbnail__deletes(self):
         """
         Saving a new thumbnail should delete all cached thumbnail resizes.
 

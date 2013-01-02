@@ -356,7 +356,7 @@ class SavedSearch(BaseTestCase):
                     search.update()
         self.assertEqual(search.video_set.count(), 22)
 
-    def test_update_ignore_duplicates(self):
+    def test_update_auto_authors(self):
         """
         If a SavedSearch has authors set, imported videos should be given that
         authorship.
@@ -368,8 +368,7 @@ class SavedSearch(BaseTestCase):
             with mock.patch.object(vidscraper, 'auto_search', self._search):
                 with mock.patch.object(video_save_thumbnail, 'delay'):
                     search.update()
-        self.assertEqual(list(search.video_set.all()[0].authors.all()),
-                         [user])
+        self.assertTrue(user in list(search.video_set.all()[0].authors.all()))
 
     def test_attribution_default(self):
         """

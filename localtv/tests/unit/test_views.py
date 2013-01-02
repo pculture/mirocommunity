@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.contrib.sites.models import Site
 from django.http import Http404
 
 from localtv.listing.views import CompatibleListingView
@@ -12,18 +12,17 @@ from localtv.views import VideoView
 class VideoViewTestCase(BaseTestCase):
     def test_get_queryset(self):
         """The queryset should be this site's active videos."""
-        video1 = self.create_video(site_id=settings.SITE_ID)
-        video2 = self.create_video(site_id=settings.SITE_ID)
+        site1 = Site.objects.get_current()
+        site2 = Site.objects.create(name='test', domain='test.com')
+        video1 = self.create_video(site_id=site1.pk)
+        video2 = self.create_video(site_id=site1.pk)
         self.create_video(status=Video.UNAPPROVED)
-        self.create_video(site_id=settings.SITE_ID + 1)
+        self.create_video(site_id=site2.pk)
 
         view = VideoView()
         view.request = self.factory.get('/')
         results = set(view.get_queryset())
         self.assertEqual(results, set((video1, video2)))
-
-        # TODO: Test for admins as well - this would replace
-        # test_view_video_admins_see_rejected
 
     def test_context__category(self):
         """

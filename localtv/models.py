@@ -400,7 +400,7 @@ class Feed(Source):
     feed_url = models.URLField(verify_exists=False)
     name = models.CharField(max_length=250)
     webpage = models.URLField(verify_exists=False, blank=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     last_updated = models.DateTimeField()
     when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
@@ -450,8 +450,17 @@ class Feed(Source):
             return
 
         self.etag = getattr(video_iter, 'etag', None) or ''
-        self.last_updated = (getattr(video_iter, 'last_modified', None) or
-                                 datetime.datetime.now())
+        self.last_updated = datetime.datetime.now()
+        if self.status == self.INACTIVE:
+            # If these fields have already been changed, don't
+            # override those changes. Don't unset the name field
+            # if no further data is available.
+            if self.name == self.feed_url:
+                self.name = video_iter.title or self.name
+            if not self.webpage:
+                self.webpage = video_iter.webpage or ''
+            if not self.description:
+                self.description = video_iter.description or ''
         self.save()
 
         super(Feed, self).update(video_iter, source_import=feed_import,
@@ -1318,7 +1327,7 @@ class Video(Thumbnailable, VideoBase):
         def save_m2m():
             if authors:
                 instance.authors = authors
-            elif video.user:
+            if video.user:
                 name = video.user
                 if ' ' in name:
                     first, last = name.split(' ', 1)
@@ -1333,7 +1342,7 @@ class Video(Thumbnailable, VideoBase):
                     author.save()
                     utils.get_profile_model()._default_manager.db_manager(using
                         ).create(user=author, website=video.user_url or '')
-                instance.authors = [author]
+                instance.authors.add(author)
             if categories:
                 instance.categories = categories
             if video.tags:

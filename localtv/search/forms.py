@@ -71,7 +71,10 @@ class DateTimeFilterField(FilterMixin, forms.BooleanField):
             # Backwards-compat until 2.0: Also exclude max datetimes
             # with this filter.
             values = [DATETIME_NULL_PLACEHOLDER,
-                      datetime.datetime.max]
+                      datetime.datetime.max,
+                      # MySQL doesn't support microsecond resolution,
+                      # so we need to hit that separately.
+                      datetime.datetime.max.replace(microsecond=0)]
         else:
             values = [None]
         return queryset.exclude(self._make_qs(queryset, values))
@@ -149,7 +152,7 @@ class SearchForm(HaystackForm):
 
     tag = TagFilterField()
     category = ModelFilterField(
-                            Category.objects.filter(site=settings.SITE_ID),
+                            Category.objects.all(),
                             to_field_name='slug',
                             field_lookups=('categories',))
     author = ModelFilterField(
@@ -157,15 +160,21 @@ class SearchForm(HaystackForm):
                             field_lookups=('authors', 'user'),
                             label=_('Authors'))
     playlist = ModelFilterField(
-                            Playlist.objects.filter(site=settings.SITE_ID),
+                            Playlist.objects.all(),
                             field_lookups=('playlists',))
-    feed = ModelFilterField(Feed.objects.filter(
-                            site=settings.SITE_ID),
+    feed = ModelFilterField(Feed.objects.all(),
                             field_lookups=('feed',))
     featured = DateTimeFilterField(
                             required=False,
                             field_lookups=('last_featured',),
                             label=_('Featured videos'))
+
+    def __init__(self, *args, **kwargs):
+        super(SearchForm, self).__init__(*args, **kwargs)
+        # Avoid triggering app loading here; sometimes causes a circular import.
+        self.fields['category'].queryset = Category.objects.filter(site=settings.SITE_ID)
+        self.fields['playlist'].queryset = Playlist.objects.filter(site=settings.SITE_ID)
+        self.fields['feed'].queryset = Feed.objects.filter(site=settings.SITE_ID)
 
     def get_queryset(self, use_haystack=USE_HAYSTACK):
         """Return the base queryset for this form."""

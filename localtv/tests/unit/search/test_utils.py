@@ -193,14 +193,15 @@ class ModelFilterFieldUnitTestCase(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         self._clear_index()
-        Site.objects.create(name='example.com', domain='example.com')
-        self.user_field = forms.SearchForm.base_fields['author']
-        self.category_field = forms.SearchForm.base_fields['category']
+        site2 = Site.objects.create(name='example.com', domain='example.com')
+        form = forms.SearchForm()
+        self.user_field = form.fields['author']
+        self.category_field = form.fields['category']
         self.user1 = self.create_user(username='user1')
         self.user2 = self.create_user(username='user2')
         self.category1 = self.create_category(name='category1')
         self.category2 = self.create_category(name='category2')
-        self.category3 = self.create_category(name='category3', site_id=2)
+        self.category3 = self.create_category(name='category3', site_id=site2.pk)
         self.video1 = self.create_video(name='user1,category1', user=self.user1,
                                         categories=[self.category1])
         self.video2 = self.create_video(name='user1,category2',
@@ -309,7 +310,6 @@ class TagFilterFieldUnitTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self._clear_index()
         self.field = forms.SearchForm.base_fields['tag']
-        self.site2 = Site.objects.create(name='example.com', domain='example.com')
         self.tag1 = self.create_tag(name='tag1')
         self.tag2 = self.create_tag(name='tag2')
         self.tag3 = self.create_tag(name='tag3')
@@ -321,7 +321,8 @@ class TagFilterFieldUnitTestCase(BaseTestCase):
         self.video4 = self.create_video(name='tag3', tags='tag3')
         self.video5 = self.create_video(name='tag4', tags='tag4',
                                         status=Video.UNAPPROVED)
-        self.video6 = self.create_video(name='tag4_2', tags='tag4', site_id=2)
+        site2 = Site.objects.create(name='example.com', domain='example.com')
+        self.video6 = self.create_video(name='tag4_2', tags='tag4', site_id=site2.pk)
 
     def test_clean(self):
         """
