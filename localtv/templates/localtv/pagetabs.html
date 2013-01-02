@@ -1,0 +1,33 @@
+{% comment %}
+Copyright 2012 - Participatory Culture Foundation
+
+This file is part of Miro Community.
+
+Miro Community is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Miro Community is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+<ul class="pagetabs">
+  {% for pagesection in pagesections %}
+    {% for page in pagesection %}
+      <li {% if page.number == selected_page.number %}
+            class="selected"
+          {% endif %}>
+        <a href="{{ pagetabs_url }}?{% if pagetabs_args %}{{ pagetabs_args }}&amp;{% endif %}page={{ page.number }}">
+          <span>{{ page.number }}</span></a>
+      </li>
+    {% endfor %}
+    {% if not forloop.last %}
+      <li class="ellipse"><span>...</span></li>
+    {% endif %}
+  {% endfor %}
+</ul>
