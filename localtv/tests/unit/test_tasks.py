@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 
 from celery.signals import task_postrun
+from django.db import connections
+from django.test.utils import override_settings
 from haystack.query import SearchQuerySet
 import mock
 
@@ -131,7 +133,6 @@ class HaystackRemoveUnitTestCase(BaseTestCase):
 
 
 class HaystackBatchUpdateUnitTestCase(BaseTestCase):
-
     def test_batch(self):
         """Tests whether batching works."""
         self._clear_index()
@@ -155,7 +156,6 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
         expected = set((video1.pk, video2.pk, video3.pk))
         results = set((int(r.pk) for r in SearchQuerySet()))
         self.assertEqual(results, expected)
-
 
     def test_date_filtering(self):
         """
@@ -199,11 +199,17 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
 
         self._clear_index()
 
-        haystack_batch_update.apply(args=(Video._meta.app_label,
-                                          Video._meta.module_name),
-                                    kwargs={'start': eight_days_ago,
-                                            'end': six_days_ago,
-                                            'date_lookup': 'watch__timestamp'})
+
+        with override_settings(DEBUG=True):
+            haystack_batch_update.apply(args=(Video._meta.app_label,
+                                              Video._meta.module_name),
+                                        kwargs={'start': eight_days_ago,
+                                                'end': six_days_ago,
+                                                'date_lookup': 'watch__timestamp'})
+            queries = connections['default'].queries
+            # The query here shouldn't use the index queryset as its base.
+            # If it did, it'll have an OUTER JOIN in it.
+            self.assertFalse('OUTER JOIN' in queries[0]['sql'])
         expected = set((video3.pk,))
         results = set((int(r.pk) for r in SearchQuerySet()))
         self.assertEqual(results, expected)
@@ -231,6 +237,23 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
                                           Video._meta.module_name),
                                     kwargs={'remove': expected})
         self.assertEqual(self.remove, expected)
+
+    def test_distinct_pks(self):
+        self._clear_index()
+        video1 = self.create_video(name='Video1', update_index=False)
+        self.create_watch(video1, days=5)
+        self.create_watch(video1, days=3)
+        self.create_watch(video1, days=2)
+        six_days_ago = datetime.now() - timedelta(6)
+
+        with mock.patch.object(haystack_update, 'delay') as delay:
+            haystack_batch_update.apply(args=(Video._meta.app_label,
+                                              Video._meta.module_name),
+                                        kwargs={'start': six_days_ago,
+                                                'date_lookup': 'watch__timestamp'})
+            delay.assert_called_once_with(Video._meta.app_label,
+                                          Video._meta.module_name,
+                                          [1], using='default', remove=True)
 
 
 class VideoSaveThumbnailTestCase(BaseTestCase):

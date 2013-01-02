@@ -3,20 +3,25 @@ python:
   - "2.6"
   - "2.7"
 env:
-  - MC_TEST_USE_SOUTH= MC_TEST_USE_ES= MC_TEST_MYSQL=
-  - MC_TEST_USE_SOUTH=yes
-  - MC_TEST_USE_ES=yes
-  - MC_TEST_MYSQL=yes
+  -
+  - MIGRATIONS=yes
+  - SEARCH=elasticsearch
+  - DB=mysql
+  - DB=postgres
 before_install:
-  - test x$MC_TEST_USE_ES == xyes && sudo service elasticsearch start && sleep 3 || true
+  - if [ $SEARCH = 'elasticsearch' ]; then sudo service elasticsearch start; sleep 3; fi
 install:
-  - pip install -q -e . --use-mirrors
-  - pip install -q --use-mirrors -r example_mc_project/requirements.txt
-  - test x$MC_TEST_USE_SOUTH == xyes && pip install -q --use-mirrors south || true
-  - test x$MC_TEST_USE_ES == xyes && pip install -q 'git+git://github.com/toastdriven/pyelasticsearch.git' || true
-  - test x$MC_TEST_MYSQL == xyes && pip install -q --use-mirrors mysql-python || true
+  - pip install . --no-deps
+  - pip install --use-mirrors --no-deps -r test_mc_project/requirements.txt
+  - if [ $TRAVIS_PYTHON_VERSION == '2.6' ]; then pip install --use-mirrors --no-deps importlib ordereddict; fi
+  - if [ $MIGRATIONS = 'yes' ]; then pip install --use-mirrors --no-deps south; fi
+  - if [ $SEARCH = 'elasticsearch' ]; then pip install --use-mirrors --no-deps pyelasticsearch; fi
+  - if [ $DB = 'mysql' ]; then pip install --use-mirrors --no-deps mysql-python; fi
+  - if [ $DB = 'postgres' ]; then pip install --use-mirrors --no-deps psycopg2; fi
 before_script:
-  - mysql -e 'CREATE DATABASE miro_community_example CHARACTER SET utf8 COLLATE utf8_bin;'
+  - if [ $DB = 'postgres' ]; then psql -c 'CREATE DATABASE mirocommunity_test;' -U postgres; fi
+  - if [ $DB = 'mysql' ]; then mysql -e 'CREATE DATABASE mirocommunity_test;'; fi
 script:
-  - django-admin.py test localtv --settings=example_mc_project.settings --verbosity=2
-  - django-admin.py test contests --settings=example_mc_project.settings --verbosity=2
+  - cd test_mc_project
+  - ./manage.py test localtv --verbosity=2
+  - ./manage.py test localtv.contrib.contests --verbosity=2

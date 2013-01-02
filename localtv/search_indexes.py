@@ -182,6 +182,15 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return model._default_manager.filter(status=model.ACTIVE
                                   ).with_watch_count()
 
+    def batch_update_queryset(self):
+        """
+        Custom queryset; batch updates don't need the watch count, and it
+        screws things up on mysql.
+
+        """
+        model = self.get_model()
+        return model._default_manager.filter(status=model.ACTIVE)
+
     def read_queryset(self):
         """
         Returns active videos and selects related feeds, users, and searches.

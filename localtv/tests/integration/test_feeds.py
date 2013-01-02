@@ -73,6 +73,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
                                            site=Site.objects.get_current())
         playlist.add_video(self.test_video)
         playlist.add_video(self.yesterday_video)
+        self._rebuild_index()
 
         client = Client()
         response = client.get('/feeds/json/playlist/1')

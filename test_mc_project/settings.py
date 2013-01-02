@@ -1,36 +1,57 @@
-# Example settings for a Miro Community project
+# Settings for testing Miro Community on travis-ci.org
 
 import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-USE_SOUTH = bool(os.environ.get('MC_TEST_USE_SOUTH', False))
-USE_ES = bool(os.environ.get('MC_TEST_USE_ES', False))
-
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
+ADMINS = ()
 
 MANAGERS = ADMINS
 
-import os
-if not os.environ.get('MC_TEST_MYSQL', False):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'example_mc_project.sl3',
-            'TEST_CHARSET': 'utf8'
-            }
-        }
-else:
+DB = os.environ.get('DB')
+if DB == 'mysql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'miro_community_example',
+            'NAME': 'mirocommunity_test',
             'USER': 'root',
-            'HOST': '',
-            'TEST_CHARSET': 'utf8'
+            'TEST_CHARSET': 'utf8',
+            'TEST_COLLATION': 'utf8_general_ci',
+        }
+    }
+elif DB == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'mirocommunity_test',
+            'USER': 'postgres',
+            'TEST_CHARSET': 'utf8',
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(os.path.dirname(__file__), 'test_mc_project.sl3'),
+        }
+    }
+
+# haystack search
+SEARCH = os.environ.get('SEARCH')
+if SEARCH == 'elasticsearch':
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+            'URL': 'http://localhost:9200/',
+            'INDEX_NAME': 'mirocommunity'
+            }
+        }
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+            'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
             }
         }
 
@@ -103,7 +124,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'example_mc_project_secret_key'
+SECRET_KEY = 'test_mc_project_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -124,10 +145,9 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware'
     'localtv.middleware.FixAJAXMiddleware',
     'localtv.middleware.UserIsAdminMiddleware',
-    'openid_consumer.middleware.OpenIDMiddleware',
 )
 
-ROOT_URLCONF = 'example_mc_project.urls'
+ROOT_URLCONF = 'test_mc_project.urls'
 
 UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
@@ -149,8 +169,6 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
     'django.contrib.markup',
-    # Uncomment to use south migrations
-    # 'south',
     'djpagetabs',
     'localtv.contrib.contests',
     'localtv',
@@ -175,7 +193,7 @@ INSTALLED_APPS = (
     'django_nose',
 )
 
-if USE_SOUTH:
+if os.environ.get('MIGRATIONS'):
     if 'south' not in INSTALLED_APPS:
         INSTALLED_APPS = INSTALLED_APPS + ('south',)
     SOUTH_TESTS_MIGRATE = True
@@ -244,23 +262,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 
 # django-tagging
 FORCE_LOWERCASE_TAGS = True
-
-# haystack search
-if USE_ES:
-    HAYSTACK_CONNECTIONS = {
-        'default': {
-            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-            'URL': 'http://localhost:9200/',
-            'INDEX_NAME': 'mirocommunity'
-            }
-        }
-else:
-    HAYSTACK_CONNECTIONS = {
-        'default': {
-            'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-            'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-            }
-        }
 
 # Facebook options
 FACEBOOK_APP_ID = None

@@ -403,7 +403,7 @@ def haystack_remove(app_label, model_name, pks, using='default'):
 
 @task(ignore_result=True)
 def haystack_batch_update(app_label, model_name, pks=None, start=None,
-                          end=None, date_lookup=None, batch_size=1000,
+                          end=None, date_lookup=None, batch_size=100,
                           remove=True, using='default'):
     """
     Batches haystack index updates for the given model. If no pks are given, a
@@ -413,7 +413,7 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
     model_class = get_model(app_label, model_name)
     index = connections[using].get_unified_index().get_index(model_class)
 
-    pk_qs = index.index_queryset().using(using)
+    pk_qs = index.batch_update_queryset().using(using)
     if pks is not None:
         pk_qs = pk_qs.filter(pk__in=pks)
 
@@ -425,7 +425,7 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
         if end is not None:
             pk_qs = pk_qs.filter(**{"%s__lte" % date_lookup: end})
 
-    pks = list(pk_qs.values_list('pk', flat=True))
+    pks = list(pk_qs.distinct().values_list('pk', flat=True))
     total = len(pks)
 
     for start in xrange(0, total, batch_size):
