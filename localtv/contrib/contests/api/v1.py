@@ -85,7 +85,6 @@ class ContestVoteResource(ModelResource):
 
         # Extract relevant data.
         contest = contestvideo.contest
-        video = contestvideo.video
         vote_value = int(bundle.data['vote']) if bundle else None
 
         # Verify authenticated user.

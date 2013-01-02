@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from django.core.files import File
 
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 from localtv.models import Feed, SavedSearch, Video
 

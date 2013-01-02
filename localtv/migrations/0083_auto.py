@@ -8,12 +8,14 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.rename_table('localtv_sitelocation', 'localtv_sitesettings')
-        db.rename_table('localtv_sitelocation_admins', 'localtv_sitesettings_admins')
+        # Adding index on 'Watch', fields ['timestamp']
+        db.create_index('localtv_watch', ['timestamp'])
+
 
     def backwards(self, orm):
-        db.rename_table('localtv_sitesettings', 'localtv_sitelocation')
-        db.rename_table('localtv_sitesettings_admins', 'localtv_sitelocation_admins')
+        # Removing index on 'Watch', fields ['timestamp']
+        db.delete_index('localtv_watch', ['timestamp'])
+
 
     models = {
         'auth.group': {
@@ -114,23 +116,6 @@ class Migration(SchemaMigration):
             'index': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'source_import': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'indexes'", 'to': "orm['localtv.FeedImport']"}),
             'video': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.Video']", 'unique': 'True'})
-        },
-        'localtv.newslettersettings': {
-            'Meta': {'object_name': 'NewsletterSettings'},
-            'facebook_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'intro': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True'}),
-            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video2': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter2'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video3': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter3'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video4': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter4'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video5': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter5'", 'null': 'True', 'to': "orm['localtv.Video']"})
         },
         'localtv.originalvideo': {
             'Meta': {'object_name': 'OriginalVideo'},
@@ -246,7 +231,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Watch'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'ip_address': ('django.db.models.fields.IPAddressField', [], {'max_length': '15'}),
-            'timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'video': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.Video']"})
         },

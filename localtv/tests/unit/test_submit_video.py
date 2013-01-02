@@ -2,7 +2,6 @@ import mock
 import datetime
 import urllib2
 
-from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
@@ -16,25 +15,23 @@ from localtv.submit_video import forms
 from localtv.submit_video.views import (_has_submit_permissions,
                                         SubmitURLView,
                                         SubmitVideoView)
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 from localtv.utils import get_or_create_tags
 
 
-class SubmitPermissionsTestCase(BaseTestCase):
+class Permissions(BaseTestCase):
     """
     Test case for submit permissions.
 
     """
-    fixtures = ['users']
     def setUp(self):
         BaseTestCase.setUp(self)
-        url = reverse('localtv_submit_video')
-        self.site_settings = SiteSettings.objects.get()
-        self.anonymous_request = self.factory.get(url)
-        self.user_request = self.factory.get(
-            url, user=User.objects.get(username='user'))
-        self.admin_request = self.factory.get(
-            url, user=User.objects.get(username='admin'))
+        self.site_settings = SiteSettings.objects.get_current()
+        user = self.create_user('user')
+        admin = self.create_user('admin', is_superuser=True)
+        self.anonymous_request = self.factory.get('/')
+        self.user_request = self.factory.get('/', user=user)
+        self.admin_request = self.factory.get('/', user=admin)
 
     def test_all_permitted(self):
         """
@@ -433,16 +430,11 @@ class ThumbnailSubmitVideoFormTestCase(BaseTestCase):
 
         """
         request = self.factory.get('/')
-        form = self.form_class(
-            request, 'http://google.com',
-            data={
-                'url': 'http://google.com',
-                'name': 'Test Name',
-                'embed_code': 'Test Embed',
-                'thumbnail_url': 'http://google.com'},
-            files={'thumbnail_file': File(file(self._data_file('logo.png')))})
-
-        self.assertTrue(form.is_valid(), form.errors)
+        form = self.form_class(request, 'http://google.com')
+        form.cleaned_data = {
+            'thumbnail_file': File(self._data_file('logo.png')),
+            'thumbnail_url': 'http://google.com'
+        }
         video = form.save()
         self.assertTrue(video.thumbnail)
         self.assertEqual(video.thumbnail_url, '')

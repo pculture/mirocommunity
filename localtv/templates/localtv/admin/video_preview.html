@@ -1,4 +1,4 @@
-{% load video i18n filters editable_widget %}
+{% load generate_embed i18n filters editable_widget %}
 
 
 <h2 class="preview_heading">Click Videos to Preview Here</h2>
@@ -34,7 +34,7 @@
   {% if current_video.embed_code %}
   {{ current_video.embed_code|wmode_transparent }}
   {% else %}
-  {% video current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
+  {% generate_embed current_video.file_url mime_type=current_video.file_url_mimetype autoplay=0 %}
   {% endif %}
 </div>
 <div id="thumbnail">

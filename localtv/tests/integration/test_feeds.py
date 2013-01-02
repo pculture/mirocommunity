@@ -10,12 +10,10 @@ import feedparser
 from localtv.models import Video, Feed, SiteSettings
 from localtv.admin import feeds
 from localtv.playlists.models import Playlist
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class FeedViewIntegrationTestCase(BaseTestCase):
-    urls = 'localtv.urls'
-
     def setUp(self):
         BaseTestCase.setUp(self)
         SiteSettings.objects.create(site_id=1)
@@ -107,8 +105,6 @@ class FeedViewIntegrationTestCase(BaseTestCase):
 
 
 class AdminFeedViewIntegrationTestCase(BaseTestCase):
-    urls = 'localtv.urls'
-
     def setUp(self):
         BaseTestCase.setUp(self)
         SiteSettings.objects.create(site_id=1)

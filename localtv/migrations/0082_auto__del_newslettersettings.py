@@ -8,12 +8,30 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.rename_table('localtv_sitelocation', 'localtv_sitesettings')
-        db.rename_table('localtv_sitelocation_admins', 'localtv_sitesettings_admins')
+        # Deleting model 'NewsletterSettings'
+        db.delete_table('localtv_newslettersettings')
+
 
     def backwards(self, orm):
-        db.rename_table('localtv_sitesettings', 'localtv_sitelocation')
-        db.rename_table('localtv_sitesettings_admins', 'localtv_sitelocation_admins')
+        # Adding model 'NewsletterSettings'
+        db.create_table('localtv_newslettersettings', (
+            ('status', self.gf('django.db.models.fields.IntegerField')(default=0)),
+            ('video4', self.gf('django.db.models.fields.related.ForeignKey')(related_name='newsletter4', null=True, to=orm['localtv.Video'])),
+            ('repeat', self.gf('django.db.models.fields.IntegerField')(default=0)),
+            ('video1', self.gf('django.db.models.fields.related.ForeignKey')(related_name='newsletter1', null=True, to=orm['localtv.Video'])),
+            ('video3', self.gf('django.db.models.fields.related.ForeignKey')(related_name='newsletter3', null=True, to=orm['localtv.Video'])),
+            ('video2', self.gf('django.db.models.fields.related.ForeignKey')(related_name='newsletter2', null=True, to=orm['localtv.Video'])),
+            ('twitter_url', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
+            ('facebook_url', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
+            ('intro', self.gf('django.db.models.fields.CharField')(max_length=200, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('last_sent', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('site_settings', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['localtv.SiteSettings'], unique=True)),
+            ('show_icon', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('video5', self.gf('django.db.models.fields.related.ForeignKey')(related_name='newsletter5', null=True, to=orm['localtv.Video'])),
+        ))
+        db.send_create_signal('localtv', ['NewsletterSettings'])
+
 
     models = {
         'auth.group': {
@@ -114,23 +132,6 @@ class Migration(SchemaMigration):
             'index': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'source_import': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'indexes'", 'to': "orm['localtv.FeedImport']"}),
             'video': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.Video']", 'unique': 'True'})
-        },
-        'localtv.newslettersettings': {
-            'Meta': {'object_name': 'NewsletterSettings'},
-            'facebook_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'intro': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'repeat': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'show_icon': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'site_settings': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['localtv.SiteSettings']", 'unique': 'True'}),
-            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'twitter_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'video1': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter1'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video2': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter2'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video3': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter3'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video4': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter4'", 'null': 'True', 'to': "orm['localtv.Video']"}),
-            'video5': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'newsletter5'", 'null': 'True', 'to': "orm['localtv.Video']"})
         },
         'localtv.originalvideo': {
             'Meta': {'object_name': 'OriginalVideo'},

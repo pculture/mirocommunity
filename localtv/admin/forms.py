@@ -729,67 +729,6 @@ class DayTimeField(forms.MultiValueField):
                                                           # hour to send
         return None
 
-class NewsletterSettingsForm(forms.ModelForm):
-    intro = forms.CharField(max_length=200,
-                            widget=forms.Textarea)
-    video1 = VideoAsUrlField('Video 1', required=False,
-                             help_text='A URL of a video on your site.')
-    video2 = VideoAsUrlField('Video 2', required=False,
-                             help_text='A URL of a video on your site.')
-    video3 = VideoAsUrlField('Video 3', required=False,
-                             help_text='A URL of a video on your site.')
-    video4 = VideoAsUrlField('Video 4', required=False,
-                             help_text='A URL of a video on your site.')
-    video5 = VideoAsUrlField('Video 5', required=False,
-                             help_text='A URL of a video on your site.')
-
-    repeat = forms.ChoiceField(choices=((0, 'No'),
-                                        (24 * 7, 'Yes, weekly'),
-                                        (24 * 7 * 2, 'Yes, bi-weekly')),
-                               label='Send Newsletter Automatically?',
-                               help_text=('Select how often you would like '
-                                          'the newsletter to send.'))
-    last_sent = DayTimeField(label='Choose a date/time to send your newsletter')
-    
-    class Meta:
-        model = models.NewsletterSettings
-        exclude = ['site_settings']
-
-    def clean(self):
-        if self.cleaned_data['repeat']:
-            if not self.instance.last_sent:
-                last_sent = datetime.datetime.now()
-            else:
-                last_sent = self.instance.last_sent
-            week_start = last_sent - datetime.timedelta(
-                days=last_sent.weekday(),
-                hours=last_sent.hour,
-                minutes=last_sent.minute,
-                seconds=last_sent.second)
-            # week_start is the start of the week that the email was last sent
-            delta = datetime.timedelta(
-                days=self.cleaned_data['last_sent'].weekday(),
-                hours=self.cleaned_data['last_sent'].hour)
-            last_sent = week_start + delta
-            now = datetime.datetime.now()
-            repeat = datetime.timedelta(hours=int(self.cleaned_data['repeat']))
-            if last_sent > now:
-                # we've picked a time in the future, so go back
-                last_sent -= datetime.timedelta(days=7)
-            if last_sent + repeat < now:
-                # repeat would be in the past, so move forward
-                last_sent += repeat
-            self.cleaned_data['last_sent'] = last_sent
-        return super(forms.ModelForm, self).clean()
-
-    def save(self, commit=True):
-        instance = super(forms.ModelForm, self).save(commit=False)
-        if not instance.repeat:
-            instance.last_sent = None
-        if commit:
-            instance.save()
-            self.save_m2m()
-        return instance
 
 class CategoryForm(forms.ModelForm):
     parent = forms.models.ModelChoiceField(required=False,

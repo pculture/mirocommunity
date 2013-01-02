@@ -228,10 +228,10 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             try:
                 image = Image.objects.for_storage_path(
                             item.thumbnail_path)
-            except Image.DoesNotExist:
+                adjusted = AdjustedImage.objects.adjust(image, 375, 295)
+            except (Image.DoesNotExist, AdjustedImage.DoesNotExist):
                 kwargs['thumbnail_url'] = ''
             else:
-                adjusted = AdjustedImage.objects.adjust(image, 375, 295)
                 thumbnail_url = adjusted.adjusted.url
                 if not (thumbnail_url.startswith('http://') or
                         thumbnail_url.startswith('https://')):

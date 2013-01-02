@@ -4,7 +4,7 @@ from haystack.query import SearchQuerySet
 
 from localtv.models import Video
 from localtv.search.forms import DateTimeFilterField, SearchForm
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 
 class DateTimeFilterFieldTestCase(BaseTestCase):

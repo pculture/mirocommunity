@@ -1,6 +1,6 @@
 {% extends "localtv/__layouts/75_25.html" %}
 
-{% load i18n %}
+{% load i18n daguerre %}
 {% load url from future %}
 
 {% block title %}{{ block.super }} - {{ category.name }}{% endblock %}
@@ -26,7 +26,7 @@
 
 {% block side %}
 	<div class="padded">
-		{% if category.logo %}<img src="{{ category.logo.url }}">{% endif %}
+		{% if category.logo %}<img class="scaled" src="{% adjust category.logo width=700 adjustment="fit" %}">{% endif %}
 		{{ category.description|safe }}
 	</div>{# /.padded #}
 	{% with child_set=category.child_set.all %}

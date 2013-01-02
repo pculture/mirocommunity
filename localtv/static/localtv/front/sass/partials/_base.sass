@@ -29,3 +29,29 @@ h5
 h6
 	+normal
 	color: #CCC
+
+strong, b
+	font-weight: bold
+
+em, i, cite
+	font-style: italic
+
+cite
+	border-bottom: 1px dotted
+
+dt
+	font-weight: bold
+
+dd
+	margin-left: 1.5em
+	&::before
+		content: "—"
+		float: left
+		width: 1.5em
+		margin-left: -1.75em
+		text-align: right
+
+blockquote
+	padding-left: .75em
+	margin-left: .5em
+	border-left: .25em solid

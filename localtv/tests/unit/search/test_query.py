@@ -1,5 +1,5 @@
 from localtv.search.query import SmartSearchQuerySet
-from localtv.tests.base import BaseTestCase
+from localtv.tests import BaseTestCase
 
 from haystack import connections
 

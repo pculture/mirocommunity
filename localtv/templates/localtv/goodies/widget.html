@@ -9,8 +9,8 @@
 {% block title %}{{ block.super }} - {% trans "Admin - Create a Widget" %}{% endblock %}
 {% block head %}
 {% if site_settings.site.widgetsettings.css and not site_settings.site.widgetsettings.css_editable %}
-<link rel="stylesheet" href="{{ site_settings.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="{% get_static_url 'localtv/css/widget.css' bundled %}">{% endif %}
-<script src="{% get_static_url 'localtv/js/widget.js' bundled %}"></script>
+<link rel="stylesheet" href="{{ site_settings.site.widgetsettings.css.url }}">{% else %}<link rel="stylesheet" href="{% get_static_url 'localtv/css/widget.css' %}">{% endif %}
+<script src="{% get_static_url 'localtv/js/widget.js' %}"></script>
 <script type="text/javascript">
 var embed_base = "{% filter escapejs %}{% include "localtv/goodies/widget_embed.html" %}{% endfilter %}";
 function full_url(path) {
