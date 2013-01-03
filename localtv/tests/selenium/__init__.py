@@ -54,9 +54,11 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         We are going to look for a USE_SAUCE = True if we are using sauce,
         and a default browser TEST_BROWSER if not using sauce.
         """
+        LiveServerTestCase.setUp(self)
+        BaseTestCase.setUp(self)
 
         self.use_sauce = os.environ.get('USE_SAUCE', False)
-        self.base_url = os.environ.get('TEST_URL', 'http://127.0.0.1:8081/')
+        self.base_url = os.environ.get('TEST_URL', self.live_server_url + '/')
         self._clear_index()
         #If we are using sauce - check if we are running on jenkins.
         if self.use_sauce:
@@ -80,8 +82,6 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
             self.browser = getattr(webdriver, test_browser)()
             self.browser.implicitly_wait(1)
 
-        LiveServerTestCase.setUp(self)
-        BaseTestCase.setUp(self)
         self.admin_user = 'seleniumTestAdmin' 
         self.admin_pass = 'password'
         self.normal_user = 'seleniumTestUser'
