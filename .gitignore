@@ -1,3 +1,4 @@
 *.pyc
-Miro_Community.egg-info/*
-docs/_build/*
+/mirocommunity.egg-info/*
+/docs/_build/*
+/.tox/
