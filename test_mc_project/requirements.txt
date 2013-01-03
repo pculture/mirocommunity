@@ -25,7 +25,7 @@ django-notification==0.2
 whoosh==2.4.1
 httplib2==0.7.2
 requests==0.14.2
-vidscraper==0.5.2
+vidscraper==0.5.3
 django-tastypie==0.9.11
 django_compressor==1.1.2
 django-appconf==0.5
