@@ -18,6 +18,9 @@
 import time
 import os
 import sys
+import httplib
+import base64
+import simplejson as json
 from django.core import management
 from django.test import LiveServerTestCase
 from localtv.tests import BaseTestCase
@@ -63,7 +66,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self._clear_index()
         #If we are using sauce - check if we are running on jenkins.
         if self.use_sauce:
-            sauce_key = os.environ.get('SAUCE_API_KEY')
+            self.sauce_key = os.environ.get('SAUCE_API_KEY')
             test_browser = os.environ.get('SELENIUM_BROWSER', 'CHROME')
             dc = getattr(webdriver.DesiredCapabilities, test_browser.upper())
             dc['version'] = os.environ.get('SELENIUM_VERSION', '')
@@ -74,7 +77,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
             self.browser = webdriver.Remote(
                 desired_capabilities = dc,
                 command_executor=("http://jed-pcf:%s@ondemand.saucelabs.com:80"
-                                  "/wd/hub" % sauce_key)
+                                  "/wd/hub" % self.sauce_key)
                                   )
             sys.stdout.write("SauceOnDemandSessionID={0} job-name={1}".format(
             self.browser.session_id, self.id()))
@@ -95,16 +98,32 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.create_user(username=self.normal_user, password=self.normal_pass)
         self.browser.get(self.base_url)
 
+
+    def set_sauce_status(self, jobid, status):
+        base64string = base64.encodestring('%s:%s' % ('jed-pcf', self.sauce_key))[:-1]
+        body_content = json.dumps({"passed": status})
+        connection = httplib.HTTPConnection("saucelabs.com")
+        connection.request('PUT', '/rest/v1/%s/jobs/%s' % ('jed-pcf', self.browser.session_id),
+                           body_content,
+                           headers={"Authorization": "Basic %s" % base64string})
+        result = connection.getresponse()
+
+
     def tearDown(self):
-        time.sleep(2)
-        try:
-            screenshot_name = "%s.png" % self.id()
-            filename = os.path.join(self.results_dir, screenshot_name)
-            self.browser.get_screenshot_as_file(filename)
-        except: #Sometimes screenshot fails - test should not fail on this.
-            pass 
-        finally:
+        if self.use_sauce:  #Send the results back to sauce labs for reporting.
+            status = False
+            if sys.exc_info() == (None, None, None):
+                status = True
+            self.set_sauce_status(self.browser.session_id, status)
+        else:  #When we aren't using sauce - we want to grab the screenshot.
             try:
-                self.browser.quit()
-            except: #May already be quit - so don't fail.
-                pass
+                time.sleep(2)
+                screenshot_name = "%s.png" % self.id()
+                filename = os.path.join(self.results_dir, screenshot_name)
+                self.browser.get_screenshot_as_file(filename)
+            except: #Sometimes screenshot fails - test should not fail on this.
+                pass 
+        try:
+            self.browser.quit()
+        except: #May already be quit - so don't fail.
+            pass
