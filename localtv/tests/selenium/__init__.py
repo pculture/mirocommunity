@@ -100,23 +100,8 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.browser.get(self.base_url)
 
 
-    def set_sauce_status(self, jobid, status):
-        base64string = base64.encodestring('%s:%s' % ('jed-pcf', self.sauce_key))[:-1]
-        body_content = json.dumps({"passed": status})
-        connection = httplib.HTTPConnection("saucelabs.com")
-        connection.request('PUT', '/rest/v1/%s/jobs/%s' % ('jed-pcf', self.browser.session_id),
-                           body_content,
-                           headers={"Authorization": "Basic %s" % base64string})
-        result = connection.getresponse()
-
-
     def tearDown(self):
-        if self.use_sauce:  #Send the results back to sauce labs for reporting.
-            status = False
-            if sys.exc_info() == (None, None, None):
-                status = True
-            self.set_sauce_status(self.browser.session_id, status)
-        else:  #When we aren't using sauce - we want to grab the screenshot.
+        if not self.use_sauce:  #Sauce gets it's own screenshots.
             try:
                 time.sleep(2)
                 screenshot_name = "%s.png" % self.id()
