@@ -1793,10 +1793,11 @@ models.signals.post_syncdb.connect(create_email_notices)
 
 def delete_comments(sender, instance, **kwargs):
     from django.contrib.comments import get_model
-    get_model().objects.filter(object_pk=instance.pk,
-                               content_type__app_label='localtv',
-                               content_type__model='video'
-                               ).delete()
+    get_model().objects.using(instance._state.db).filter(
+        object_pk=instance.pk,
+        content_type__app_label='localtv',
+        content_type__model='video'
+        ).delete()
 models.signals.pre_delete.connect(delete_comments,
                                   sender=Video)
 
