@@ -21,7 +21,8 @@ from tagging.models import Tag
 import vidscraper
 
 import localtv
-from localtv import models
+from localtv.models import (Video, SiteSettings, Watch, Category, Feed,
+                            SavedSearch)
 from localtv.middleware import UserIsAdminMiddleware
 from localtv.playlists.models import Playlist
 
@@ -58,8 +59,7 @@ class BaseTestCase(TestCase):
     def _update_index():
         """Updates the search index."""
         backend = connections['default'].get_backend()
-        index = connections['default'].get_unified_index().get_index(
-            models.Video)
+        index = connections['default'].get_unified_index().get_index(Video)
         qs = index.index_queryset()
         if qs:
             backend.update(index, qs)
@@ -73,16 +73,14 @@ class BaseTestCase(TestCase):
     @staticmethod
     def _disable_index_updates():
         """Disconnects the index update listeners."""
-        index = connections['default'].get_unified_index().get_index(
-                                                                 models.Video)
+        index = connections['default'].get_unified_index().get_index(Video)
         index._teardown_save()
         index._teardown_delete()
 
     @staticmethod
     def _enable_index_updates():
         """Connects the index update listeners."""
-        index = connections['default'].get_unified_index().get_index(
-                                                                 models.Video)
+        index = connections['default'].get_unified_index().get_index(Video)
         index._setup_save()
         index._setup_delete()
 
@@ -106,10 +104,10 @@ class BaseTestCase(TestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
         self.factory = FakeRequestFactory()
-        models.SiteSettings.objects.clear_cache()
+        SiteSettings.objects.clear_cache()
 
     @classmethod
-    def create_video(cls, name='Test.', status=models.Video.ACTIVE, site_id=1,
+    def create_video(cls, name='Test.', status=Video.ACTIVE, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
                      update_index=True, **kwargs):
         """
@@ -129,8 +127,7 @@ class BaseTestCase(TestCase):
         ``categories`` and ``authors``, respectively.
 
         """
-        video = models.Video(name=name, status=status, site_id=site_id,
-                             **kwargs)
+        video = Video(name=name, status=status, site_id=site_id, **kwargs)
         video.save(update_index=update_index)
 
         for i in xrange(watches):
@@ -147,9 +144,8 @@ class BaseTestCase(TestCase):
 
         # Update the index here to be sure that the categories and authors get
         # indexed correctly.
-        if update_index and status == models.Video.ACTIVE and site_id == 1:
-            index = connections['default'].get_unified_index().get_index(
-                models.Video)
+        if update_index and status == Video.ACTIVE and site_id == 1:
+            index = connections['default'].get_unified_index().get_index(Video)
             index._enqueue_update(video)
 
         return video
@@ -169,8 +165,8 @@ class BaseTestCase(TestCase):
         """
         if slug is None:
             slug = slugify(name)
-        return models.Category.objects.create(name=name, slug=slug,
-                                              site_id=site_id, **kwargs)
+        return Category.objects.create(name=name, slug=slug,
+                                       site_id=site_id, **kwargs)
 
     @classmethod
     def create_user(cls, username='user', password=None, **kwargs):
@@ -205,26 +201,26 @@ class BaseTestCase(TestCase):
         :param days: Number of days to place the :class:`Watch` in the past.
 
         """
-        watch = models.Watch.objects.create(video=video, ip_address=ip_address)
+        watch = Watch.objects.create(video=video, ip_address=ip_address)
         watch.timestamp = datetime.now() - timedelta(days)
         watch.save()
         return watch
 
     @classmethod
     def create_feed(cls, feed_url, name=None, description='Lorem ipsum',
-                    last_updated=None, status=models.Feed.ACTIVE, site_id=1,
+                    last_updated=None, status=Feed.ACTIVE, site_id=1,
                     **kwargs):
         if name is None:
             name = feed_url
         if last_updated is None:
             last_updated = datetime.now()
-        return models.Feed.objects.create(feed_url=feed_url,
-                                          name=name,
-                                          description=description,
-                                          last_updated=last_updated,
-                                          status=status,
-                                          site_id=site_id,
-                                          **kwargs)
+        return Feed.objects.create(feed_url=feed_url,
+                                   name=name,
+                                   description=description,
+                                   last_updated=last_updated,
+                                   status=status,
+                                   site_id=site_id,
+                                   **kwargs)
 
     @classmethod
     def create_playlist(cls, user, name='Playlist', status=Playlist.PUBLIC,
@@ -237,9 +233,9 @@ class BaseTestCase(TestCase):
 
     @classmethod
     def create_search(cls, query_string, site_id=1, **kwargs):
-        return models.SavedSearch.objects.create(query_string=query_string,
-                                                 site_id=site_id,
-                                                 **kwargs)
+        return SavedSearch.objects.create(query_string=query_string,
+                                          site_id=site_id,
+                                          **kwargs)
 
     @classmethod
     def create_site(cls, domain='example.com', name=None):
