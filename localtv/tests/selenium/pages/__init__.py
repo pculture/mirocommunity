@@ -124,10 +124,7 @@ class Page(object):
         """Clear text of css element in form.
 
         """
-        try:
-            elem = self.browser.find_element_by_css_selector(element)
-        except:
-            self.record_error()
+        elem = self.wait_for_element_present(element)
         elem.clear()
 
     def click_link_text(self, text, wait_for_element=None):
@@ -137,9 +134,8 @@ class Page(object):
         try:
             elem = self.browser.find_element_by_link_text(text)
         except:
-            curr_page = self.record_error()
-            raise Exception(("link text: {0} not found on current page: {1}")
-                            .format(str(text), str(curr_page)))
+            self.record_error("link text: {0} not found on current page:"
+                              " {1}".format(str(text), str(curr_page)))
         elem.click()
         if wait_for_element:
             self.wait_for_element_present(wait_for_element)
@@ -151,9 +147,8 @@ class Page(object):
         try:
             elem = self.browser.find_element_by_partial_link_text(text)
         except:
-            curr_page = self.record_error()
-            raise Exception(("partial link text: {0} not found on current page: \
-                             {1}").format(str(text), str(curr_page)))
+            self.record_error("partial link text: {0} not found on current "
+                 "page:{1}".format(str(text), str(curr_page)))
         elem.click()
         if wait_for_element:
             self.wait_for_element_present(wait_for_element)
@@ -408,4 +403,5 @@ class Page(object):
         print '-------------------'
         print 'Error at ' + self.browser.current_url
         print '-------------------'
+        self.testcase.tearDown()
         raise ValueError(str(e))

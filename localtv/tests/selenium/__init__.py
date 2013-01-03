@@ -17,6 +17,7 @@
 
 import time
 import os
+import sys
 from django.core import management
 from django.test import LiveServerTestCase
 from localtv.tests import BaseTestCase
@@ -75,6 +76,9 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
                 command_executor=("http://jed-pcf:%s@ondemand.saucelabs.com:80"
                                   "/wd/hub" % sauce_key)
                                   )
+            sys.stdout.write("SauceOnDemandSessionID={0} job-name={1}".format(
+            self.browser.session_id, self.id()))
+
 
         #Otherwise just running locally - setup the browser to use.
         else:
@@ -92,10 +96,15 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.browser.get(self.base_url)
 
     def tearDown(self):
-        time.sleep(1)
+        time.sleep(2)
         try:
             screenshot_name = "%s.png" % self.id()
             filename = os.path.join(self.results_dir, screenshot_name)
             self.browser.get_screenshot_as_file(filename)
+        except: #Sometimes screenshot fails - test should not fail on this.
+            pass 
         finally:
-            self.browser.quit()
+            try:
+                self.browser.quit()
+            except: #May already be quit - so don't fail.
+                pass
