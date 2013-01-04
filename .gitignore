@@ -2,3 +2,6 @@
 /mirocommunity.egg-info/*
 /docs/_build/*
 /.tox/
+/test_mc_project/media/
+/test_mc_project/test_mc_project.sl3
+/test_mc_project/whoosh_index/
