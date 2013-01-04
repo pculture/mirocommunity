@@ -86,7 +86,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
 
         #Otherwise just running locally - setup the browser to use.
         else:
-            test_browser = os.environ.get('TEST_BROWSER', getattr(settings, 'TEST_BROWSER'))
+            test_browser = getattr(settings, 'TEST_BROWSER')
             self.browser = getattr(webdriver, test_browser)()
             self.browser.implicitly_wait(1)
 
