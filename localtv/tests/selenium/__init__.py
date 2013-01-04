@@ -67,6 +67,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         #If we are using sauce - check if we are running on jenkins.
         if self.use_sauce:
             self.sauce_key = os.environ.get('SAUCE_API_KEY')
+            self.sauce_user = os.environ.get('SAUCE_USER_NAME')
             test_browser = os.environ.get('SELENIUM_BROWSER', 'CHROME')
             dc = getattr(webdriver.DesiredCapabilities, 
                 test_browser.upper().replace(" ", ""))
@@ -77,11 +78,11 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
             #Setup the remote browser capabilities
             self.browser = webdriver.Remote(
                 desired_capabilities = dc,
-                command_executor=("http://jed-pcf:%s@ondemand.saucelabs.com:80"
-                                  "/wd/hub" % self.sauce_key)
-                                  )
+                command_executor=("http://{0}:{1}@ondemand.saucelabs.com:80/"
+                                  "wd/hub".format(self.sauce_user, self.sauce_key)
+                ))
             sys.stdout.write("SauceOnDemandSessionID={0} job-name={1}".format(
-            self.browser.session_id, self.id()))
+                self.browser.session_id, self.id()))
 
 
         #Otherwise just running locally - setup the browser to use.
@@ -100,6 +101,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
 
 
     def tearDown(self):
+        print("Link to the job: https://saucelabs.com/jobs/%s" % self.browser.session_id)
         if not self.use_sauce:  #Sauce gets it's own screenshots.
             try:
                 time.sleep(2)

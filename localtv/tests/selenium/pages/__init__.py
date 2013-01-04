@@ -403,5 +403,4 @@ class Page(object):
         print '-------------------'
         print 'Error at ' + self.browser.current_url
         print '-------------------'
-        self.testcase.tearDown()
-        raise ValueError(str(e))
+        raise AssertionError(str(e))
