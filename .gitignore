@@ -5,8 +5,5 @@
 /test_mc_project/media/
 /test_mc_project/test_mc_project.sl3
 /test_mc_project/whoosh_index/
-localtv/tests/selenium/Results/*.png
-localtv/tests/selenium/Results/nosetests.xml
-localtv/tests/selenium/Results/results.html
-test_mc_project/nosetests.xml
-test_mc_project/webdriver_results
+/test_mc_project/nosetests*.xml
+/test_mc_project/webdriver_results/
