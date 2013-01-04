@@ -37,7 +37,8 @@ class Page(object):
     def __init__(self, testsetup):
         self.browser = testsetup.browser  # BROWSER TO USE FOR TESTING
         self.base_url = testsetup.base_url
-        self.browser.implicitly_wait(2)  # seconds
+        self.testcase = testsetup
+        self.browser.implicitly_wait(1)  # seconds
 
     def quit(self):
         """Quit the browser.
@@ -403,4 +404,5 @@ class Page(object):
         print '-------------------'
         print 'Error at ' + self.browser.current_url
         print '-------------------'
+        self.testcase.tearDown
         raise AssertionError(str(e))
