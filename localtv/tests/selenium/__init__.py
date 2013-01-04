@@ -72,7 +72,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
                 test_browser.upper().replace(" ", ""))
             dc['version'] = os.environ.get('SELENIUM_VERSION', '')
             dc['platform'] = os.environ.get('SELENIUM_PLATFORM', 'WINDOWS 2008')
-            dc['name'] = self.shortDescription()
+            dc['name'] = self.id()
 
             #Setup the remote browser capabilities
             self.browser = webdriver.Remote(
@@ -88,7 +88,6 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         else:
             test_browser = getattr(settings, 'TEST_BROWSER')
             self.browser = getattr(webdriver, test_browser)()
-            self.browser.implicitly_wait(1)
 
         self.admin_user = 'seleniumTestAdmin' 
         self.admin_pass = 'password'
