@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import time
 from localtv.tests.selenium.pages import Page
 
