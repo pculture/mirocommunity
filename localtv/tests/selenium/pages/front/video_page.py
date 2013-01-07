@@ -27,7 +27,7 @@ class VideoPage(Page):
     _TITLE = ".title"
     _SOURCE = ".colophon a"
     _DESCRIPTION = ".video-details"
-    _SUBMITTER = "div.compact:nth-child(2)" 
+    _SUBMITTER = "div.compact:nth-child(2)"
     _EXPANDER = ".shrinkydink-handle"
     _EXPANDER_TEXT = ".shrinkydink-handle-inner"
     _TAGS = "div.video-full-tags a"
@@ -35,15 +35,15 @@ class VideoPage(Page):
 
     def check_video_details(self, **kwargs):
         """Compare displayed vs expected video metadata.
-  
+
            Return any mismatched fields.
         """
         video_data = {
-                    'title': None,
-                    'tags': None,
-                    'description': None,
-                    'submitter': None,
-                    'source': None,
+            'title': None,
+            'tags': None,
+            'description': None,
+            'submitter': None,
+            'source': None,
         }
         video_data.update(kwargs)
         site_vid_details = []
@@ -67,7 +67,7 @@ class VideoPage(Page):
                 return True
             else:
                 return ("Expected {0}, for {1} but found {2} instead."
-                        .format(data_value, data_field, 
+                        .format(data_value, data_field,
                         self.get_text_by_css(field)))
 
     def verify_amara_widget(self):

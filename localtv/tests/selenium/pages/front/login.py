@@ -102,12 +102,12 @@ class Login(Page):
             assert self.is_text_present("div.message", error_msg)
         elif error == 'blank value':
             self.wait_for_element_present(self._ERROR)
-            assert self.verify_text_present(self._ERROR, 
+            assert self.verify_text_present(self._ERROR,
                    'This field is required.'), \
                    'Field required message not displayed'
         elif error == 'account inactive':
             self.wait_for_element_present(self._ERROR)
-            assert self.verify_text_present(self._ERROR, 
+            assert self.verify_text_present(self._ERROR,
                    'This account is inactive.'), \
                    'Account inactive message not displayed'
         else:

@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 from localtv.tests.selenium.pages import Page
+
 
 class TwitterAuth(Page):
     """Twitter Auth page.
@@ -36,4 +35,3 @@ class TwitterAuth(Page):
             self.type_by_css(self._USERNAME, user)
             self.type_by_css(self._PASSWORD, passw)
             self.click_by_css(self._SUBMIT)
-

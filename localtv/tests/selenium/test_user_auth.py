@@ -104,8 +104,7 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'testuser' + str(time.time()),
                   'passw': 'test.pass',
                   'email': 'pculture.qa@gmail.com',
-                  'kind': 'signup',
-                  }
+                  'kind': 'signup'}
         self.nav_pg.login(**kwargs)
         #The second email sent has the activation link
         msg = str(mail.outbox[1].message())

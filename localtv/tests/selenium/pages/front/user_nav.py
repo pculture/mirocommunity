@@ -73,8 +73,8 @@ class NavPage(Login, Page):
                            "text": "Popular"},
 
                'SUBMIT': {"css": ".submit",
-                              "url": "/submit_video/",
-                              "text": "Submit A Video"},
+                          "url": "/submit_video/",
+                          "text": "Submit A Video"},
 
                'ABOUT': {"css": ".about",
                          "url": "/about/",
@@ -106,7 +106,7 @@ class NavPage(Login, Page):
 
     def logout(self):
         """Logout current user.
- 
+
         """
         if self.is_logged_in() is True:
             self.click_by_css(self.LOGOUT['css'])
@@ -118,9 +118,9 @@ class NavPage(Login, Page):
         'google', 'openid', 'twitter'
 
         """
-        if self.is_logged_in() and not \
-            self.is_text_present(self.LOGOUT['css'], 
-                                 self.LOGOUT['text'] % user):
+        if (self.is_logged_in() and
+            not self.is_text_present(self.LOGOUT['css'],
+                                     self.LOGOUT['text'] % user)):
             self.logout()
 
         self.wait_for_element_present(self.LOGIN['css'])

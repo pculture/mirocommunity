@@ -30,7 +30,7 @@ class SubmitVideo(WebdriverTestCase):
                    'url': 'http://www.youtube.com/watch?v=WqJineyEszo',
                    'form': 'scraped',
                    'title': 'X Factor Audition - Stop Looking At My Mom',
-                   'search': 'stop looking at my mom rap',                     
+                   'search': 'stop looking at my mom rap',
                    'tags': ['competition', 'mom', 'music', 'rap'],
                    'description': ('Brian Bradley sings his original song '
                                    'Stop Looking'),
@@ -43,7 +43,7 @@ class SubmitVideo(WebdriverTestCase):
                        'search': 'stop looking at my mom rap',
                        'tags': ['competition', 'mom', 'music', 'rap'],
                        'description': ('Brian Bradley sings his original song '
-                                      'Stop Looking'),
+                                       'Stop Looking'),
                        'source': 'clowntownhonkhonk',
                    },
                    'vimeo': {
@@ -51,7 +51,7 @@ class SubmitVideo(WebdriverTestCase):
                        'form': 'scraped',
                        'title': 'WADDICT - Kiteskate Edit',
                        'search': 'kiteskate',
-                       'tags': ['kitesurf', 'kiteskate', 'wakeskate', 
+                       'tags': ['kitesurf', 'kiteskate', 'wakeskate',
                                  'western australia', 'safety bay',
                                  'cabrinha', 'kitaddict'],
                        'description': ('In addition to WADDICT part I & II, '
@@ -67,10 +67,10 @@ class SubmitVideo(WebdriverTestCase):
                                'sarchons-invade-the-movies-rock-of-ages-2012'
                                '-movie-review-6208658'),
                        'form': 'scraped',
-                       'title': ('ROCK OF AGES (2012) MOVIE REVIEW by SARCHONS '
-                                 'INVADE THE MOVIES'),
+                       'title': ('ROCK OF AGES (2012) MOVIE REVIEW by '
+                                 'SARCHONS INVADE THE MOVIES'),
                        'search': 'sarchons invade the movies',
-                       'tags': ['movie review', 'comedy', 'animation', 
+                       'tags': ['movie review', 'comedy', 'animation',
                                 'diego boneta', 'rock of ages'],
                        'source': 'sarchons',
                        'description': ('Arn-0 & 0-Nad take a voyage back in '
@@ -92,9 +92,9 @@ class SubmitVideo(WebdriverTestCase):
                        'description': ('Although this Flame Challenge entry '
                                        'was first submitted on Vimeo, this '
                                        'goes out to all the YouTube viewers'
-                                       'out there. Thanks to Alan Alda and The '
-                                       'Center for Communicating Science for '
-                                       'creating such an educational and '
+                                       'out there. Thanks to Alan Alda and '
+                                       'The Center for Communicating Science '
+                                       'for creating such an educational and '
                                        'creative venue!'),
                        'tags': 'educational',
                        'embed': ('<script type="text/javascript'

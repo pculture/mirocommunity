@@ -14,7 +14,7 @@ class SubmitPage(Page):
     _ERROR = 'ul.errorlist li'
     _SUBMIT = 'footer.form-actions > button'
     _MESSAGE = 'div.message'
-    _DUP_MESSAGES = [('It appears that we already have a copy of that video '   
+    _DUP_MESSAGES = [('It appears that we already have a copy of that video '
                       'here... sorry! You can submit another video if you '
                       'like.'),
                      ('It appears that we already have a copy of that video '
@@ -86,7 +86,7 @@ class SubmitPage(Page):
 
     def _is_the_correct_submit_form(self, form):
         """Verify the expected submit form is displayed, via the url.
-   
+
         """
         try:
             time.sleep(3)
@@ -94,7 +94,7 @@ class SubmitPage(Page):
         except AssertionError, e:
             raise(AssertionError("Expecting the {0} form, got {1}:{2}"
                                  .format(form, self.current_url(), e)))
-                
+
     def _add_tags(self, **kwargs):
         """Add any tags to the form.
 

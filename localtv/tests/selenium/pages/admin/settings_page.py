@@ -21,6 +21,7 @@
 """
 from localtv.tests.selenium.pages.admin.admin_nav import AdminNav
 
+
 class SettingsPage(AdminNav):
     """Describes elements and functions for the Admin Settings page.
 
@@ -46,17 +47,17 @@ class SettingsPage(AdminNav):
     _DISPLAY_SUBMIT = 'input#id_display_submit_button'
 
     # Setting to require users to login to submit video
-    _SUBMIT_LOGIN = 'input#id_submission_requires_login' 
+    _SUBMIT_LOGIN = 'input#id_submission_requires_login'
 
     # Setting for original date posted.  Unchecked = date added to site.
     _ORIGINAL_DATE = 'input#id_use_original_date'
- 
+
     # Setting to comments for moderation obe on new theme.
-    _COMMENTS_MODERATE = 'input#id_screen_all_comments' 
+    _COMMENTS_MODERATE = 'input#id_screen_all_comments'
 
     # If checked, comments require the user to be logged in.
-    _COMMENTS_LOGIN = 'input#id_comments_required_login'    
-    
+    _COMMENTS_LOGIN = 'input#id_comments_required_login'
+
     _PLAYLISTS_ENABLED = '#id_playlists_enabled'
 
     def open_settings_page(self):
@@ -96,7 +97,7 @@ class SettingsPage(AdminNav):
             self.type_by_css(self._CHANGE_LOGO, img_path)
 
     def background(self, img_path):
-        """Upload a new background.  
+        """Upload a new background.
 
         If img_path is 'delete' then delete existing.
 

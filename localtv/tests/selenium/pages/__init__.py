@@ -135,8 +135,9 @@ class Page(object):
         try:
             elem = self.browser.find_element_by_link_text(text)
         except:
+            url = self.browser.current_url
             self.record_error("link text: {0} not found on current page:"
-                              " {1}".format(str(text), str(curr_page)))
+                              " {1}".format(str(text), str(url)))
         elem.click()
         if wait_for_element:
             self.wait_for_element_present(wait_for_element)
@@ -148,8 +149,9 @@ class Page(object):
         try:
             elem = self.browser.find_element_by_partial_link_text(text)
         except:
+            url = self.browser.current_url
             self.record_error("partial link text: {0} not found on current "
-                 "page:{1}".format(str(text), str(curr_page)))
+                              "page:{1}".format(str(text), str(url)))
         elem.click()
         if wait_for_element:
             self.wait_for_element_present(wait_for_element)
@@ -175,7 +177,7 @@ class Page(object):
 
     def submit_form_text_by_css(self, element, text):
         """Submit form using css selector for form element.
- 
+
         """
         elem = self.browser.find_element_by_css_selector(element)
         elem.send_keys(text)
@@ -226,7 +228,7 @@ class Page(object):
         except NoSuchElementException():
             return False
         if len(elements_found) > 1:
-            raise Exception(MULTIPLE_ELS % element)
+            raise Exception(self._MULTIPLE_ELS.format(element))
         else:
             element_text = self.browser.find_element_by_css_selector(
                 element).text
@@ -262,11 +264,10 @@ class Page(object):
         else:
             self.record_error('did not find %s' % expected_text)
 
-
     def wait_for_element_present(self, element, wait_time=5):
         """Wait for element (by css) present on page, within x seconds.
 
-           Settings the default to 5 since we shouldn't have to wait long for 
+           Settings the default to 5 since we shouldn't have to wait long for
            most things.  If using implicit_wait in webdriver_base so this
            is multiplied by the implicit wait value.
 
@@ -275,17 +276,16 @@ class Page(object):
             try:
                 time.sleep(1)
                 if self.is_element_present(element):
-                    return self.browser.find_element_by_css_selector(element) 
+                    return self.browser.find_element_by_css_selector(element)
             except:
                 pass
         else:
             self.record_error("Element %s is not present." % element)
 
-
     def wait_for_element_not_present(self, element, wait_time=10):
         """Wait for element (by css) to disappear on page, within 10 seconds.
 
-           Settings the default to 10 since we shouldn't have to wait long for 
+           Settings the default to 10 since we shouldn't have to wait long for
            most things.  If using implicit_wait in webdriver_base so this
            is a multiplied by the implicit wait value.
 
@@ -300,7 +300,6 @@ class Page(object):
                 pass
         else:
             self.record_error("Element %s is still present." % element)
-
 
     def wait_for_text_not_present(self, text):
         """Wait for text to disappear on page, within 20 seconds.
@@ -354,7 +353,7 @@ class Page(object):
 
     def get_element_attribute(self, element, html_attribute):
         """Return the attribute of an element (by css).
-  
+
         """
         try:
             elements_found = self.browser.find_elements_by_css_selector(
@@ -363,7 +362,7 @@ class Page(object):
             raise Exception("%s does not exist on the page" % element)
 
         if len(elements_found) > 1:
-            raise Exception(MULTIPLE_ELS % element)
+            raise Exception(self._MULTIPLE_ELS.format(element))
         return elements_found[0].get_attribute(html_attribute)
 
     def open_page(self, url):
@@ -393,8 +392,6 @@ class Page(object):
                 elem = self.browser.find_element_by_css_selector(elements)
         elem.send_keys("PAGE_DOWN")
 
-
-
     def record_error(self, e=None):
         """
             Records an error.
@@ -404,5 +401,5 @@ class Page(object):
         print '-------------------'
         print 'Error at ' + self.browser.current_url
         print '-------------------'
-        self.testcase.tearDown
+        self.testcase.tearDown()
         raise AssertionError(str(e))

@@ -18,10 +18,6 @@
 import time
 import os
 import sys
-import httplib
-import base64
-import simplejson as json
-from django.core import management
 from django.test import LiveServerTestCase
 from localtv.tests import BaseTestCase
 from selenium import webdriver
@@ -54,7 +50,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         SELENIUM_URL - The initial URL to load when the test begins
         SAUCE_USER_NAME - The user name used to invoke Sauce OnDemand
         SAUCE_API_KEY - The access key for the user used to invoke Sauce OnDemand
-        
+
         We are going to look for a USE_SAUCE = True if we are using sauce,
         and a default browser TEST_BROWSER if not using sauce.
         """
@@ -69,28 +65,25 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
             self.sauce_key = os.environ.get('SAUCE_API_KEY')
             self.sauce_user = os.environ.get('SAUCE_USER_NAME')
             test_browser = os.environ.get('SELENIUM_BROWSER', 'CHROME')
-            dc = getattr(webdriver.DesiredCapabilities, 
-                test_browser.upper().replace(" ", ""))
+            dc = getattr(webdriver.DesiredCapabilities,
+                         test_browser.upper().replace(" ", ""))
             dc['version'] = os.environ.get('SELENIUM_VERSION', '')
             dc['platform'] = os.environ.get('SELENIUM_PLATFORM', 'WINDOWS 2008')
             dc['name'] = self.id()
 
             #Setup the remote browser capabilities
             self.browser = webdriver.Remote(
-                desired_capabilities = dc,
+                desired_capabilities=dc,
                 command_executor=("http://{0}:{1}@ondemand.saucelabs.com:80/"
-                                  "wd/hub".format(self.sauce_user, self.sauce_key)
-                ))
+                                  "wd/hub".format(self.sauce_user, self.sauce_key)))
             sys.stdout.write("SauceOnDemandSessionID={0} job-name={1}".format(
                 self.browser.session_id, self.id()))
-
-
         #Otherwise just running locally - setup the browser to use.
         else:
             test_browser = getattr(settings, 'TEST_BROWSER')
             self.browser = getattr(webdriver, test_browser)()
 
-        self.admin_user = 'seleniumTestAdmin' 
+        self.admin_user = 'seleniumTestAdmin'
         self.admin_pass = 'password'
         self.normal_user = 'seleniumTestUser'
         self.normal_pass = 'password'
@@ -99,18 +92,20 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.create_user(username=self.normal_user, password=self.normal_pass)
         self.browser.get(self.base_url)
 
-
     def tearDown(self):
         print("Link to the job: https://saucelabs.com/jobs/%s" % self.browser.session_id)
-        if not self.use_sauce:  #Sauce gets it's own screenshots.
+        # Sauce gets its own screenshots.
+        if not self.use_sauce:
             try:
                 time.sleep(2)
                 screenshot_name = "%s.png" % self.id()
                 filename = os.path.join(self.results_dir, screenshot_name)
                 self.browser.get_screenshot_as_file(filename)
-            except: #Sometimes screenshot fails - test should not fail on this.
-                pass 
+            except:
+                # Sometimes screenshot fails - test should not fail on this.
+                pass
         try:
             self.browser.quit()
-        except: #May already be quit - so don't fail.
+        except:
+            # May already be quit - so don't fail.
             pass

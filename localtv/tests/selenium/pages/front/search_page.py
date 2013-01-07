@@ -37,7 +37,7 @@ class SearchPage(NavPage):
     _RSS = 'a.rss'
     _NO_RESULTS = 'div#main h2'
     _NO_RESULTS_TEXT = ('Sorry, we could not find any videos matching '
-                       'that query.')
+                        'that query.')
 
     def on_searchable_page(self):
         """Open the home page if current page does not have search box.
@@ -59,7 +59,7 @@ class SearchPage(NavPage):
         """Verify search displays results, or No Results message if expected.
 
         """
-        if expected == False:
+        if not expected:
             time.sleep(5)
             if self.is_text_present(self._NO_RESULTS, self._NO_RESULTS_TEXT):
                 return False, 'I am not expecting results'

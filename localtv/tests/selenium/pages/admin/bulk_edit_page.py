@@ -22,8 +22,6 @@
 from localtv.tests.selenium.pages.admin.admin_nav import AdminNav
 
 
-
-
 class BulkEditPage(AdminNav):
     """Describes elements and functions for the Admin Settings page.
 
@@ -57,7 +55,7 @@ class BulkEditPage(AdminNav):
     def _bulk_edit_action(self, action):
         """Choose one of the bulk edit options.
 
-        actions = Bulk Actions, Edit, Delete, Approve, Unapprove, 
+        actions = Bulk Actions, Edit, Delete, Approve, Unapprove,
         Feature, Unfeature
         """
         if self._items_in_table() is True:
@@ -102,7 +100,7 @@ class BulkEditPage(AdminNav):
 
     def open_bulk_page(self):
         """Open the Bulk Edit page.
-  
+
         """
         self.open_admin_page(self._URL)
 

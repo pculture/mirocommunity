@@ -19,6 +19,7 @@
 import time
 from localtv.tests.selenium.pages import Page
 
+
 class MyOpenIDAuth(Page):
     _OPENID_PAGE = "html head base[href='https://www.myopenid.com/']"
     _CONTINUE = "button#continue-button"
@@ -36,4 +37,3 @@ class MyOpenIDAuth(Page):
                 self.click_by_css(self._SUBMIT)
             if self.is_element_present(self._CONTINUE):
                 self.click_by_css(self._CONTINUE)
-

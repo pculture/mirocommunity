@@ -1,5 +1,6 @@
 from localtv.tests.selenium.pages import Page
 
+
 class FacebookAuth(Page):
     _FB_LOGIN_PAGE = "html#facebook"
     _USERNAME = "input#email"
@@ -11,4 +12,3 @@ class FacebookAuth(Page):
             self.click_by_css(self._USERNAME)
             self.click_by_css(self._PASSWORD)
             self.click_by_css(self._SUBMIT)
-

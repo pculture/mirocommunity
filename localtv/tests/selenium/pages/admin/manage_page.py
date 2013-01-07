@@ -20,7 +20,6 @@
 
 """
 from localtv.tests.selenium.pages.admin.admin_nav import AdminNav
-import time
 
 
 class ManagePage(AdminNav):
@@ -60,7 +59,7 @@ class ManagePage(AdminNav):
 
     # default 'Show All Categories'
     _CAT_FILTER = 'select.behave[name="category"]'
-    _USER_FILTER = 'select.behave[name="author"]'      
+    _USER_FILTER = 'select.behave[name="author"]'
     _TEXT_FILTER = 'input[placeholder="Search Sources"]'
     _SUBMIT_FILTER = 'form.search_sources button[type="submit"]'
     _FEED_TITLE = 'tr td:nth-child(2) span'
@@ -68,9 +67,9 @@ class ManagePage(AdminNav):
     _DELETE_FEED_LINK = ("td span.overflow:contains('%s') + "
                          "div.actions a.delete_icon")
     _EDIT_FEED_LINK = "td span.overflow:contains('%s') + div.actions a"
-  
+
     # default '/admin/manage/', options user, search, feed
-    _VIDEO_SOURCE_FILTER = 'ul.only_show li a[href*="%s"]'     
+    _VIDEO_SOURCE_FILTER = 'ul.only_show li a[href*="%s"]'
     _INVALID_FEED_TEXT = "* It does not appear that %s is an RSS/Atom feed URL."
 
     #BULK CONTROLS
@@ -111,8 +110,8 @@ class ManagePage(AdminNav):
 
     def filter_by_source(self, source_type=None):
         """Filter by the source type.
-        
-        The default no-filture url is the page url (/admin/manage/), 
+
+        The default no-filter url is the page url (/admin/manage/),
         filter options are user, search or feed.
         """
         if source_type is None:
@@ -131,13 +130,12 @@ class ManagePage(AdminNav):
         elem = self.browser.find_element_by_css_selector(self._SUBMIT_FEED)
         elem.submit()
 
-
     def _duplicate_feed(self):
         """Return True if the feed is a duplicated.
 
         """
         dup_feed_message = 'Feed with this URL already exists.'
- 
+
         if self.verify_text_present('li', dup_feed_message):
             print '*** got dup feed message *** '
             return True

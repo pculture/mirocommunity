@@ -18,7 +18,7 @@
 
 
 from localtv.tests.selenium import WebdriverTestCase
-from localtv.tests.selenium.pages.front import search_page 
+from localtv.tests.selenium.pages.front import search_page
 from localtv.tests.selenium.pages.front import video_page
 from localtv.tests.selenium.pages.front import listing_page
 from localtv.tests.selenium.pages.admin import manage_page
@@ -47,7 +47,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
     def verify_video_page(self, testcase):
         """Search for a video from the feed, and verify metadata.
-       
+
         """
         search_pg = search_page.SearchPage(self)
         search_pg.on_searchable_page()
@@ -66,7 +66,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         testcase = {'feed url': 'http://www.youtube.com/user/croatiadivers',
                     'title': ('Scuba Diving Croatia, Duiken Kroatie, '
-                             'Tauchen Kroatien'),
+                              'Tauchen Kroatien'),
                     'search': 'Duiken Kroatie',
                     'tags': ['boat', 'cave', 'cavern', 'croatia', 'diving'],
                     'description': ('5 Star PADI IDC Resort & BSAC Resort '
@@ -84,8 +84,8 @@ class SubmitVideoFeeds(WebdriverTestCase):
         testcase = {'feed url': 'http://blip.tv/reelscience',
                     'feed name': 'Reel Science',
                     'title': 'Insects: Aliens on Earth',
-                    'search': 'Insects: Aliens', 
-                    'tags': ['learning', 'animation', 'alien', 
+                    'search': 'Insects: Aliens',
+                    'tags': ['learning', 'animation', 'alien',
                              'educational', 'humor'],
                     'description': ('Saw Prometheus? What if I told you there '
                                     'are creatures on Earth that are just as '
@@ -101,15 +101,16 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
         """
         testcase = {'feed url': ('http://qa.pculture.org/feeds_test/'
-                                'list-of-guide-feeds.xml'),
+                                 'list-of-guide-feeds.xml'),
                     'feed name': 'Static List',
                     'title': 'LandlineTV (HD)',
-                    'search': 'LandlineTV',  # term that returns a unique result
+                    # term that returns a unique result
+                    'search': 'LandlineTV',
                     'description': ('Landline TV is sketch comedy that '
-                                    'delivers witty, higher brow content about '
-                                    'relevant pop culture and news events. '
-                                    'Comically relevant... for about a week or '
-                                    'so.'),
+                                    'delivers witty, higher brow content '
+                                    'about relevant pop culture and news '
+                                    'events. Comically relevant... for '
+                                    'about a week or so.'),
                     'source': 'Static List'
                     }
         self.submit_feed(testcase)
@@ -117,7 +118,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
     def test_submit_feed__vimeo(self):
         """Submit a vimeo feed.
- 
+
         """
         testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
                     'feed name': 'Videos janet likes on Vimeo',
@@ -151,7 +152,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
     def test_submit_feed__dailymotion(self):
         """Submit a dailymotion feed.
- 
+
         """
         testcase = {'feed url': 'http://www.dailymotion.com/rss/user/KEXP',
                     'feed name': 'KEXP',

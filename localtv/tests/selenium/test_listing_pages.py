@@ -107,7 +107,7 @@ class ListingPages(WebdriverTestCase):
             self.create_video(name=vid_name,
                               watches=0,
                               update_index=True)
-        #CREATE 30 POPULAR VIDEOS WITH NUM WATCHES THAT MATCH THE 
+        #CREATE 30 POPULAR VIDEOS WITH NUM WATCHES THAT MATCH THE
         #NUM in the VID NAME
         for x in range(11, 41):
             vid_name = 'listing_test_' + str(x)
@@ -152,7 +152,7 @@ class ListingPages(WebdriverTestCase):
         user = self.create_user(username='autotester',
                                 first_name='selene', last_name='driver')
         self.create_video(name=title,
-                          description=('This is the most awesome test ' 
+                          description=('This is the most awesome test '
                                        'video ever!'),
                           user=user,
                           categories=[self.create_category(name='webdriver',
@@ -186,12 +186,11 @@ class ListingPages(WebdriverTestCase):
         title = 'webdriver test video'
         description = 'This is the most awesome test video ever'
         self.create_user(username='autotester',
-                                first_name='webby', last_name='driver')
+                         first_name='webby', last_name='driver')
         self.create_video(name=title,
                           description=description,
                           authors=[3],
-                          watches=1
-                          )
+                          watches=1)
         self.listing_pg.open_listing_page('popular')
         _, overlay_text = self.listing_pg.has_overlay(title)
 
