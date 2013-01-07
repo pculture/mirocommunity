@@ -24,7 +24,7 @@ from vidscraper.utils.search import intersperse_results
 from localtv import utils
 from localtv.admin.livesearch.views import LiveSearchView
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings
-from localtv.tests.test_legacy_localtv import BaseTestCase
+from localtv.tests.legacy.test_localtv import BaseTestCase
 import localtv.admin.user_views
 
 Profile = utils.get_profile_model()

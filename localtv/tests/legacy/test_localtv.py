@@ -45,7 +45,7 @@ from tagging.models import Tag
 
 
 Profile = utils.get_profile_model()
-TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(localtv.__file__), 'tests', 'testdata'))
+TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(localtv.__file__), 'tests', 'legacy', 'data'))
 VIDSCRAPER_TEST_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(vidscraper.__file__), 'tests', 'data'))
 
 

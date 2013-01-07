@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 
 from notification import models as notification
 
-from localtv.tests.test_legacy_localtv import BaseTestCase
+from localtv.tests.legacy.test_localtv import BaseTestCase
 from localtv.user_profile import forms
 from localtv import utils
 
