@@ -216,6 +216,10 @@ if os.environ.get('MIGRATIONS'):
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
+# Webdriver test settings
+TEST_BROWSER = 'Firefox'
+TEST_RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'webdriver_results')
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
