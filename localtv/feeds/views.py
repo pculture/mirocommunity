@@ -17,7 +17,8 @@
 
 from hashlib import sha1
 
-from daguerre.models import AdjustedImage, Image
+from daguerre.models import Image
+from daguerre.utils.adjustments import DEFAULT_ADJUSTMENT, get_adjustment_class
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
@@ -36,8 +37,13 @@ from localtv.templatetags.filters import simpletimesince
 
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
-
 LOCALTV_FEED_LENGTH = 30
+WIDGET_THUMBNAIL_SIZES = (
+    (222, 169), # large widget
+    (140, 110), # medium widget
+    (88, 68),   # small widget
+)
+
 
 class BaseVideosFeed(FeedView, SortFilterMixin):
     title_template = "localtv/feed/title.html"
@@ -243,13 +249,16 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         if item.has_thumbnail:
             site = Site.objects.get_current()
             try:
-                image = Image.objects.for_storage_path(
-                            item.thumbnail_path)
-                adjusted = AdjustedImage.objects.adjust(image, 375, 295)
-            except (Image.DoesNotExist, AdjustedImage.DoesNotExist):
+                image = Image.objects.for_storage_path(item.thumbnail_path)
+                adjustment_class = get_adjustment_class(DEFAULT_ADJUSTMENT)
+                # Raises IOError if the original image can't be found.
+                adjustment = adjustment_class.from_image(image,
+                                                         width=375,
+                                                         height=295)
+            except (Image.DoesNotExist, IOError):
                 kwargs['thumbnail_url'] = ''
             else:
-                thumbnail_url = adjusted.adjusted.url
+                thumbnail_url = adjustment.url
                 if not (thumbnail_url.startswith('http://') or
                         thumbnail_url.startswith('https://')):
                     thumbnail_url = 'http://%s%s' % (site.domain,
@@ -263,18 +272,22 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
                     # widgets.
                     kwargs['thumbnails_resized'] = []
 
-                    for size in ((222, 169), # large widget
-                                 (140, 110), # medium widget
-                                 (88, 68)):  # small widget
-                        adjusted = AdjustedImage.objects.adjust(image, *size)
-                        thumbnail_url = adjusted.adjusted.url
+                    for width, height in WIDGET_THUMBNAIL_SIZES:
+                        try:
+                            adjustment = adjustment_class.from_image(image,
+                                                                width=width,
+                                                                height=height)
+                        except IOError:
+                            thumbnail_url = ''
+                        else:
+                            thumbnail_url = adjustment.url
                         if not (thumbnail_url.startswith('http://') or
                                 thumbnail_url.startswith('https://')):
                             thumbnail_url = 'http://%s%s' % (site.domain,
                                                              thumbnail_url)
                         kwargs['thumbnails_resized'].append(
-                                                  {'width': size[0],
-                                                   'height': size[1],
+                                                  {'width': width,
+                                                   'height': height,
                                                    'url': thumbnail_url})
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
