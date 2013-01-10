@@ -1,4 +1,5 @@
 *.pyc
+.sass-cache
 /mirocommunity.egg-info/*
 /docs/_build/*
 /.tox/
@@ -7,3 +8,5 @@
 /test_mc_project/whoosh_index/
 /test_mc_project/nosetests*.xml
 /test_mc_project/webdriver_results/
+/localtv/static/localtv/front/images/icon-16-*
+/localtv/static/localtv/front/images/icon-32-*

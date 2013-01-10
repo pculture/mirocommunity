@@ -44,9 +44,15 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 						</header>
 						<div class="card-figure">
 							<ul class="tile-box">
-								{% for video in category.approved_set|slice:"0:8" %}
-									<li class="tile"><img src="{% adjust video.thumbnail_path width=140 height=110 %}" /></li>
-								{% endfor %}
+								{% if category.logo %}
+									<li class="tile tile-full">
+										<img src="{% adjust category.logo width=182 height=108 adjustment="fill" %}" />
+									</li>
+								{% else %}
+									{% for video in category.approved_set|slice:"0:8" %}
+										<li class="tile"><img src="{% adjust video.thumbnail_path width=140 height=110 %}" /></li>
+									{% endfor %}
+								{% endif %}
 							</ul>
 						</div>
 					</a>
