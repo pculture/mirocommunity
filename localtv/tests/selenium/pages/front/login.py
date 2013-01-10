@@ -35,7 +35,7 @@ class Login(Page):
     """
     _LOGIN_PAGE_TITLE = "h1.page-title"
     _ERROR = "ul.errorlist li"
-    _FORGOT_PASS_ERROR = "div a[href='/accounts/password/reset/']"
+    _FORGOT_PASSWORD = "a[href='/accounts/password/reset/']"
     _TABS = {
         'site': {
             "css": "a[href='#login']",

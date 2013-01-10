@@ -19,6 +19,7 @@ import time
 
 from django.conf import settings
 from django.core import mail
+
 from localtv.tests.selenium import WebdriverTestCase
 from localtv.tests.selenium.pages.front import user_nav
 
@@ -132,3 +133,8 @@ class UserAuth(WebdriverTestCase):
                   'passw': '',
                   'success': 'blank value'}
         self.assertFalse(self.nav_pg.login(**kwargs))
+
+    def test_login__forgot(self):
+        self.nav_pg.wait_for_element_present(self.nav_pg.LOGIN['css'])
+        self.nav_pg.click_by_css(self.nav_pg.LOGIN['css'])
+        self.assertTrue(self.nav_pg.is_element_visible(self.nav_pg._FORGOT_PASSWORD))
