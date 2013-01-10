@@ -208,7 +208,7 @@ form { margin-bottom: 18px; }
 .grid-2 > li { width: 50%; }
 .grid-2 > li:nth-child(odd) { clear: left; }
 
-.grid-1 > li { width: 100%; float: none; }
+.grid-1 > li { width: 100%; float: none; padding-bottom: 18px; padding-top: 18px; padding-left: 20px; padding-right: 20px; }
 
 .grid { *zoom: 1; margin-left: -40px; }
 .grid:after { content: ""; display: table; clear: both; }
