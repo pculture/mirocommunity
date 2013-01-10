@@ -6,19 +6,17 @@
 	</div>
 {% endif %}
 
-<div class="video-list-wrapper">
-	{% if video_list %}
-		<ul class="media-grid-{{ columns }} video-grid">
-			{% for video in video_list %}
-				{% include "localtv/_video_grid_item.html" %}
-			{% endfor %}
-		</ul>
-	{% else %}
-		<div class="message warning">
-			<p>{% trans "No videos have been added yet." %}</p>
-		</div>
-	{% endif %}
-</div>
+{% if video_list %}
+	<ul class="grid grid-{{ columns }}">
+		{% for video in video_list %}
+			{% include "localtv/_video_grid_item.html" %}
+		{% endfor %}
+	</ul>
+{% else %}
+	<div class="message warning">
+		<p>{% trans "No videos have been added yet." %}</p>
+	</div>
+{% endif %}
 
 {% if page_obj.has_other_pages %}
 	<div class="pagination lower">

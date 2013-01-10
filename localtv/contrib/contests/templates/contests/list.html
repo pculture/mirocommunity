@@ -1,4 +1,4 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 {% comment %}
 Copyright 2012 - Participatory Culture Foundation
 
@@ -18,11 +18,11 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load pagetabs localtv_thumbnail i18n %}
+{% load pagetabs daguerre i18n static %}
 
 {% block title %}{{ block.super }} - Contests{% endblock %}
 
-{% block content %}
+{% block main %}
 	<header class="page-header">
 	  <h1 class="page-title">{% trans "Contests" %}</h1>
 	</header>
@@ -32,22 +32,45 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				{% pagetabs page_obj %}
 			{% endif %}
 		</div>
-		<ul class="grid-list card-list">
+		<ul class="grid grid-4">
 			{% for contest in contest_list %}
-				<li class="grid-item card">
-					<a href="{{ contest.get_absolute_url }}" class="card-link">
-						<header class="card-header">
-							<span class="card-title">{{ contest.name }}</span>
-							{% with contest.videos.count as count %}
-								<span class="card-title-quiet">({{ count }} {% blocktrans count count=count %}Video{% plural %}Videos{% endblocktrans %})</span>
-							{% endwith %}
-						</header>
-						<div class="card-figure">
-							<ul class="tile-box">
-								{% for video in contest.videos.all|slice:"0:8" %}
-									<li class="tile"><img src="{% get_thumbnail_url video 140 110 %}" /></li>
-								{% endfor %}
-							</ul>
+				<li class="grid-item">
+					<a class="grid-item-link" href="{{ contest.get_absolute_url }}">
+						<figure class="grid-item-figure">
+							<div class="tiles-wrapper">
+								<div class="tiles-shim">
+									<img src="{% static "localtv/front/images/shim_300_216.png" %}" />
+								</div>
+								{% with videos=contest.videos.all|slice:":6" %}
+								<ul class="tiles tiles-{% if videos|length < 2 %}1{% elif videos|length < 6 %}2{% else %}6{% endif %}">
+									{% if not videos %}
+										<li class="tiles-item">
+											<img src="{% static "localtv/front/images/nounproject_2650_television_white.png" %}" />
+										</li>
+									{% elif videos|length == 1 %}
+										{% for video in videos %}
+											<li class="tiles-item"><img src="{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" %}" /></li>
+										{% endfor %}
+									{% elif videos|length < 6 %}
+										{% for video in videos %}
+											<li class="tiles-item"><img src="{% adjust video.thumbnail_path width=150 height=216 adjustment="fill" %}" /></li>
+										{% endfor %}
+									{% else %}
+										{% for video in videos %}
+											<li class="tiles-item"><img src="{% adjust video.thumbnail_path width=100 height=108 adjustment="fill" %}" /></li>
+										{% endfor %}
+									{% endif %}
+								</ul>
+								{% endwith %}
+							</div>
+						</figure>
+						<div class='grid-item-content'>
+							<header class="grid-item-header">
+								<h1>{{ contest.name }}</h1>
+								{% with count=contest.videos.count %}
+									<p>{{ count }} {% blocktrans count count=count %}video{% plural %}videos{% endblocktrans %}</p>
+								{% endwith %}
+							</header>
 						</div>
 					</a>
 				</li>

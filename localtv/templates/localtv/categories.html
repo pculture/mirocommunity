@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load pagetabs daguerre i18n %}
+{% load pagetabs daguerre i18n staticfiles %}
 
 {% block title %}{{ block.super }} - Categories{% endblock %}
 
@@ -32,34 +32,57 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 				{% pagetabs page_obj %}
 			{% endif %}
 		</div>
-		<ul class="grid-list card-list">
+		<ul class="grid grid-4">
 			{% for category in category_list %}
-				<li class="grid-item card">
-					<a href="{{ category.get_absolute_url }}" class="card-link">
-						<header class="card-header">
-							<span class="card-title">{{ category.name }}</span>
-							{% with category.approved_set.count as count %}
-								<span class="card-title-quiet">({{ count }} {% blocktrans count count=count %}Video{% plural %}Videos{% endblocktrans %})</span>
-							{% endwith %}
-						</header>
-						<div class="card-figure">
-							<ul class="tile-box">
-								{% if category.logo %}
-									<li class="tile tile-full">
-										<img src="{% adjust category.logo width=182 height=108 adjustment="fill" %}" />
-									</li>
-								{% else %}
-									{% for video in category.approved_set|slice:"0:8" %}
-										<li class="tile"><img src="{% adjust video.thumbnail_path width=140 height=110 %}" /></li>
-									{% endfor %}
-								{% endif %}
-							</ul>
+				<li class="grid-item">
+					<a class='grid-item-link' href="{{ category.get_absolute_url }}">
+						<figure class='grid-item-figure'>
+							<div class="tiles-wrapper">
+								<div class="tiles-shim">
+									<img src="{% static "localtv/front/images/shim_300_216.png" %}" />
+								</div>
+								{% with videos=category.approved_set|slice:":6" %}
+								<ul class="tiles tiles-{% if category.logo or videos|length < 2 %}1{% elif videos|length < 6 %}2{% else %}6{% endif %}">
+									{% if category.logo %}
+										<li class="tiles-item">
+											<img src="{% adjust category.logo width=300 height=216 adjustment="fill" %}" />
+										</li>
+									{% elif not videos %}
+										<li class="tiles-item">
+											<img src="{% static "localtv/front/images/nounproject_2650_television_white.png" %}" />
+										</li>
+									{% elif videos|length == 1 %}
+										{% for video in videos %}
+											<li class="tiles-item"><img src="{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" %}" /></li>
+										{% endfor %}
+									{% elif videos|length < 6 %}
+										{% for video in videos %}
+											<li class="tiles-item"><img src="{% adjust video.thumbnail_path width=150 height=216 adjustment="fill" %}" /></li>
+										{% endfor %}
+									{% else %}
+										{% for video in videos %}
+											<li class="tiles-item"><img src="{% adjust video.thumbnail_path width=100 height=108 adjustment="fill" %}" /></li>
+										{% endfor %}
+									{% endif %}
+								</ul>
+								{% endwith %}
+							</div>
+						</figure>
+						<div class='grid-item-content'>
+							<header class='grid-item-header'>
+								<h1>{{ category.name }}</h1>
+								{% with count=category.approved_set.count %}
+									<p>{{ count }} {% blocktrans count count=count %}video{% plural %}videos{% endblocktrans %}</p>
+								{% endwith %}
+							</header>
 						</div>
 					</a>
-					<div class="card-details">
-						{% for subcat in category.child_set.all|slice:":3" %}
-							{% if forloop.first %}{% trans "Subcategories" %}: {% endif %}<a href="{{ subcat.get_absolute_url}}">{{ subcat.name }}</a>{% if not forloop.last %}, {% endif %}
-						{% endfor %}
+					<div class='grid-item-post'>
+						{% with subcats=category.child_set.all|slice:":3" %}
+							{% if subcats %}
+								<p>{% trans "Subcategories" %}: {% for subcat in subcats %}<a href="{{ subcat.get_absolute_url}}">{{ subcat.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+							{% endif %}
+						{% endwith %}
 					</div>
 				</li>
 			{% endfor %}
