@@ -1,0 +1,16 @@
+{# Expects columns, object_list, and grid_item_template #}
+{# empty_message is optional #}
+
+{% if object_list %}
+    <ul class="grid grid-{{ columns }}">
+        {% for object in object_list %}
+            <li class="grid-item">
+                {% include grid_item_template %}
+            </li>
+        {% endfor %}
+    </ul>
+{% elif empty_message %}
+    <div class="message warning">
+        <p>{{ empty_message }}</p>
+    </div>
+{% endif %}

@@ -19,7 +19,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
-{% load i18n %}
+{% load i18n pagetabs %}
 
 {% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
@@ -36,7 +36,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 	<div class="page-content">
 		<div class="padded">
-			{% include "localtv/_video_grid_list.html" with columns=4 %}
+			{% if page_obj.has_other_pages %}
+				<div class="pagination upper">
+					{% pagetabs page_obj %}
+				</div>
+			{% endif %}
+			
+			{% include "localtv/_grid/video_list.html" %}
+
+			{% if page_obj.has_other_pages %}
+				<div class="pagination lower">
+					{% pagetabs page_obj %}
+				</div>
+			{% endif %}
 		</div>
 	</div>
 	

@@ -1,0 +1,20 @@
+<a href="{{ object.get_absolute_url }}" class="popover-trigger grid-item-link" data-content="
+    {% filter force_escape %}
+        {% if object.description %}
+            <div class="popover-normal-text">
+                {{ object.description|safe }}
+            </div>
+        {% endif %}
+        {% with object as instance %}
+            <p class="byline">{% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}</p>
+        {% endwith %}
+    {% endfilter %}
+">
+    {% include "localtv/_grid/_item_figure.html" with image=object.thumbnail_path %}
+    <div class="grid-item-content">
+        <header class='grid-item-header'>
+            <h1>{{ object.name }}</h1>
+            <p>{% include "localtv/_when_published.html" with instance=object %}</p>
+        </header>
+    </div>
+</a>
