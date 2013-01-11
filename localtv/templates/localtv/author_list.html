@@ -19,6 +19,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 
 {% load url from future %}
+{% load pagetabs %}
 
 {% block title %}{{ block.super }} - Users{% endblock %}
 
@@ -28,11 +29,19 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<header class="page-header">
 		<h1 class="page-title">Authors</h1>
 	</header>
-	<div id="author_list" class="padded page-content">
-		<ul>
-			{% for author in authors %}
-				<li><a href="{% url 'localtv_author' author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>
-			{% endfor %}
-		</ul>
+	<div class="padded page-content">
+		<div class="pagination upper">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
+
+		{% include "localtv/_grid/author_list.html" %}
+
+		<div class="pagination lower">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
 	</div>
 {% endblock %}
