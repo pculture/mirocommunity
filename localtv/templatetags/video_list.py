@@ -124,6 +124,9 @@ class UserVideoListNode(BaseVideoListNode):
     """
     filter_name = 'author'
 
+    def get_filter_value(self, context):
+        return [self.item.resolve(context)]
+
 
 register.tag('get_video_list_new', NewVideoListNode.handle_token)
 register.tag('get_video_list_popular', PopularVideoListNode.handle_token)
