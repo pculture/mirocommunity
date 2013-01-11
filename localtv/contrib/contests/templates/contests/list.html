@@ -1,10 +1,10 @@
-{% extends "localtv/__base.html" %}
+{% extends "localtv/__layouts/100.html" %}
 
-{% load pagetabs localtv_thumbnail i18n %}
+{% load pagetabs i18n %}
 
 {% block title %}{{ block.super }} - Contests{% endblock %}
 
-{% block content %}
+{% block main %}
 	<header class="page-header">
 	  <h1 class="page-title">{% trans "Contests" %}</h1>
 	</header>
@@ -14,26 +14,13 @@
 				{% pagetabs page_obj %}
 			{% endif %}
 		</div>
-		<ul class="grid-list card-list">
-			{% for contest in contest_list %}
-				<li class="grid-item card">
-					<a href="{{ contest.get_absolute_url }}" class="card-link">
-						<header class="card-header">
-							<span class="card-title">{{ contest.name }}</span>
-							{% with contest.videos.count as count %}
-								<span class="card-title-quiet">({{ count }} {% blocktrans count count=count %}Video{% plural %}Videos{% endblocktrans %})</span>
-							{% endwith %}
-						</header>
-						<div class="card-figure">
-							<ul class="tile-box">
-								{% for video in contest.videos.all|slice:"0:8" %}
-									<li class="tile"><img src="{% get_thumbnail_url video 140 110 %}" /></li>
-								{% endfor %}
-							</ul>
-						</div>
-					</a>
-				</li>
-			{% endfor %}
-		</ul>
+
+		{% include "localtv/_grid/contest_list.html" %}
+
+		{% if page_obj.has_other_pages %}
+			<div class="pagination lower">
+				{% pagetabs page_obj %}
+			</div>
+		{% endif %}
 	</div>
 {% endblock %}

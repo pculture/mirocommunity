@@ -1,7 +1,7 @@
 {% extends "localtv/__layouts/25_75.html" %}
 {% load comments daguerre author_comment %}
 
-{% load filters %}
+{% load filters pagetabs %}
 
 {% block title %}{{ block.super }} - {% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}{% endblock %}
 
@@ -68,6 +68,18 @@
 
 {% block main %}
 	<div class="padded">
-		{% include "localtv/_video_grid_list.html" with columns=3 %}
+		{% if page_obj.has_other_pages %}
+			<div class="pagination upper">
+				{% pagetabs page_obj %}
+			</div>
+		{% endif %}
+		
+		{% include "localtv/_grid/video_list.html" with columns=3 %}
+
+		{% if page_obj.has_other_pages %}
+			<div class="pagination lower">
+				{% pagetabs page_obj %}
+			</div>
+		{% endif %}
 	</div>
 {% endblock %}

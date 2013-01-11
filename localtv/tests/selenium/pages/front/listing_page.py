@@ -13,8 +13,8 @@ class ListingPage(Page):
     _POPULAR_PAGE = 'listing/popular/'
     _FEATURED_PAGE = 'listing/featured/'
     _CATEGORY_PAGE = 'category/%s'
-    _THUMBNAIL = '.video-thumb-wrapper img'
-    _TITLE = 'a.title-link'
+    _THUMBNAIL = '.tiles-item img'
+    _TITLE = '.grid-item-header h1'
     _FEED_PAGE = 'feeds/%s'
     _HOVER = '.popover-trigger'
     _BYLINE = '.byline a'
@@ -92,7 +92,7 @@ class ListingPage(Page):
             return False, ("Found {0} thumbnail(s) on the page, expected "
                            "{1}".format(visible_thumbs, expected))
 
-    def valid_thumbnail_sizes(self, height, width):
+    def valid_thumbnail_sizes(self, width, height):
         """Verify thumbnails have the expected height / width attributes.
 
         """
@@ -101,8 +101,8 @@ class ListingPage(Page):
         invalid_thumbs = []
         for elem in thumbs:
             size = elem.size
-            if size['height'] != height and size['width'] != width:
-                invalid_thumbs.append((size['height'], size['width']))
+            if size['width'] != width or size['height'] != height:
+                invalid_thumbs.append((size['width'], size['height']))
         if invalid_thumbs == []:
             return True
         else:
@@ -114,11 +114,12 @@ class ListingPage(Page):
         """
         return self.verify_text_present(self._TITLE, expected)
 
-    def has_overlay(self, title_text):
+    def has_overlay(self, video):
         """"Return is the overlay displays and the text content.
 
         """
-        elem = self.browser.find_element_by_link_text(title_text)
+        selector = '[href="{0}"]'.format(video.get_absolute_url())
+        elem = self.browser.find_elements_by_css_selector(selector)[0]
         self.hover_by_css(elem)
         if self.is_element_present(self._HOVER):
             overlay_text = self.get_element_attribute(

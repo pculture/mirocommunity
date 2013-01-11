@@ -1,0 +1,39 @@
+{# takes image and video_list. image has priority. #}
+
+{% load staticfiles daguerre %}
+
+<figure class='grid-item-figure'>
+    <div class="tiles-wrapper">
+        <div class="tiles-shim">
+            <img src="{% static "localtv/front/images/shim_300_216.png" %}" />
+        </div>
+        <ul class="tiles tiles-{% if image or video_list|length < 2 %}1{% elif video_list|length < 6 %}2{% else %}6{% endif %}">
+            {% if image %}
+                <li class="tiles-item">
+                    {% adjust image width=300 height=216 adjustment="fill" as image_adjusted %}
+                    {% if image_adjusted %}
+                        <img src="{{ image_adjusted }}" />
+                    {% else %}
+                        <img src="{% static "localtv/front/images/nounproject_2650_television_white.png" %}" />
+                    {% endif %}
+                </li>
+            {% elif not video_list %}
+                <li class="tiles-item">
+                    <img src="{% static "localtv/front/images/nounproject_2650_television_white.png" %}" />
+                </li>
+            {% elif video_list|length == 1 %}
+                {% for video in video_list %}
+                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" %}" /></li>
+                {% endfor %}
+            {% elif video_list|length < 6 %}
+                {% for video in video_list %}
+                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=150 height=216 adjustment="fill" %}" /></li>
+                {% endfor %}
+            {% else %}
+                {% for video in video_list %}
+                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=100 height=108 adjustment="fill" %}" /></li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </div>
+</figure>

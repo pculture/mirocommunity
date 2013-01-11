@@ -26,7 +26,7 @@ class ListingPages(WebdriverTestCase):
         self.listing_pg.open_listing_page('new')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
         self.assertEqual(True, self.listing_pg.thumbnail_count(5))
-        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
+        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(162, 117))
 
     def test_new__pagination(self):
         """New listing page is limited to 15 videos per page.
@@ -100,7 +100,7 @@ class ListingPages(WebdriverTestCase):
 
         self.listing_pg.open_listing_page('popular')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
-        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
+        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(162, 117))
 
     def test_featured__thumbs(self):
         """Verify Featured listing page has expected thumbnails.
@@ -122,7 +122,7 @@ class ListingPages(WebdriverTestCase):
                               update_index=True)
         self.listing_pg.open_listing_page('featured')
         self.assertEqual(True, self.listing_pg.has_thumbnails())
-        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(140, 194))
+        self.assertEqual(True, self.listing_pg.valid_thumbnail_sizes(162, 117))
         #Only the 5 Featured Videos should be displayed on the Page
         self.assertEqual(True, self.listing_pg.thumbnail_count(5))
 
@@ -133,16 +133,17 @@ class ListingPages(WebdriverTestCase):
         title = 'webdriver test video'
         user = self.create_user(username='autotester',
                                 first_name='selene', last_name='driver')
-        self.create_video(name=title,
-                          description=('This is the most awesome test '
-                                       'video ever!'),
-                          user=user,
-                          categories=[self.create_category(name='webdriver',
-                                                           slug='webdriver')])
+        video = self.create_video(name=title,
+                                  description=('This is the most awesome test '
+                                               'video ever!'),
+                                  user=user,
+                                  categories=[self.create_category(name='webdriver',
+                                                                   slug='webdriver')])
         self.listing_pg.open_listing_page('new')
         self.assertTrue(self.listing_pg.has_title(title))
-        link = self.listing_pg.title_link(title)
-        self.assertIn('webdriver-test-video', link)
+        elem = self.browser.find_element_by_css_selector(self.listing_pg._TITLE)
+        elem.click()
+        self.assertTrue(self.browser.current_url.endswith(video.get_absolute_url()))
 
     def test_listing__overlay(self):
         """Verify overlay appears on hover and has description text.
@@ -150,13 +151,12 @@ class ListingPages(WebdriverTestCase):
         """
         title = 'webdriver test video'
         description = 'This is the most awesome test video ever'
-        self.create_video(name=title,
-                          description=description,
-                          )
+        video = self.create_video(name=title,
+                                  description=description)
 
         self.listing_pg.open_listing_page('new')
 
-        has_overlay, overlay_description = self.listing_pg.has_overlay(title)
+        has_overlay, overlay_description = self.listing_pg.has_overlay(video)
         self.assertTrue(has_overlay)
         self.assertIn(description, overlay_description)
 
@@ -169,12 +169,12 @@ class ListingPages(WebdriverTestCase):
         description = 'This is the most awesome test video ever'
         self.create_user(username='autotester',
                          first_name='webby', last_name='driver')
-        self.create_video(name=title,
-                          description=description,
-                          authors=[3],
-                          watches=1)
+        video = self.create_video(name=title,
+                                  description=description,
+                                  authors=[3],
+                                  watches=1)
         self.listing_pg.open_listing_page('popular')
-        _, overlay_text = self.listing_pg.has_overlay(title)
+        _, overlay_text = self.listing_pg.has_overlay(video)
 
         self.assertIn('webby driver', overlay_text)
         self.assertIn('/author/3/', overlay_text)

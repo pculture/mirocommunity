@@ -1,6 +1,6 @@
 {% extends "localtv/__layouts/100.html" %}
 
-{% load pagetabs daguerre i18n %}
+{% load pagetabs i18n %}
 
 {% block title %}{{ block.super }} - Categories{% endblock %}
 
@@ -14,31 +14,13 @@
 				{% pagetabs page_obj %}
 			{% endif %}
 		</div>
-		<ul class="grid-list card-list">
-			{% for category in category_list %}
-				<li class="grid-item card">
-					<a href="{{ category.get_absolute_url }}" class="card-link">
-						<header class="card-header">
-							<span class="card-title">{{ category.name }}</span>
-							{% with category.approved_set.count as count %}
-								<span class="card-title-quiet">({{ count }} {% blocktrans count count=count %}Video{% plural %}Videos{% endblocktrans %})</span>
-							{% endwith %}
-						</header>
-						<div class="card-figure">
-							<ul class="tile-box">
-								{% for video in category.approved_set|slice:"0:8" %}
-									<li class="tile"><img src="{% adjust video.thumbnail_path width=140 height=110 %}" /></li>
-								{% endfor %}
-							</ul>
-						</div>
-					</a>
-					<div class="card-details">
-						{% for subcat in category.child_set.all|slice:":3" %}
-							{% if forloop.first %}{% trans "Subcategories" %}: {% endif %}<a href="{{ subcat.get_absolute_url}}">{{ subcat.name }}</a>{% if not forloop.last %}, {% endif %}
-						{% endfor %}
-					</div>
-				</li>
-			{% endfor %}
-		</ul>
+
+		{% include "localtv/_grid/category_list.html" %}
+
+		<div class="pagination lower">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
 	</div>
 {% endblock %}

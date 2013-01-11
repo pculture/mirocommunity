@@ -17,22 +17,20 @@ class SubmitVideoFeeds(WebdriverTestCase):
         self.listing_pg = listing_page.ListingPage(self)
         self.manage_pg.login(self.admin_user, self.admin_pass)
 
-    def submit_feed(self, testcase):
+    def submit_feed(self, **kwargs):
         """Submit the video feed.
 
         """
         self.manage_pg.open_manage_page()
-        kwargs = testcase
         self.manage_pg.submit_feed(**kwargs)
         self._update_index()
 
-    def verify_video_page(self, testcase):
+    def verify_video_page(self, **kwargs):
         """Search for a video from the feed, and verify metadata.
 
         """
         search_pg = search_page.SearchPage(self)
         search_pg.on_searchable_page()
-        kwargs = testcase
         search_pg.search(kwargs['search'])
         result, page_url = search_pg.click_first_result()
         self.assertTrue(result, page_url)
@@ -45,89 +43,94 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """Submit a youtube user feed.
 
         """
-        testcase = {'feed url': 'http://www.youtube.com/user/croatiadivers',
-                    'title': ('Scuba Diving Croatia, Duiken Kroatie, '
-                              'Tauchen Kroatien'),
-                    'search': 'Duiken Kroatie',
-                    'tags': ['boat', 'cave', 'cavern', 'croatia', 'diving'],
-                    'description': ('5 Star PADI IDC Resort & BSAC Resort '
-                                    'Centre. Vela Luka, Korcula, Croatia'),
-                    'source': 'croatiadivers'
-                    }
+        kwargs = {
+            'feed url': 'http://www.youtube.com/user/croatiadivers',
+            'title': ('Scuba Diving Croatia, Duiken Kroatie, '
+                      'Tauchen Kroatien'),
+            'search': 'Duiken Kroatie',
+            'tags': ['boat', 'cave', 'cavern', 'croatia', 'diving'],
+            'description': ('5 Star PADI IDC Resort & BSAC Resort '
+                            'Centre. Vela Luka, Korcula, Croatia'),
+            'source': 'croatiadivers'
+        }
 
-        self.submit_feed(testcase)
-        self.verify_video_page(testcase)
+        self.submit_feed(**kwargs)
+        self.verify_video_page(**kwargs)
 
     def test_submit_feed__blip(self):
         """Submit a blip feed.
 
         """
-        testcase = {'feed url': 'http://blip.tv/reelscience',
-                    'feed name': 'Reel Science',
-                    'title': 'Insects: Aliens on Earth',
-                    'search': 'Insects: Aliens',
-                    'tags': ['learning', 'animation', 'alien',
-                             'educational', 'humor'],
-                    'description': ('Saw Prometheus? What if I told you there '
-                                    'are creatures on Earth that are just as '
-                                    'freaky?'),
-                    'source': 'reelscience'
-                    }
+        kwargs = {
+            'feed url': 'http://blip.tv/reelscience',
+            'feed name': 'Reel Science',
+            'title': 'Insects: Aliens on Earth',
+            'search': 'Insects: Aliens',
+            'tags': ['learning', 'animation', 'alien',
+                     'educational', 'humor'],
+            'description': ('Saw Prometheus? What if I told you there '
+                            'are creatures on Earth that are just as '
+                            'freaky?'),
+            'source': 'reelscience'
+        }
 
-        self.submit_feed(testcase)
-        self.verify_video_page(testcase)
+        self.submit_feed(**kwargs)
+        self.verify_video_page(**kwargs)
 
     def test_submit_feed__xml(self):
         """Submit a regular xml feed.
 
         """
-        testcase = {'feed url': ('http://qa.pculture.org/feeds_test/'
-                                 'list-of-guide-feeds.xml'),
-                    'feed name': 'Static List',
-                    'title': 'LandlineTV (HD)',
-                    # term that returns a unique result
-                    'search': 'LandlineTV',
-                    'description': ('Landline TV is sketch comedy that '
-                                    'delivers witty, higher brow content '
-                                    'about relevant pop culture and news '
-                                    'events. Comically relevant... for '
-                                    'about a week or so.'),
-                    'source': 'Static List'
-                    }
-        self.submit_feed(testcase)
-        self.verify_video_page(testcase)
+        kwargs = {
+            'feed url': ('http://qa.pculture.org/feeds_test/'
+                         'list-of-guide-feeds.xml'),
+            'feed name': 'Static List',
+            'title': 'LandlineTV (HD)',
+            # term that returns a unique result
+            'search': 'LandlineTV',
+            'description': ('Landline TV is sketch comedy that '
+                            'delivers witty, higher brow content '
+                            'about relevant pop culture and news '
+                            'events. Comically relevant... for '
+                            'about a week or so.'),
+            'source': 'Static List'
+        }
+        self.submit_feed(**kwargs)
+        self.verify_video_page(**kwargs)
 
     def test_submit_feed__vimeo(self):
         """Submit a vimeo feed.
 
         """
-        testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
-                    'feed name': 'Videos janet likes on Vimeo',
-                    'title': 'WADDICT - Kiteskate Edit',
-                    'search': 'Kiteskate',
-                    'description': ('In addition to WADDICT part I & II, '
-                                    'we have done an edit dedicated to '
-                                    'kiteskating.'),
-                    'source': 'spocky'
-                    }
-        self.submit_feed(testcase)
-        self.verify_video_page(testcase)
+        kwargs = {
+            'feed url': 'http://vimeo.com/jfinn/likes/rss',
+            'feed name': 'Videos janet likes on Vimeo',
+            'title': 'WADDICT - Kiteskate Edit',
+            'search': 'Kiteskate',
+            'description': ('In addition to WADDICT part I & II, '
+                            'we have done an edit dedicated to '
+                            'kiteskating.'),
+            'source': 'spocky'
+        }
+        self.submit_feed(**kwargs)
+        self.verify_video_page(**kwargs)
 
     def test_feed_thumbnails__vimeo(self):
         """Verify submitted vimeo feed has thumbnails.
 
         """
-        testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
-                    'feed name': 'Videos janet likes on Vimeo',
-                    'title': 'WADDICT - Kiteskate Edit',
-                    'search': 'Kiteskate',
-                    'description': ('In addition to WADDICT part I & II, '
-                                    'we have done an edit dedicated to '
-                                    'kiteskating.'),
-                    'source': 'spocky'
-                    }
-        self.submit_feed(testcase)
-        self.manage_pg.click_feed_action(testcase['feed name'], "View")
+        kwargs = {
+            'feed url': 'http://vimeo.com/jfinn/likes/rss',
+            'feed name': 'Videos janet likes on Vimeo',
+            'title': 'WADDICT - Kiteskate Edit',
+            'search': 'Kiteskate',
+            'description': ('In addition to WADDICT part I & II, '
+                            'we have done an edit dedicated to '
+                            'kiteskating.'),
+            'source': 'spocky'
+        }
+        self.submit_feed(**kwargs)
+        self.manage_pg.click_feed_action(kwargs['feed name'], "View")
         self.assertTrue(self.listing_pg.has_thumbnails())
         self.assertLess(self.listing_pg.default_thumbnail_percent(), 30)
 
@@ -135,36 +138,38 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """Submit a dailymotion feed.
 
         """
-        testcase = {'feed url': 'http://www.dailymotion.com/rss/user/KEXP',
-                    'feed name': 'KEXP',
-                    'title': 'Centro-matic (Live at SXSW)',
-                    'search': 'Centro-matic',
-                    'description': ('Centro-matic perform live at the '
-                                    'Brooklyn Vegan Free Day Party at '
-                                    'Club DeVille during SXSW.'),
-                    'source': 'KEXP'
-                    }
-        self.submit_feed(testcase)
-        self.verify_video_page(testcase)
+        kwargs = {
+            'feed url': 'http://www.dailymotion.com/rss/user/KEXP',
+            'feed name': 'KEXP',
+            'title': 'Centro-matic (Live at SXSW)',
+            'search': 'Centro-matic',
+            'description': ('Centro-matic perform live at the '
+                            'Brooklyn Vegan Free Day Party at '
+                            'Club DeVille during SXSW.'),
+            'source': 'KEXP'
+        }
+        self.submit_feed(**kwargs)
+        self.verify_video_page(**kwargs)
 
     def test_submit_feed__duplicate(self):
         """Submit a duplicate feed url.
 
         """
-        testcase = {'feed url': 'http://vimeo.com/jfinn/likes/rss',
-                    'feed name': 'Videos janet likes on Vimeo',
-                    'title': 'WADDICT - Kiteskate Edit',
-                    'search': 'Kiteskate',
-                    'description': ('In addition to WADDICT part I & II, '
-                                    'we have done an edit dedicated to '
-                                    'kiteskating.'),
-                    'source': 'spocky'
-                    }
-        self.submit_feed(testcase)
+        kwargs = {
+            'feed url': 'http://vimeo.com/jfinn/likes/rss',
+            'feed name': 'Videos janet likes on Vimeo',
+            'title': 'WADDICT - Kiteskate Edit',
+            'search': 'Kiteskate',
+            'description': ('In addition to WADDICT part I & II, '
+                            'we have done an edit dedicated to '
+                            'kiteskating.'),
+            'source': 'spocky'
+        }
+        self.submit_feed(**kwargs)
 
-        testcase['feed source'] = 'duplicate'
+        kwargs['feed source'] = 'duplicate'
         self.manage_pg.open_manage_page()
-        self.assertTrue(self.manage_pg.submit_feed(**testcase))
+        self.assertTrue(self.manage_pg.submit_feed(**kwargs))
 
     def test_submit_feed__update(self):
         """Verify videos are updated when feed updates.

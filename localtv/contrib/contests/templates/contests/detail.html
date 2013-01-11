@@ -27,6 +27,7 @@
 							{% with top_videos|slice:"8" as video_list %}
 								{% include "contests/_contest_ranked_list.html" %}
 							{% endwith %}
+							
 							<a class="button button-dark button-wide" href="{% url 'localtv_contests_submit_video' pk=contest.pk slug=contest.slug %}">{% blocktrans with name=contest.name %}Submit a video to <span class="name">{{ name }}</span>{% endblocktrans %}</a>
 					</div>{# /.padded #}
 				</div>{# /.container #}

@@ -11,9 +11,9 @@ class SearchPage(NavPage):
 
     """
 
-    _SEARCH_RESULT_THUMB = '.video-thumb-wrapper img'
-    _SEARCH_RESULT_TITLE = 'a.title-link'
-    _SEARCH_RESULT_TIMESTAMP = 'a.timestamp-link'
+    _SEARCH_RESULT_THUMB = '.tiles-item img'
+    _SEARCH_RESULT_TITLE = '.grid-item-header h1'
+    _SEARCH_RESULT_TIMESTAMP = '.grid-item-header p'
     _SEARCH_HEADER = 'header.page-header h1'
     _RSS = 'a.rss'
     _NO_RESULTS = 'div#main h2'

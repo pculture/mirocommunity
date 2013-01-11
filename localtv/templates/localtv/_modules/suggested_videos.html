@@ -12,9 +12,7 @@ module displaying them.
 	</header>
 	<div class="pod-content">
 		{# TODO: calculate a suggested videos list #}
-		{% with popular_videos|slice:"4" as video_list %}
-			{% include "localtv/_video_grid_list.html" with columns=1 %}
-		{% endwith %}
+		{% include "localtv/_grid/video_list.html" with columns=1 video_list=popular_videos|slice:":4" %}
 	</div>
 	<div class="pod-footer">
 		<ul class="pod-footer-actions">

@@ -50,13 +50,7 @@
 			</ul>
 		</header>{# /.pod-header #}
 		<div class="pod-content">
-			{% if new_videos %}
-				{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"12" columns=3 %}
-			{% else %}
-				<div class="message warning">
-					<p>{% trans "No videos have been added yet." %}</p>
-				</div>
-			{% endif %}
+			{% include "localtv/_grid/video_list.html" with video_list=new_videos|slice:":12" columns=3 %}
 		</div>{# /.pod-content #}
 		<div class="pod-footer">
 			<ul class="pod-footer-actions">
@@ -78,13 +72,7 @@
 				</ul>
 			</header>{# /.pod-header #}
 			<div class="pod-content">
-				{% if popular_videos %}
-					{% include "localtv/_video_grid_list.html" with video_list=popular_videos|slice:"4" columns=1 %}
-				{% else %}
-					<div class="message warning">
-						<p>{% trans "No videos have been added yet." %}</p>
-					</div>
-				{% endif %}
+				{% include "localtv/_grid/video_list.html" with video_list=popular_videos|slice:":4" columns=1 %}
 			</div>{# /.pod-content #}
 			<div class="pod-footer">
 				<ul class="pod-footer-actions">

@@ -76,9 +76,10 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.browser.get(self.base_url)
 
     def tearDown(self):
-        print("Link to the job: https://saucelabs.com/jobs/%s" % self.browser.session_id)
-        # Sauce gets its own screenshots.
-        if not self.use_sauce:
+        if self.use_sauce:
+            print("Link to the job: https://saucelabs.com/jobs/%s" % self.browser.session_id)
+        else:
+            # Sauce gets its own screenshots.
             try:
                 time.sleep(2)
                 screenshot_name = "%s.png" % self.id()

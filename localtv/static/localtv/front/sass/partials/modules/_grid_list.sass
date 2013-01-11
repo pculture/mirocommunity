@@ -1,16 +1,111 @@
 @import compass/utilities/general/clearfix
+@import compass/css3/border-radius
 @import compass/css3/box-sizing
+    
+.grid-4 > li
+    width: 25%
+    &:nth-child(4n+1)
+        clear: left
 
-.grid-list
-	@extend .unstyled-list
-	+pie-clearfix
+.grid-3 > li
+    width: 33%
+    &:nth-child(3n+1)
+        clear: left
+
+.grid-2 > li
+    width: 50%
+    &:nth-child(odd)
+        clear: left
+
+.grid-1 > li
+    width: 100%
+    float: none
+    // Override the funky padding if there's only one.
+    +padded
+
+.grid
+    @extend .unstyled-list
+    +pie-clearfix
+    margin-left: -$gutter-width
+    & > li
+        @media screen and (max-width: $small-viewport-max) and (min-width: $tiny-viewport-max)
+            width: 50%
+            float: left
+            &:nth-child(even)
+                clear: none
+            &:nth-child(odd)
+                clear: left
+        @media screen and (max-width: $tiny-viewport-max)
+            width: 100%
+            float: none
+
+.grid > #infscr-loading
+    float: none
+    clear: both
+    text-indent: -9999px
+    height: 66px
+    background: transparent image-url("ajax-loader.gif") center center no-repeat
+
+.grid > #infscr-done
+    float: none
+    clear: both
+    height: 66px
+    +xx-large
+    font-weight: bold
+    +margin-leader
 
 .grid-item
-	width: 25%
-	float: left
-	@extend .padded
-	+box-sizing(border-box)
+    @extend .padded
+    float: left
+    padding-left: $gutter-width
+    +box-sizing(border-box)
+    position: relative
+    & > a
+        display: block
+        &:hover
+            border: 0
 
-@media screen and (max-width:$small-viewport-max)
-	.grid-item
-		width: 50%
+    .grid-item-link
+        @extend .unpadded
+        @extend .padded
+        padding-bottom: 0
+        overflow: hidden
+        +margin-trailer(0.5)
+        display: block
+        &:hover
+            background: rgba(150, 150, 150, .25)
+            border: 0
+        +border-radius(5px)
+
+    .grid-item-header, .grid-item-figure
+        +margin-trailer(0.5)
+
+    .grid-item-figure
+        overflow: hidden
+        border: 4px solid black
+        background: black
+        +border-radius(3px)
+
+        & > img
+            width: 100%
+            display: block
+
+    .grid-item-header
+        & > h1
+            @extend h3
+
+        & > p
+            +small
+            margin-bottom: 0
+
+    .grid-item-badge
+        height: 20px
+        min-width: 20px
+        padding: 10px
+        text-align: center
+        line-height: 20px
+        font-size: 20px
+        position: absolute
+        top: -10px
+        left: 20px
+        +border-radius(43px)

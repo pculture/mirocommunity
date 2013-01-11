@@ -1,6 +1,7 @@
 {% extends "localtv/__layouts/100.html" %}
 
 {% load url from future %}
+{% load pagetabs %}
 
 {% block title %}{{ block.super }} - Users{% endblock %}
 
@@ -10,11 +11,19 @@
 	<header class="page-header">
 		<h1 class="page-title">Authors</h1>
 	</header>
-	<div id="author_list" class="padded page-content">
-		<ul>
-			{% for author in authors %}
-				<li><a href="{% url 'localtv_author' author.pk %}">{% if author.first_name %}{{ author.first_name }} {{ author.last_name }}{% else %}{{ author.username }}{% endif %}</a></li>
-			{% endfor %}
-		</ul>
+	<div class="padded page-content">
+		<div class="pagination upper">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
+
+		{% include "localtv/_grid/author_list.html" %}
+
+		<div class="pagination lower">
+			{% if page_obj.has_other_pages %}
+				{% pagetabs page_obj %}
+			{% endif %}
+		</div>
 	</div>
 {% endblock %}
