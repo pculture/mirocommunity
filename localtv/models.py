@@ -671,8 +671,6 @@ class FeedImportIndex(SourceImportIndex):
 
 class SearchImportIndex(SourceImportIndex):
     source_import = models.ForeignKey('SearchImport', related_name='indexes')
-    #: This is just the name of the suite that was used to get this index.
-    suite = models.CharField(max_length=30, blank=True)
 
 
 class SourceImportError(models.Model):
