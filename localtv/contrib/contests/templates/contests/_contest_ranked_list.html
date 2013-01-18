@@ -9,7 +9,7 @@ order with the first video being #1.
 <ul class="grid grid-4">
 	{% for video in video_list %}
 		<li class="grid-item">
-			{% include "localtv/_video_grid_item_inner.html" %}
+			{% include "localtv/_grid/video_item.html" with object=video %}
 			<div class="grid-item-badge">
 				{{ forloop.counter }}
 			</div>

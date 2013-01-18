@@ -55,7 +55,7 @@
 					<h1>{% trans "New Videos" %}</h1>
 				</header>
 				<div class="pod-content">
-					{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"10" columns=2 %}
+					{% include "localtv/_grid/video_list.html" with video_list=new_videos|slice:"10" columns=2 %}
 				</div>
 			</div>
 			<div class="pod col-one-half right-sidebar">
@@ -63,7 +63,7 @@
 					<h1>{% trans "Random Videos" %}</h1>
 				</header>
 				<div class="pod-content">
-					{% include "localtv/_video_grid_list.html" with video_list=random_videos|slice:"10" columns=2 %}
+					{% include "localtv/_grid/video_list.html" with video_list=random_videos|slice:"10" columns=2 %}
 				</div>
 			</div>
 		</div>{# /.row-flexible.contest-videos #}
@@ -74,7 +74,7 @@
 					<h1>{% trans "New Videos" %}</h1>
 				</header>
 				<div class="pod-content">
-					{% include "localtv/_video_grid_list.html" with video_list=new_videos|slice:"10" columns=4 %}
+					{% include "localtv/_grid/video_list.html" with video_list=new_videos|slice:"10" columns=4 %}
 				</div>
 			</div>
 		{% endif %}
@@ -84,7 +84,7 @@
 					<h1>{% trans "Random Videos" %}</h1>
 				</header>
 				<div class="pod-content">
-					{% include "localtv/_video_grid_list.html" with video_list=random_videos|slice:"10" columns=4 %}
+					{% include "localtv/_grid/video_list.html" with video_list=random_videos|slice:"10" columns=4 %}
 				</div>
 			</div>
 		{% endif %}

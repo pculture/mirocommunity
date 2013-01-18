@@ -4,7 +4,7 @@ git+git://github.com/pculture/djvideo.git@ddc27014800a3432abc82872d8bacf103ab91c
 # Until vidscraper 1.0.2 is released.
 git+git://github.com/pculture/vidscraper.git@aa8de0480f12fe277b04c235ad4fa51eeb19e608#egg=vidscraper
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
-git+git://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
+git+git://github.com/toastdriven/django-haystack.git@6065c8525bea4b9a116c7fa279b9e3e26ac7362f#egg=django-haystack
 django-registration==0.8
 beautifulsoup4==4.0.4
 Django==1.4.3

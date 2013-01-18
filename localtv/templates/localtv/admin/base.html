@@ -38,7 +38,7 @@
               <span>logged in as <em>{{ request.user.username }}</em></span>
               <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Sign Out</a>
               {% else %}
-              <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" rel="#overlay" title="Please Sign In"><span>Sign In</span></a>
+              <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" title="Please Sign In"><span>Sign In</span></a>
             {% endif %}
           </div><!-- // user_pane -->
         <div id="logo">
