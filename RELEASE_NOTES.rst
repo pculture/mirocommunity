@@ -1,5 +1,19 @@
-Miro Community 1.9 Release Notes
-================================
+Miro Community 1.9.1
+====================
+
+* Switched to nose for tests.
+* Added tox integration.
+* Added selenium tests.
+* Cleaned up grid list CSS/HTML.
+* Moved auth functionality to top navbar.
+* Switched adding/editing sources to use pages rather than overlays.
+* Made sure haystack indexing pks are distinct.
+* Switched social authentication to django-social-auth.
+* Removed "Newsletter" functionality.
+* Corrected video thumbnail handling in generated feeds.
+
+Miro Community 1.9
+==================
 
 * Renamed :class:`~localtv.SiteLocation` to
   :class:`~localtv.SiteSettings`.
@@ -20,28 +34,34 @@ Miro Community 1.9 Release Notes
 * Moved :class:`Video` validation to the model class from the :func:`video_from_vidscraper_video` task.
 
 
-Miro Community 1.8.5 Release Notes
-==================================
+Miro Community 1.8.6
+====================
+
+* Bumped Django requirement due to security releases.
+* Stopped verification of submitted URLs' existence.
+
+Miro Community 1.8.5
+====================
 
 * Corrected a bug in feed import thumbnail handling.
 
-Miro Community 1.8.4 Release Notes
-==================================
+Miro Community 1.8.4
+====================
 
 * Corrected database referencing during source imports.
 * Eliminated a thumbnail vs. source import race condition which was
   re-marking videos as pending.
 
-Miro Community 1.8.3 Release Notes
-==================================
+Miro Community 1.8.3
+====================
 
 * Brought test cases and example project dependencies up to date.
 * Corrected some missing imports.
 * Added a catch for errors while saving video m2m relationships during
   source imports.
 
-Miro Community 1.8.2 Release Notes
-==================================
+Miro Community 1.8.2
+====================
 
 * Added instance creation methods to new test cases.
 * Disabled haystack indexing during fixture loading for legacy tests.
@@ -59,8 +79,8 @@ Miro Community 1.8.2 Release Notes
 * Deleting a source, user, or site will now remove all related videos
   from the search index.
 
-Miro Community 1.8.1 Release Notes
-==================================
+Miro Community 1.8.1
+====================
 
 * Various bugfixes for issues raised in the 1.8 release, such as:
    * Listing sorting
@@ -69,8 +89,8 @@ Miro Community 1.8.1 Release Notes
    * Feed unicode errors
 * Removed patch_settings hack from :mod:`localtv.tasks`
 
-Miro Community 1.8 Release Notes
-================================
+Miro Community 1.8
+==================
 
 New Features
 ++++++++++++
