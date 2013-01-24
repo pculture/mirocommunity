@@ -79,70 +79,72 @@ class Thumbnailable(models.Model):
 
 class SiteSettings(Thumbnailable):
     """
-    An extension to the django.contrib.sites site model, providing
-    localtv-specific data.
+    A model for storing Site-specific settings (feature switches, custom HTML
+    and CSS, etc) in the database rather than in settings files. Most of
+    these can thus be set by site admins rather than sysadmins. There are
+    also a few fields for storing site event state.
 
-    Fields:
-     - site: A link to the django.contrib.sites.models.Site object
-     - logo: custom logo image for this site
-     - background: custom background image for this site (unused?)
-     - admins: a collection of Users who have access to administrate this
-       site_settings
-     - sidebar_html: custom html to appear on the right sidebar of many
-       user-facing pages.  Can be whatever's most appropriate for the owners of
-       said site.
-     - footer_html: HTML that appears at the bottom of most user-facing pages.
-       Can be whatever's most appropriate for the owners of said site.
-     - about_html: HTML to display on the s about page
-     - tagline: displays below the s title on most user-facing pages
-     - css: The intention here is to allow  to paste in their own CSS
-       here from the admin.  Not used presently, though eventually it should
-       be.
-     - display_submit_button: whether or not we should allow users to see that
-       they can submit videos or not (doesn't affect whether or not they
-       actually can though)
-     - submission_requires_login: whether or not users need to log in to submit
-       videos.
     """
-
     thumbnail_attribute = 'logo'
 
-    site = models.ForeignKey(Site, unique=True)
+    #: Link to the Site these settings are for.
+    site = models.OneToOneField(Site)
 
-    # Site styles
+    ## Site styles ##
+    #: Custom logo image for this site.
     logo = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/logo/%Y/%m/%d/'), blank=True)
+
+    #: Custom background image for this site.
     background = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/background/%Y/%m/%d/'),
                                    blank=True)
+    #: Arbitrary custom css overrides.
     css = models.TextField(blank=True)
 
-    # Custom HTML
+    ## Custom HTML ##
+    #: Subheader for the site.
     tagline = models.CharField(max_length=4096, blank=True)
+    #: Arbitrary custom HTML which (currently) is used as a site description
+    #: on the main page.
     sidebar_html = models.TextField(blank=True)
+    #: Arbitrary custom HTML which displays in the footer of all non-admin pages.
     footer_html = models.TextField(blank=True)
+    #: Arbitrary custom HTML which displays on the about page.
     about_html = models.TextField(blank=True)
 
-    # Site permissions
+    ## Site permissions ##
+    #: A collection of Users who have administrative access to the site.
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
+    #: Whether or not the Submit Video button should display or not.
+    #: Doesn't affect whether videos can be submitted or not.
+    #: See http://bugzilla.pculture.org/show_bug.cgi?id=19809
     display_submit_button = models.BooleanField(default=True)
+    #: Whether or not users need to log in to submit videos.
     submission_requires_login = models.BooleanField(default=False)
 
-    # Feature switches
+    ## Feature switches ##
+    #: Whether playlist functionality is enabled.
     playlists_enabled = models.IntegerField(default=1)
+    #: Whether the original publication date or date added to this site
+    #: should be used for sorting videos.
     use_original_date = models.BooleanField(
         default=True,
         help_text="If set, use the original date the video was posted.  "
         "Otherwise, use the date the video was added to this site.")
+    #: Whether comments should be held for moderation.
     screen_all_comments = models.BooleanField(
         verbose_name='Hold comments for moderation',
         default=True,
         help_text="Hold all comments for moderation by default?")
+    #: Whether leaving a comment requires you to be logged in.
     comments_required_login = models.BooleanField(
         default=False,
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
 
-    # Tracking fields
+    ## Tracking fields ##
+    #: Whether a user has elected to hide the "get started" section in
+    #: the admin interface.
     hide_get_started = models.BooleanField(default=False)
 
     objects = SiteRelatedManager()
