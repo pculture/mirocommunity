@@ -21,7 +21,6 @@ from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
-from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 from django.core.validators import ipv4_re
@@ -45,12 +44,6 @@ from localtv import settings as lsettings
 from localtv.managers import SiteRelatedManager, VideoManager
 from localtv.signals import post_video_from_vidscraper, submit_finished
 
-def delete_if_exists(path):
-    if default_storage.exists(path):
-        default_storage.delete(path)
-
-FORCE_HEIGHT_CROP = 1 # arguments for thumbnail resizing
-FORCE_HEIGHT_PADDING = 2
 
 VIDEO_SERVICE_REGEXES = (
     ('YouTube', r'http://gdata\.youtube\.com/feeds/'),
@@ -82,17 +75,6 @@ class Thumbnailable(models.Model):
             return thumb_file.name
         else:
             return ''
-
-
-class SingletonManager(models.Manager):
-    def get_current(self):
-        current_site_settings = SiteSettings._default_manager.db_manager(
-            self.db).get_current()
-        singleton, created = self.get_or_create(
-            site_settings = current_site_settings)
-        if created:
-            logging.debug("Created %s." % self.model)
-        return singleton
 
 
 class SiteSettings(Thumbnailable):
