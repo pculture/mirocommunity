@@ -106,7 +106,6 @@ class SiteSettings(Thumbnailable):
      - background: custom background image for this site (unused?)
      - admins: a collection of Users who have access to administrate this
        site_settings
-     - status: one of SiteSettings.STATUS_CHOICES
      - sidebar_html: custom html to appear on the right sidebar of many
        user-facing pages.  Can be whatever's most appropriate for the owners of
        said site.
@@ -126,38 +125,32 @@ class SiteSettings(Thumbnailable):
 
     thumbnail_attribute = 'logo'
 
-    DISABLED = 0
-    ACTIVE = 1
-
-    STATUS_CHOICES = (
-        (DISABLED, _(u'Disabled')),
-        (ACTIVE, _(u'Active')),
-    )
-
     site = models.ForeignKey(Site, unique=True)
+
+    # Site styles
     logo = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/logo/%Y/%m/%d/'), blank=True)
     background = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/background/%Y/%m/%d/'),
                                    blank=True)
-    admins = models.ManyToManyField('auth.User', blank=True,
-                                    related_name='admin_for')
-    status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
+    css = models.TextField(blank=True)
+
+    # Custom HTML
+    tagline = models.CharField(max_length=4096, blank=True)
     sidebar_html = models.TextField(blank=True)
     footer_html = models.TextField(blank=True)
     about_html = models.TextField(blank=True)
-    tagline = models.CharField(max_length=4096, blank=True)
-    css = models.TextField(blank=True)
+
+    # Site permissions
+    admins = models.ManyToManyField('auth.User', blank=True,
+                                    related_name='admin_for')
     display_submit_button = models.BooleanField(default=True)
     submission_requires_login = models.BooleanField(default=False)
-    playlists_enabled = models.IntegerField(default=1)
-    hide_get_started = models.BooleanField(default=False)
 
-    # ordering options
+    # Feature switches
+    playlists_enabled = models.IntegerField(default=1)
     use_original_date = models.BooleanField(
         default=True,
         help_text="If set, use the original date the video was posted.  "
         "Otherwise, use the date the video was added to this site.")
-
-    # comments options
     screen_all_comments = models.BooleanField(
         verbose_name='Hold comments for moderation',
         default=True,
@@ -166,6 +159,9 @@ class SiteSettings(Thumbnailable):
         default=False,
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
+
+    # Tracking fields
+    hide_get_started = models.BooleanField(default=False)
 
     objects = SiteRelatedManager()
 
