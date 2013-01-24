@@ -1,11 +1,10 @@
 git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share
 git+git://github.com/pculture/django-uploadtemplate.git@233bdf6dce5108e9ed3d6efec6593148d62e5b0c#egg=django-uploadtemplate
 git+git://github.com/pculture/djvideo.git@ddc27014800a3432abc82872d8bacf103ab91c2f#egg=djvideo
-# Until vidscraper 1.0.2 is released.
-git+git://github.com/pculture/vidscraper.git@aa8de0480f12fe277b04c235ad4fa51eeb19e608#egg=vidscraper
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
 git+git://github.com/toastdriven/django-haystack.git@6065c8525bea4b9a116c7fa279b9e3e26ac7362f#egg=django-haystack
 django-registration==0.8
+vidscraper==1.0.2
 beautifulsoup4==4.0.4
 Django==1.4.3
 Pillow==1.7.5
