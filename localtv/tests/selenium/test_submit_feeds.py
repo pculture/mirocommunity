@@ -121,7 +121,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         kwargs = {
             'feed url': 'http://vimeo.com/jfinn/likes/rss',
-            'feed name': 'Videos janet likes on Vimeo',
+            'feed name': 'Videos janet likes',
             'title': 'WADDICT - Kiteskate Edit',
             'search': 'Kiteskate',
             'description': ('In addition to WADDICT part I & II, '

@@ -10,7 +10,7 @@
         {% endwith %}
     {% endfilter %}
 ">
-    {% include "localtv/_grid/_item_figure.html" with image=object.thumbnail %}
+    {% include "localtv/_grid/_item_figure.html" with image=object.thumbnail only %}
     <div class="grid-item-content">
         <header class='grid-item-header'>
             <h1>{{ object.name }}</h1>

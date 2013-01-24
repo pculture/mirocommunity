@@ -14,6 +14,7 @@ class SearchPage(NavPage):
     _SEARCH_RESULT_THUMB = '.tiles-item img'
     _SEARCH_RESULT_TITLE = '.grid-item-header h1'
     _SEARCH_RESULT_TIMESTAMP = '.grid-item-header p'
+    _SEARCH_RESULT_LINK = '.grid-item-link'
     _SEARCH_HEADER = 'header.page-header h1'
     _RSS = 'a.rss'
     _NO_RESULTS = 'div#main h2'
@@ -60,8 +61,8 @@ class SearchPage(NavPage):
         if not self.is_element_present(self._SEARCH_RESULT_THUMB):
             return False, 'There are no results on the page'
         vid_page = self.get_element_attribute(
-            self._SEARCH_RESULT_THUMB, 'href')
-        self.click_by_css(self._SEARCH_RESULT_THUMB)
+            self._SEARCH_RESULT_LINK, 'href')
+        self.click_by_css(self._SEARCH_RESULT_LINK)
         return True, vid_page
 
     def _search_results(self):

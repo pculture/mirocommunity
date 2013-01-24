@@ -7,7 +7,7 @@
         <div class="tiles-shim">
             <img src="{% static "localtv/front/images/shim_300_216.png" %}" />
         </div>
-        <ul class="tiles tiles-{% if image or video_list|length < 2 %}1{% elif video_list|length < 6 %}2{% else %}6{% endif %}">
+        <ul class="tiles tiles-{% if image or not video_list or video_list|length < 2 %}1{% elif video_list|length < 6 %}2{% else %}6{% endif %}">
             {% if image %}
                 <li class="tiles-item">
                     {% adjust image width=300 height=216 adjustment="fill" as image_adjusted %}
