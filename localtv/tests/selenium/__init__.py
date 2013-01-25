@@ -5,6 +5,7 @@ from localtv.tests import BaseTestCase
 from selenium import webdriver
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core import management
 
 class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
 
@@ -18,7 +19,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super(WebdriverTestCase, cls).setUpClass()
-        #management.call_command('flush', interactive=False)
+        management.call_command('clear_index', interactive=False)
         cls.logger = logging.getLogger('test_steps')
         cls.logger.setLevel(logging.INFO)
         if not cls.NEW_BROWSER_PER_TEST_CASE:
@@ -63,7 +64,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
 
             dc['version'] = os.environ.get('SELENIUM_VERSION', '')
             dc['platform'] = os.environ.get('SELENIUM_PLATFORM', 'WINDOWS 2008')
-            dc['name'] = cls.shortDescription()
+            dc['name'] = cls.__name__
             dc['tags'] = [os.environ.get('JOB_NAME', 'mc-local'),] 
 
             #Setup the remote browser capabilities

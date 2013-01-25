@@ -501,7 +501,7 @@ class Page(object):
         session['_auth_user_backend'] = u'localtv.auth_backends.MirocommunityBackend'
         session.save()
         self.logger.info("session saved: %s", session.session_key)
-        self.browser.add_cookie({ u'domain': 'localhost:8081',
+        self.browser.add_cookie({ u'domain': 'localhost:%s' % self.__class__.server_thread.port,
                                   u'name': u'sessionid',
                                   u'value': session.session_key,
                                   u'path': u'/',
