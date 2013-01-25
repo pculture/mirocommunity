@@ -1106,7 +1106,7 @@ class Video(Thumbnailable):
         request = urllib2.Request(utils.quote_unicode_url(self.file_url))
         request.get_method = lambda: 'HEAD'
         try:
-            http_file = urllib2.urlopen(request)
+            http_file = urllib2.urlopen(request, timeout=5)
         except Exception:
             pass
         else:
