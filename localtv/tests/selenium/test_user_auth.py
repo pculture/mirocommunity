@@ -6,21 +6,33 @@ from django.core import mail
 from localtv.tests.selenium import WebdriverTestCase
 from localtv.tests.selenium.pages.front import user_nav
 
-
 class UserAuth(WebdriverTestCase):
     """Login tests for site, fb, twitter, google, open id...
 
     """
+    NEW_BROWSER_PER_TEST_CASE = False
+
+    @classmethod
+    def setUpClass(cls):
+        super(UserAuth, cls).setUpClass()
+        cls.create_user(username='user',
+                        password='password')
+        cls.nav_pg = user_nav.NavPage(cls)
 
     def setUp(self):
-        WebdriverTestCase.setUp(self)
-        self.nav_pg = user_nav.NavPage(self)
+        super(UserAuth, self).setUp()
+        self.nav_pg.open_page('login/')
 
+
+    def tearDown(self):
+        super(UserAuth, self).setUp()
+        self.browser.delete_all_cookies()
+                
     def test_login__valid_site(self):
         """Login with valid site creds.
 
         """
-        kwargs = {'user': 'seleniumTestUser',
+        kwargs = {'user': 'user',
                   'passw': 'password',
                   'success': True}
         self.assertTrue(self.nav_pg.login(**kwargs))
@@ -75,7 +87,7 @@ class UserAuth(WebdriverTestCase):
         """Login with invalid password
 
         """
-        kwargs = {'user': 'seleniumTestUser',
+        kwargs = {'user': 'user',
                   'passw': 'junk',
                   'success': 'bad password'}
         self.assertFalse(self.nav_pg.login(**kwargs))
@@ -112,7 +124,7 @@ class UserAuth(WebdriverTestCase):
         """Login with  blank password.
 
         """
-        kwargs = {'user': 'seleniumTestUser',
+        kwargs = {'user': 'user',
                   'passw': '',
                   'success': 'blank value'}
         self.assertFalse(self.nav_pg.login(**kwargs))

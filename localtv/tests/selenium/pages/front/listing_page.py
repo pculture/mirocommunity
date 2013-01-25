@@ -119,8 +119,8 @@ class ListingPage(Page):
 
         """
         selector = '[href="{0}"]'.format(video.get_absolute_url())
-        elem = self.browser.find_elements_by_css_selector(selector)[0]
-        self.hover_by_css(elem)
+        #elem = self.browser.find_elements_by_css_selector(selector)[0]
+        self.hover_by_css(selector)
         if self.is_element_present(self._HOVER):
             overlay_text = self.get_element_attribute(
                 self._HOVER, 'data-content')

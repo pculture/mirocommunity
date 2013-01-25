@@ -5,17 +5,27 @@ from localtv.tests.selenium.pages.front import listing_page
 from localtv.tests.selenium.pages.admin import manage_page
 from django.core import management
 
-
 class SubmitVideoFeeds(WebdriverTestCase):
-    """Test the submission of supported and unsupported feeds.
+    """TestSuite for submitting video feeds to site. """
+    NEW_BROWSER_PER_TEST_CASE = False
 
-    """
+    @classmethod
+    def setUpClass(cls):
+        super(SubmitVideoFeeds, cls).setUpClass()
+        cls.manage_pg = manage_page.ManagePage(cls)
+        cls.listing_pg = listing_page.ListingPage(cls)
+
+        cls.create_user(username='admin',
+                        password='password',
+                        is_superuser=True)
+        cls.listing_pg.open_page('')
+        cls.listing_pg.log_in('admin', 'password')
 
     def setUp(self):
-        WebdriverTestCase.setUp(self)
-        self.manage_pg = manage_page.ManagePage(self)
-        self.listing_pg = listing_page.ListingPage(self)
-        self.manage_pg.login(self.admin_user, self.admin_pass)
+        super(SubmitVideoFeeds, self).setUp()
+        management.call_command('update_index', interactive=False)
+
+
 
     def submit_feed(self, **kwargs):
         """Submit the video feed.

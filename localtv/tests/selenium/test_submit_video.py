@@ -1,13 +1,28 @@
 from nose.tools import assert_false
+import time
 from localtv.tests.selenium import WebdriverTestCase
 from localtv.tests.selenium.pages.front import submit_page
 from localtv.tests.selenium.pages.front import video_page
-from localtv.tests.selenium.pages.front import user_nav
-
+from django.core import management
 
 class SubmitVideo(WebdriverTestCase):
+    """TestSuite for submitting videos to site. """
+    NEW_BROWSER_PER_TEST_CASE = False
 
-    test_videos = {'youtube': {
+    @classmethod
+    def setUpClass(cls):
+        super(SubmitVideo, cls).setUpClass()
+        cls.video_pg = video_page.VideoPage(cls)
+        cls.submit_pg = submit_page.SubmitPage(cls)
+        cls.create_user(username='admin',
+                        password='password',
+                        is_superuser=True)
+        cls.submit_pg.open_page('search/')
+        cls.submit_pg.log_in('admin', 'password')
+
+
+        cls.test_videos = {
+                   'youtube': {
                    'url': 'http://www.youtube.com/watch?v=WqJineyEszo',
                    'form': 'scraped',
                    'title': 'X Factor Audition - Stop Looking At My Mom',
@@ -102,11 +117,11 @@ class SubmitVideo(WebdriverTestCase):
                    }
 
     def setUp(self):
-        WebdriverTestCase.setUp(self)
-        nav_pg = user_nav.NavPage(self)
-        nav_pg.login(self.admin_user, self.admin_pass)
-        self.video_pg = video_page.VideoPage(self)
-        self.submit_pg = submit_page.SubmitPage(self)
+        super(SubmitVideo, self).setUp()
+        management.call_command('update_index', interactive=False)
+
+
+
 
     def verify_video_submit(self, testcase):
         """Open the video page and verify the metadata.

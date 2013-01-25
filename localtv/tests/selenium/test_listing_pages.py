@@ -8,11 +8,24 @@ class ListingPages(WebdriverTestCase):
     """Tests for the various listing pages, new, featured and popular.
 
     """
+    NEW_BROWSER_PER_TEST_CASE = False
+
+    @classmethod
+    def setUpClass(cls):
+        super(ListingPages, cls).setUpClass()
+        cls.listing_pg = listing_page.ListingPage(cls)
 
     def setUp(self):
-        WebdriverTestCase.setUp(self)
-        self.listing_pg = listing_page.ListingPage(self)
+        super(ListingPages, self).setUp()
+        self.listing_pg.open_page('listing/')
 
+
+    def tearDown(self):
+        super(ListingPages, self).tearDown()
+        management.call_command('clear_index', interactive=False)
+        #management.call_command('flush', interactive=False)
+
+        
     def test_new__thumbs(self):
         """Verify New listing page has expected thumbnails.
 
@@ -167,17 +180,19 @@ class ListingPages(WebdriverTestCase):
 
         title = 'webdriver test video'
         description = 'This is the most awesome test video ever'
-        self.create_user(username='autotester',
-                         first_name='webby', last_name='driver')
+        user = self.create_user(username='autotester',
+                                first_name='webby', last_name='driver')
+        self.logger.info(dir(user))
         video = self.create_video(name=title,
                                   description=description,
-                                  authors=[3],
+                                  authors=[user.id],
                                   watches=1)
+        self.logger.info(dir(video))
         self.listing_pg.open_listing_page('popular')
         _, overlay_text = self.listing_pg.has_overlay(video)
 
         self.assertIn('webby driver', overlay_text)
-        self.assertIn('/author/3/', overlay_text)
+        self.assertIn(user.get_full_name(), overlay_text)
 
     def test_new__page_name(self):
         """Verify new page display name on page.
