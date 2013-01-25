@@ -10,7 +10,7 @@ from tagging.forms import TagField
 import vidscraper
 from vidscraper.exceptions import UnhandledVideo
 
-from localtv.models import Video
+from localtv.models import Video, SiteSettings
 from localtv.settings import API_KEYS
 from localtv.tasks import video_save_thumbnail, CELERY_USING
 from localtv.templatetags.filters import sanitize
@@ -69,19 +69,18 @@ class SubmitVideoFormBase(forms.ModelForm):
     tags = TagField(required=False, label="Tags (optional)",
                     help_text=("You may optionally add tags for the video."))
 
-    if getattr(settings, 'LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL', False):
-        contact = Video._meta.get_field('contact').formfield(
-                              label='E-mail (required)',
-                              required=True)
-
     class Meta:
         exclude = ['status', 'site', 'thumbnail']
 
     def __init__(self, request, url, *args, **kwargs):
         self.request = request
+        site_settings = SiteSettings.objects.get_current()
         super(SubmitVideoFormBase, self).__init__(*args, **kwargs)
         if request.user.is_authenticated():
             self.fields.pop('contact', None)
+        elif site_settings.submission_requires_email:
+            self.fields['contact'].required = True
+            self.fields['contact'].label = 'Email (required)'
         self.instance.site = Site.objects.get_current()
         self.instance.status = Video.UNAPPROVED
         if not self.instance.website_url:

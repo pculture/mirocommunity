@@ -1,30 +1,25 @@
-{% extends "localtv/admin/base.html" %}
+{% extends "localtv/admin/__form.html" %}
 
 {% load i18n %}
 
-{% block title %}{% if feed.pk %}{% blocktrans with name=feed.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "Add feed" %}{% endif %} – {% trans "Admin" %} – {{ block.super }}{% endblock %}
+{% block title %}{% if feed.pk %}{% blocktrans with name=feed.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "Add feed" %}{% endif %} – {{ block.super }}{% endblock %}
 
 {% block body_class %}admin edit_feed{% endblock body_class %}
 
-{% block content %}
+{% block preform %}
   {% block subheader %}{% include "localtv/admin/video_header.html" %}{% endblock %}
-  <form action='{{ request.path }}' method='post' enctype="multipart/form-data">{% csrf_token %}
-    <h2>{% if feed.pk %}{% blocktrans with name=feed.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "Add feed" %}{% endif %}</h2>
-    <div class="input_field">
-      <ul>
-        {% for field in form %}
-        <li{% if field.name == 'auto_categories' or field.name == 'auto_authors' %} class='scrollable'{% endif %}>
-            {{ field.label_tag }}
-            {{ field.errors }}
-            {{ field }}
-            {% if field.help_text %}
-            <span class="form_help">{{ field.help_text }}</span>
-            {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-    <button type="submit" class="approve_button"><span>{% if feed.pk %}{% trans "Save changes" %}{% else %}{% trans "Add feed" %}{% endif %}</span></button>
-    <a href="{% url localtv_admin_manage_page %}" class="reject_button"><span>Cancel</span></a>
-  </form>
+  <h2>{% if feed.pk %}{% blocktrans with name=feed.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "Add feed" %}{% endif %}</h2>
+{% endblock %}
+
+{% block field %}
+  {% if field.name == 'auto_categories' or field.name == 'auto_authors' %}
+    {% include 'localtv/admin/_forms/m2m_checkbox_field.html' with field=field only %}
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block buttons %}
+  <button type="submit" class="approve_button"><span>{% if feed.pk %}{% trans "Save changes" %}{% else %}{% trans "Add feed" %}{% endif %}</span></button>
+  <a href="{% url localtv_admin_manage_page %}" class="reject_button"><span>Cancel</span></a>
 {% endblock %}

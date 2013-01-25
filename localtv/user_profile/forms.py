@@ -31,7 +31,7 @@ class ProfileForm(forms.ModelForm):
             except Profile.DoesNotExist:
                 pass # we'll do it later
             else:
-                for field_name in ('location', 'website', 'description'):
+                for field_name in ('location', 'website', 'description', 'logo'):
                     self.fields[field_name].initial = getattr(profile,
                                                               field_name)
 

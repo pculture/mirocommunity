@@ -121,6 +121,9 @@ class SiteSettings(Thumbnailable):
     display_submit_button = models.BooleanField(default=True)
     #: Whether or not users need to log in to submit videos.
     submission_requires_login = models.BooleanField(default=False)
+    #: Whether or not an email address needs to be given with an
+    #: unauthenticated video submission.
+    submission_requires_email = models.BooleanField(default=False)
 
     ## Feature switches ##
     #: Whether playlist functionality is enabled.
@@ -1162,7 +1165,7 @@ class Video(Thumbnailable, VideoBase):
     search = models.ForeignKey(SavedSearch, null=True, blank=True)
     video_service_user = models.CharField(max_length=250, blank=True)
     video_service_url = models.URLField(verify_exists=False, blank=True)
-    contact = models.CharField(verbose_name='E-mail (optional)', max_length=250,
+    contact = models.CharField(verbose_name='Email (optional)', max_length=250,
                                blank=True)
     notes = models.TextField(verbose_name='Notes (optional)', blank=True)
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')

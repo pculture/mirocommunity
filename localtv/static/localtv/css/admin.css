@@ -22,11 +22,6 @@ min-width: 250px;
 float: left;
 }
 
-
-br.clearboth {
-    clear: both;
-}
-
 /*//////////////////////////////////////
 
 ~ Layout
@@ -351,6 +346,8 @@ background: url(../images/admin_sprites.png) 0 -77px no-repeat;
   .reject_button span, .approve_button span, .plain_button span{
     padding: 9px 0px 9px 35px;
     float: right;
+  }
+  .reject_button span, .approve_button span{
     text-shadow: 0 1px 1px rgba(0,0,0,1);
   }
 
@@ -1451,51 +1448,6 @@ margin: 5px 0 20px;
 padding-left: 110px;
 }
 
-.dirtyform{
-width: 100%;
-}
-
-#admin.settings .approve_button, #admin.widget_settings .approve_button {
-    float: right;
-}
-
-#admin.settings .dirtyform div.form_container.additional span.form_help{
-display: block;
-padding: 2px 0 4px 21px;
-}
-
-#admin.settings .dirtyform div.form_container label{
-width: 20em;
-float: left;
-color: #000;
-font-size: 12px;
-clear: both;
-}
-
-#admin.settings .dirtyform div.form_container.additional label{
-width: inherit;
-float: none;
-color: #000;
-font-size: 12px;
-clear: none;
-}
-
-
-
-#admin.settings .dirtyform div.form_container.additional input{
-margin: 0 4px 0 0;
-}
-
-
-#admin.settings .dirtyform div.form_container.additional p{
-clear: both;
-
-}
-
-
-
-
-
 /*//////////////////////////////////////
 
 ~ Modals
@@ -1822,131 +1774,6 @@ padding: 5px;
 /* bookmarklet page */
 body.bookmarklet ol li {
     padding: 3px;
-}
-/* User Profiles */
-#user_profile .tabs {
-    padding-top: 20px;
-}
-
-#user_profile .approve_button, #user_profile .plain_button {
-    float: right;
-}
-
-#user_profile .form_container {
-    width: 430px;
-    padding: 0 40px;
-    margin-top: -90px;
-    }
-
-#user_profile .form_box {
-    margin: 20px 0px;
-}
-
-#user_profile .form_sider {
-    float: right;
-    display: block;
-    font-size: 10px;
-    margin-right: 70px;
-    margin-top: 4px;
-    color: #868686;
-}
-
-#user_profile .radio {
-    width: 15px;
-    position: relative;
-    top: 1px;
-    margin: 0px;
-    padding: 0px;
-    border: 0px;
-    margin: 0px 10px;
-
-}
-
-#user_profile .roles {
-    display: inline;
-    color: #525252;
-    margin-left: 30px;
-    font-weight: bold;
-}
-
-#user_profile .role {
-    color: #8ead3f;
-}
-
-#user_profile .browse_button {
-    margin-bottom: -12px;
-}
-
-#user_profile .masthead {
-    border-bottom: 2px solid #c5c5c5;
-    padding-bottom: 20px;
-    }
-
-#user_profile .close_form {
-    margin-top: 3px;
-    float: right;
-    }
-
-#user_profile UL.tabNavigation {
-    list-style: none;
-    margin: 0;
-    margin-left: 20px;
-    margin-bottom: 9px;
-    padding: 0;
-    }
-
-#user_profile UL.tabNavigation LI {
-    display: inline;
-    }
-
-#user_profile UL.tabNavigation LI A {
-    padding: 7px 15px;
-    font-weight: bold;
-    background-color: #fcfcfc;
-    color: #999999;
-    text-decoration: none;
-    border: 1px solid #E2E2E2;
-    background-image:url('../images/tabs_bg.gif');
-}
-
-#user_profile UL.tabNavigation LI.selected A,
-#user_profile UL.tabNavigation LI A:hover {
-    background-color: #fff;
-    background-image: none;
-    color: #595959;
-    border: 1px solid #E2E2E2;
-    border-bottom: 0px;
-    padding: 7px 15px;
-}
-
-#user_profile UL.tabNavigation LI.selected A {
-    background-color: #fff;
-    color: #595959;
-    border: 1px solid #E2E2E2;
-    border-bottom: 0px;
-    padding: 8px 15px;
-}
-
-#user_profile UL.tabNavigation LI A:focus {
-    outline: 0;
-    }
-
-#user_profile div.tabs > div {
-    border: 1px solid #e2e2e2;
-    background: white;
-}
-
-#user_profile div.tabs > div h2 {
-    margin-top: 0;
-    }
-
-#user_profile label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-#user_profile.notifications form ul {
-    list-style: none;
 }
 
 body.playlists .edit_link {

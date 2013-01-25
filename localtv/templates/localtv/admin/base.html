@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 
 {% get_static_prefix as STATIC_URL %}
 <!DOCTYPE html>
@@ -16,7 +16,7 @@
     <script src="{{ STATIC_URL }}localtv/js/extern/jquery.tools-1.1.2.min.js"></script>
     <script src="{{ STATIC_URL }}localtv/js/extern/jquery.form.js" type="text/javascript"></script>
     <script src="{{ STATIC_URL }}localtv/js/miro_community.js?version={{ mc_version }}" type="text/javascript"></script>
-    <title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
+    <title>{% block title %}{% trans "Admin" %} – {{ site_settings.site.name }}{% endblock title %}</title>
     {% block extrahead %}
     {% endblock extrahead %}
     {% block head %}{% endblock head %}

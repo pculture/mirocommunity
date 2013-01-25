@@ -1,13 +1,22 @@
-{% extends "localtv/user_profile/edit.html" %}
+{% extends "localtv/admin/__form.html" %}
 
-{% block title %}Notifications{% endblock %}
-{% block body_class %}notifications" onbeforeunload="return setting_onunload();{% endblock %}
-{% block profile_button %}{% endblock %}
-{% block page_title %}Profile | Change E-mail Notifications{% endblock %}
-{% block form %}
-  <div class="form_box">
-    <label for="id_notifications">I want to be notified by e-mail when:</label>
+{% load i18n %}
+
+{% block title %}{% trans "Notifications" %} – {{ block.super }}{% endblock %}
+{% block body_class %}notifications{% endblock %}
+
+{% block preform %}
+  {% include "localtv/user_profile/header.html" %}
+  <h2>Profile | Change E-mail Notifications</h2>
+  <br class='clear' />
+  <p for="id_notifications">I want to be notified by e-mail when:</p>
+{% endblock %}
+
+{% block fields_container %}
   {{ form.notifications.errors }}
   {{ form.notifications }}
-  </div>
+{% endblock %}
+
+{% block buttons %}
+  <button type="submit" class="approve_button"><span>Save Changes</span></button>
 {% endblock %}

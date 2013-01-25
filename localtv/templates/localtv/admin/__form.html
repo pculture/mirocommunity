@@ -1,0 +1,55 @@
+{% extends "localtv/admin/base.html" %}
+
+{% load staticfiles %}
+
+{% comment %}
+Base template for a page that displays a form.
+{% endcomment %}
+
+{% block head %}
+  <script type="text/javascript" src="{% static 'localtv/admin/js/jquery.dirtyforms.js' %}"></script>
+  <script type="text/javascript">
+    ;jQuery(function($){
+      $('form').dirtyForms();
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  {% block preform %}
+  {% endblock %}
+  {% block form %}
+    <form action='{{ request.path }}' method='post' enctype="multipart/form-data">{% csrf_token %}
+
+      {% block non_field_errors %}
+        {% if form.non_field_errors %}
+        <div class="helpful" style="background-color: #e30;">
+          <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      {% endblock %}
+
+      {% block fields_container %}
+        <div class="input_field">
+          <ul>
+            {% block fields %}
+              {% for field in form %}
+                {% block field %}
+                  {% include 'localtv/admin/_forms/field.html' with field=field only %}
+                {% endblock %}
+              {% endfor %}
+            {% endblock %}
+          </ul>
+        </div>
+      {% endblock %}
+      {% block buttons %}
+      {% endblock %}
+    </form>
+  {% endblock %}
+  {% block postform %}
+  {% endblock %}
+{% endblock %}

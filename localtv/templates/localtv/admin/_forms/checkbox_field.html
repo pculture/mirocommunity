@@ -1,0 +1,11 @@
+<li class="{% block classes %}{% endblock %}">
+    <label>&nbsp;</label>
+    {{ field }}
+    {{ field.label_tag }}
+    {% if field.help_text %}
+        {% include 'localtv/admin/_forms/_field_help_text.html' with field=field only %}
+    {% endif %}
+    {% if field.errors %}
+        {% include 'localtv/admin/_forms/_field_errors.html' with field=field only %}
+    {% endif %}
+</li>

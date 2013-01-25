@@ -5,7 +5,6 @@ import urllib2
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.forms.models import modelform_factory
-from django.test.utils import override_settings
 from vidscraper.videos import (Video as VidscraperVideo,
                                VideoFile as VidscraperVideoFile)
 
@@ -277,7 +276,6 @@ class SubmitURLViewTestCase(BaseTestCase):
         self.assertEqual(context['video'], video)
 
 
-@override_settings(LOCALTV_VIDEO_SUBMIT_REQUIRES_EMAIL=True)
 class SubmitVideoViewTestCase(BaseTestCase):
     def test_requires_session_data(self):
         # This differs from the functional testing in that it tests the view
@@ -400,7 +398,6 @@ class SubmitVideoViewTestCase(BaseTestCase):
 
 class SubmitVideoFormBaseTestCase(BaseTestCase):
     def setUp(self):
-
         BaseTestCase.setUp(self)
         self.form_class = modelform_factory(Video, forms.SubmitVideoFormBase)
 
@@ -414,6 +411,34 @@ class SubmitVideoFormBaseTestCase(BaseTestCase):
         form = self.form_class(request, 'http://google.com')
         form.cleaned_data = {'description': "<img src='http://www.google.com/' alt='this should be stripped' />"}
         self.assertEqual(form.clean_description(), '')
+
+    def test_requires_email__true(self):
+        """
+        Tests that if an email is required, it's required.
+
+        """
+        site_settings = SiteSettings.objects.get_current()
+        site_settings.submission_requires_email = True
+        site_settings.save()
+        request = self.factory.get('/')
+        form = self.form_class(request, 'http://google.com')
+
+        self.assertTrue(form.fields['contact'].required)
+        self.assertIn('required', form.fields['contact'].label)
+
+    def test_requires_email__false(self):
+        """
+        Tests that if an email is required, it's required.
+
+        """
+        site_settings = SiteSettings.objects.get_current()
+        site_settings.submission_requires_email = False
+        site_settings.save()
+        request = self.factory.get('/')
+        form = self.form_class(request, 'http://google.com')
+
+        self.assertFalse(form.fields['contact'].required)
+        self.assertIn('optional', form.fields['contact'].label)
 
 
 class ThumbnailSubmitVideoFormTestCase(BaseTestCase):
