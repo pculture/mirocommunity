@@ -4,7 +4,6 @@ import urllib2
 from django import forms
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.conf import settings
 from django.db.models import Q
 from tagging.forms import TagField
 import vidscraper
@@ -121,7 +120,7 @@ class SubmitVideoFormBase(forms.ModelForm):
 
     def clean_description(self):
         return sanitize(self.cleaned_data['description'],
-                                 extra_filters=['img'])
+                        extra_filters=['img'])
 
     def save(self, commit=True):
         instance = super(SubmitVideoFormBase, self).save(commit=False)
@@ -139,6 +138,7 @@ class SubmitVideoFormBase(forms.ModelForm):
             instance.try_to_get_file_url_data()
 
         old_m2m = self.save_m2m
+
         def save_m2m():
             if instance.status == Video.ACTIVE:
                 # when_submitted isn't set until after the save
@@ -212,4 +212,3 @@ class DirectLinkSubmitVideoForm(ThumbnailSubmitVideoForm):
             instance.save()
             self.save_m2m()
         return instance
-

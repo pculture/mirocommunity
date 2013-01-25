@@ -1,20 +1,17 @@
 import datetime
-import email.utils
 import itertools
 import re
 import urllib2
 import mimetypes
 import operator
-import os
 import logging
 import sys
 import traceback
-import warnings
 
-import time
+import tagging
+import tagging.models
+import vidscraper
 from bs4 import BeautifulSoup
-
-from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
@@ -24,25 +21,20 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
 from django.core.validators import ipv4_re
+from django.db import models
 from django.template import Context, loader
 from django.template.defaultfilters import slugify
-import django.utils.html
+from django.utils.html import escape as html_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-
-import vidscraper
 from haystack import connections
 from mptt.models import MPTTModel
-
 from notification import models as notification
-import tagging
-import tagging.models
 
-from localtv.templatetags.filters import sanitize
-from localtv import utils
-from localtv import settings as lsettings
+from localtv import utils, settings as lsettings
 from localtv.managers import SiteRelatedManager, VideoManager
 from localtv.signals import post_video_from_vidscraper, submit_finished
+from localtv.templatetags.filters import sanitize
 
 
 VIDEO_SERVICE_REGEXES = (
@@ -235,7 +227,7 @@ class WidgetSettings(Thumbnailable):
 
         # Okay, so either we return the title, or a sensible default
         if use_title:
-            return django.utils.html.escape(self.title)
+            return html_escape(self.title)
         return self.generate_reasonable_default_title()
 
     def generate_reasonable_default_title(self):
@@ -249,7 +241,7 @@ class WidgetSettings(Thumbnailable):
         if ((site.name and site.name.lower() != 'example.com') and
             (site.domain and site.domain.lower() != 'example.com')):
             suffix = '<a href="http://%s/">%s</a>' % (
-                site.domain, django.utils.html.escape(site.name))
+                site.domain, html_escape(site.name))
 
         # First, we try the site name, if that's a nice string.
         elif site.name and site.name.lower() != 'example.com':
@@ -554,7 +546,7 @@ class Category(MPTTModel):
         """
         Returns active videos for the category and its subcategories, ordered
         by decreasing best date.
-        
+
         """
         opts = self._mptt_meta
 
@@ -643,7 +635,7 @@ class SavedSearch(Source):
 class SourceImportIndex(models.Model):
     video = models.OneToOneField('Video', unique=True)
     index = models.PositiveIntegerField(blank=True, null=True)
-    
+
     class Meta:
         abstract = True
 
@@ -977,7 +969,6 @@ class Video(Thumbnailable):
         super(Video, self).save(**kwargs)
     save.alters_data = True
 
-
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
                               using='default', source_import=None, site_pk=None,
@@ -1282,9 +1273,9 @@ class VideoModerator(CommentModerator):
         site_settings = SiteSettings.objects.get_cached(site=video.site_id,
                                                         using=video._state.db)
         t = loader.get_template('comments/comment_notification_email.txt')
-        c = Context({ 'comment': comment,
-                      'content_object': video,
-                      'user_is_admin': True})
+        c = Context({'comment': comment,
+                     'content_object': video,
+                     'user_is_admin': True})
         subject = '[%s] New comment posted on "%s"' % (video.site.name,
                                                        video)
         message = t.render(c)
@@ -1300,9 +1291,9 @@ class VideoModerator(CommentModerator):
             if notification.should_send(video.user, video_comment, "1") and \
                not notification.should_send(video.user,
                                             admin_new_comment, "1"):
-               c = Context({ 'comment': comment,
-                             'content_object': video,
-                             'user_is_admin': False})
+               c = Context({'comment': comment,
+                            'content_object': video,
+                            'user_is_admin': False})
                message = t.render(c)
                EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                             [video.user.email]).send(fail_silently=True)
@@ -1324,9 +1315,9 @@ class VideoModerator(CommentModerator):
                 not notification.should_send(previous_comment.user,
                                              admin_new_comment, "1")):
                 previous_users.add(previous_comment.user)
-                c = Context({ 'comment': comment,
-                              'content_object': video,
-                              'user_is_admin': False})
+                c = Context({'comment': comment,
+                             'content_object': video,
+                             'user_is_admin': False})
                 message = t.render(c)
                 EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL,
                              [previous_comment.user.email]).send(fail_silently=True)
@@ -1342,20 +1333,21 @@ class VideoModerator(CommentModerator):
         else:
             return False
 
-moderator.register(Video, VideoModerator)
 
+moderator.register(Video, VideoModerator)
 tagging.register(Video)
+
 
 def finished(sender, **kwargs):
     SiteSettings.objects.clear_cache()
 request_finished.connect(finished)
+
 
 def tag_unicode(self):
     # hack to make sure that Unicode data gets returned for all tags
     if isinstance(self.name, str):
         self.name = self.name.decode('utf8')
     return self.name
-
 tagging.models.Tag.__unicode__ = tag_unicode
 
 
@@ -1373,7 +1365,6 @@ def send_new_video_email(sender, **kwargs):
     utils.send_notice('admin_new_submission',
                      subject, message,
                      site_settings=site_settings)
-
 submit_finished.connect(send_new_video_email, weak=False)
 
 
@@ -1423,8 +1414,8 @@ def create_email_notices(app, created_models, verbosity, **kwargs):
                                     'A new playlist asked to be public',
                                     default=2,
                                     verbosity=verbosity)
-
 models.signals.post_syncdb.connect(create_email_notices)
+
 
 def delete_comments(sender, instance, **kwargs):
     from django.contrib.comments import get_model

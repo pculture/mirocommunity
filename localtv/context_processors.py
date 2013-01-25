@@ -1,5 +1,3 @@
-import os
-
 from django.conf import settings
 
 from localtv.models import SiteSettings, Video, Category

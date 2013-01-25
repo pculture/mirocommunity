@@ -1,8 +1,6 @@
-from django.conf import settings
-
 from localtv.decorators import require_site_admin
 
-from uploadtemplate import views, models
+from uploadtemplate import views
 
 index = require_site_admin(views.ThemeIndexView.as_view())
 update = require_site_admin(views.ThemeUpdateView.as_view())

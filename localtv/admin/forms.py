@@ -1,6 +1,5 @@
 import datetime
 import os.path
-from xml.sax import SAXParseException
 import urlparse
 
 from django import forms
@@ -12,7 +11,6 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import resolve
 from django.db.models.fields.files import FileField, FieldFile
@@ -29,9 +27,10 @@ from localtv.tasks import video_save_thumbnail, feed_update, CELERY_USING
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper import auto_feed
-from vidscraper.videos import FeedparserFeed
+
 
 Profile = utils.get_profile_model()
+
 
 class BulkFormSetMixin(object):
     """
@@ -49,6 +48,7 @@ class BulkFormSetMixin(object):
                 form.cleaned_data.get('BULK') and
                 not self._should_delete_form(form)):
                 yield form
+
 
 class EditVideoForm(forms.ModelForm):
     """
@@ -72,6 +72,7 @@ class EditVideoForm(forms.ModelForm):
                                            using=CELERY_USING)
         return forms.ModelForm.save(self, commit=commit)
 
+
 class BulkChecklistField(forms.ModelMultipleChoiceField):
     widget = forms.CheckboxSelectMultiple
 
@@ -84,8 +85,9 @@ class BulkChecklistField(forms.ModelMultipleChoiceField):
                 name = instance.username
         else:
             name = instance.name
-        return mark_safe(u'<span>%s</span>' % (
-                conditional_escape(name)))
+        label = u'<span>{0}</span>'.format(conditional_escape(name))
+        return mark_safe(label)
+
 
 class BooleanRadioField(forms.BooleanField):
     widget = forms.RadioSelect
@@ -97,6 +99,7 @@ class BooleanRadioField(forms.BooleanField):
         forms.BooleanField.__init__(self, *args, **kwargs)
         self.widget.choices = self.choices
 
+
 class SourceWidget(forms.HiddenInput):
     def render(self, name, value, attrs=None):
         if value is not None and not isinstance(value, basestring):
@@ -105,13 +108,14 @@ class SourceWidget(forms.HiddenInput):
                 value.pk)
         return forms.HiddenInput.render(self, name, value)
 
+
 class SourceChoiceField(forms.TypedChoiceField):
     widget = SourceWidget
     name = 'id'
 
     def __init__(self, feeds, searches, **kwargs):
         feed_choices = [('feed-%s' % feed.pk, feed) for feed in
-                         feeds]
+                        feeds]
         search_choices = [('savedsearch-%s' % search.pk, search) for search in
                           searches]
         choices = feed_choices + search_choices
@@ -126,6 +130,7 @@ class SourceChoiceField(forms.TypedChoiceField):
                                         empty_value=None,
                                         initial=initial,
                                         **kwargs)
+
     def coerce(self, value):
         model_name, pk = value.split('-')
         if model_name == 'feed':
@@ -144,10 +149,10 @@ class SourceChoiceField(forms.TypedChoiceField):
 
 class SourceForm(forms.ModelForm):
     auto_categories = BulkChecklistField(required=False,
-                                    queryset=models.Category.objects.filter(
-                                                site=settings.SITE_ID))
+                                         queryset=models.Category.objects.filter(
+                                         site=settings.SITE_ID))
     auto_authors = BulkChecklistField(required=False,
-                                 queryset=User.objects.order_by('username'))
+                                      queryset=User.objects.order_by('username'))
     auto_approve = BooleanRadioField(required=False)
     delete_thumbnail = forms.BooleanField(required=False)
 
@@ -171,14 +176,14 @@ class SourceForm(forms.ModelForm):
                     'webpage': forms.URLField(
                         required=False,
                         initial=self.instance.webpage)
-                    }
+                }
                 self._extra_field_names = ['name', 'feed_url', 'webpage']
             elif isinstance(self.instance, models.SavedSearch):
                 extra_fields = {
-                    'query_string' : forms.CharField(
+                    'query_string': forms.CharField(
                         required=True,
                         initial=self.instance.query_string)
-                    }
+                }
                 self._extra_field_names = ['query_string']
             self.fields.update(extra_fields)
             self._meta.fields = self._meta.fields + tuple(extra_fields.keys())
@@ -231,11 +236,11 @@ class BaseSourceFormSet(BulkFormSetMixin, BaseModelFormSet):
         if not hasattr(self, '_real_qs_cache'):
             self._real_qs_cache = {
                 'categories': SourceForm.base_fields[
-                                  'auto_categories'].queryset._clone(
-                                      utils.SharedQuerySet),
+                                'auto_categories'].queryset._clone(
+                                    utils.SharedQuerySet),
                 'authors': SourceForm.base_fields[
-                                  'auto_authors'].queryset._clone(
-                                      utils.SharedQuerySet),
+                                'auto_authors'].queryset._clone(
+                                    utils.SharedQuerySet),
                 'feeds': utils.SharedQuerySet(models.Feed),
                 'searches': utils.SharedQuerySet(models.SavedSearch),
             }
@@ -379,7 +384,7 @@ class BulkEditVideoForm(EditVideoForm):
                   'categories', 'authors', 'when_published', 'file_url',
                   'embed_code', 'skip_authors')
 
-    def __init__(self, cache_for_form_optimization=None,  *args, **kwargs):
+    def __init__(self, cache_for_form_optimization=None, *args, **kwargs):
         # The cache_for_form_optimization is an object that is
         # optionally created by the request that calls
         # BulkEditForm. One difficulty with BulkEditForms is that the
@@ -590,7 +595,6 @@ class EditSettingsForm(forms.ModelForm):
         model = models.SiteSettings
         exclude = ['site', 'status', 'admins', 'hide_get_started']
 
-
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
         if self.instance:
@@ -630,11 +634,13 @@ class EditSettingsForm(forms.ModelForm):
         models.SiteSettings.objects.clear_cache()
         return sl
 
+
 class WidgetSettingsForm(forms.ModelForm):
 
     class Meta:
         model = models.WidgetSettings
         exclude = ['site']
+
 
 class VideoAsUrlWidget(forms.TextInput):
     def render(self, name, value, attrs=None):
@@ -648,6 +654,7 @@ class VideoAsUrlWidget(forms.TextInput):
             value = 'http://%s%s' % (
                 site.domain, instance.get_absolute_url())
         return forms.TextInput.render(self, name, value, attrs)
+
 
 class VideoAsUrlField(forms.CharField):
     widget = VideoAsUrlWidget
@@ -673,6 +680,7 @@ class VideoAsUrlField(forms.CharField):
                 pass
         raise ValidationError('Not a valid URL')
 
+
 class DayTimeWidget(forms.MultiWidget):
     def __init__(self, attrs=None):
         widgets = (
@@ -692,6 +700,7 @@ class DayTimeWidget(forms.MultiWidget):
                 time, am_pm = time - 12, 12
             return value.weekday(), time, am_pm
         return [None, None, None]
+
 
 class DayTimeField(forms.MultiValueField):
     widget = DayTimeWidget
@@ -747,6 +756,7 @@ class CategoryForm(forms.ModelForm):
             self.instance.validate_unique()
         except forms.ValidationError, e:
             self._update_errors(e.message_dict)
+
 
 class BaseCategoryFormSet(BulkFormSetMixin, BaseModelFormSet):
     @property
@@ -823,6 +833,7 @@ CategoryFormSet = modelformset_factory(models.Category,
                                        can_delete=True,
                                        extra=0)
 
+
 class FlatPageForm(forms.ModelForm):
     url = forms.CharField(required=True,
                           label='URL',
@@ -837,6 +848,7 @@ class FlatPageForm(forms.ModelForm):
                                          "footer of your site will be "
                                          "automatically included.  This can "
                                          "contain HTML."))
+
     class Meta:
         model = FlatPage
         fields = ['url', 'title', 'content']
@@ -850,7 +862,7 @@ class FlatPageForm(forms.ModelForm):
             # append the trailing slash
             value = value + '/'
         existing = FlatPage.objects.filter(
-            url = value,
+            url=value,
             sites=Site.objects.get_current())
         if self.instance:
             existing = existing.exclude(pk=self.instance.pk)
@@ -866,14 +878,17 @@ class FlatPageForm(forms.ModelForm):
                 'View with that URL already exists.')
         return value
 
+
 class BaseFlatPageFormSet(BulkFormSetMixin, BaseModelFormSet):
     pass
+
 
 FlatPageFormSet = modelformset_factory(FlatPage,
                                        form=FlatPageForm,
                                        formset=BaseFlatPageFormSet,
                                        can_delete=True,
                                        extra=0)
+
 
 class AuthorForm(user_profile_forms.ProfileForm):
     role = forms.ChoiceField(choices=(
@@ -910,7 +925,6 @@ class AuthorForm(user_profile_forms.ProfileForm):
             for field_name in ['name', 'logo', 'location',
                                'description', 'website']:
                 del self.fields[field_name]
-
 
     def clean(self):
         if self.instance.is_superuser and 'DELETE' in self.cleaned_data:
