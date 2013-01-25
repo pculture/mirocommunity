@@ -428,7 +428,7 @@ class Page(object):
         except NoSuchElementException:
             self.record_error("%s does not exist on the page" % element)
         if len(elements_found) > 1:
-            self.record_error(MULTIPLE_ELS % element)
+            self.record_error(_MULTIPLE_ELS % element)
         return elements_found[0].get_attribute(html_attribute)
 
     def get_elements_list(self, element):
