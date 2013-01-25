@@ -22,8 +22,13 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         management.call_command('clear_index', interactive=False)
         cls.logger = logging.getLogger('test_steps')
         cls.logger.setLevel(logging.INFO)
+        site_obj =  Site.objects.get_current()
+        site_obj.domain = '%s:%s' % (cls.server_thread.host, 
+                                     cls.server_thread.port)
+        site_obj.save()
         if not cls.NEW_BROWSER_PER_TEST_CASE:
             cls.create_browser()
+        
 
     @classmethod
     def tearDownClass(cls):
@@ -39,7 +44,6 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         #Set up logging to capture the test steps.
         self.logger.info('testcase: %s' % self.id())
         self.logger.info('description: %s' % self.shortDescription())
-        
         if self.NEW_BROWSER_PER_TEST_CASE:
             self.__class__.create_browser()
         
@@ -77,7 +81,8 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         else:
             test_browser = os.environ.get('TEST_BROWSER', 'Firefox')
             cls.browser = getattr(webdriver, test_browser)()
-        cls.base_url = ('http://localhost:%s/' % cls.server_thread.port)
+        cls.base_url = ('http://%s:%s/' % (cls.server_thread.host, 
+                                           cls.server_thread.port))
 
             
     @classmethod

@@ -25,6 +25,9 @@ class Page(object):
         self.browser = testsetup.browser  # BROWSER TO USE FOR TESTING
         self.base_url = testsetup.base_url
         self.logger = testsetup.logger
+        #for setting the login cookie
+        self.host = testsetup.server_thread.host
+        self.port = testsetup.server_thread.port
 
     def _safe_find(self, element):
         self.wait_for_element_present(element)
@@ -501,7 +504,7 @@ class Page(object):
         session['_auth_user_backend'] = u'localtv.auth_backends.MirocommunityBackend'
         session.save()
         self.logger.info("session saved: %s", session.session_key)
-        self.browser.add_cookie({ u'domain': 'localhost:%s' % self.__class__.server_thread.port,
+        self.browser.add_cookie({ u'domain': '%s:%s' % (self.host, self.port),
                                   u'name': u'sessionid',
                                   u'value': session.session_key,
                                   u'path': u'/',
