@@ -1,6 +1,0 @@
-A video that you have republished on your Miro Community site was deleted
-at the source.
-
-You might want to remove the video from your Miro Community site.
-
-You can see this video at: http://{{ video.site.domain }}{{ video.get_absolute_url }}
