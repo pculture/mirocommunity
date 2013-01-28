@@ -20,9 +20,9 @@ class Google(Page):
         """
        
         self.wait_for_element_present(self._GOOGLE_PAGE, wait_time=10)
-            if self.is_element_present(self._EMAIL):
-                self.type_by_css(self._EMAIL, user)
-                self.type_by_css(self._PASSWORD, passw)
-                self.click_by_css(self._SUBMIT)
-            if self.is_element_present(self._APPROVE):
-                self.click_by_css(self._APPROVE)
+        if self.is_element_present(self._EMAIL):
+            self.type_by_css(self._EMAIL, user)
+            self.type_by_css(self._PASSWORD, passw)
+            self.click_by_css(self._SUBMIT)
+        if self.is_element_present(self._APPROVE):
+            self.click_by_css(self._APPROVE)
