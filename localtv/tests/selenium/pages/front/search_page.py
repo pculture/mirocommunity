@@ -2,11 +2,11 @@
 
 """
 
-from localtv.tests.selenium.pages.front.user_nav import NavPage
+from localtv.tests.selenium.pages.front import MCFrontPage
 import time
 
 
-class SearchPage(NavPage):
+class SearchPage(MCFrontPage):
     """Search Page - lists the results of a search.
 
     """
@@ -32,6 +32,7 @@ class SearchPage(NavPage):
         """Submit a search.
 
         """
+        self.logger.info('Searching for %s' % term)
         self.on_searchable_page()
         self.clear_text(self.SEARCH_BOX)
         self.type_by_css(self.SEARCH_BOX, term)
@@ -41,6 +42,7 @@ class SearchPage(NavPage):
         """Verify search displays results, or No Results message if expected.
 
         """
+        self.logger.info('Checking for search results')
         if not expected:
             time.sleep(5)
             if self.is_text_present(self._NO_RESULTS, self._NO_RESULTS_TEXT):
@@ -57,6 +59,7 @@ class SearchPage(NavPage):
         """Click the thumb of the first result on the page.
 
         """
+        self.logger.info('Clicking the first returned search result')
         self.wait_for_element_present(self._SEARCH_RESULT_THUMB)
         if not self.is_element_present(self._SEARCH_RESULT_THUMB):
             return False, 'There are no results on the page'

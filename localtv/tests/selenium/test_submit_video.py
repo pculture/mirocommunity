@@ -17,7 +17,7 @@ class SubmitVideo(WebdriverTestCase):
         cls.create_user(username='admin',
                         password='password',
                         is_superuser=True)
-        cls.submit_pg.open_page('search/')
+        cls.video_pg.open_page(cls.base_url[:-1])
         cls.submit_pg.log_in('admin', 'password')
 
 
@@ -118,10 +118,7 @@ class SubmitVideo(WebdriverTestCase):
 
     def setUp(self):
         super(SubmitVideo, self).setUp()
-        management.call_command('update_index', interactive=False)
-
-
-
+        #management.call_command('update_index', interactive=False)
 
     def verify_video_submit(self, testcase):
         """Open the video page and verify the metadata.
@@ -129,7 +126,7 @@ class SubmitVideo(WebdriverTestCase):
         """
         kwargs = self.test_videos[testcase]
         video_page_url = self.submit_pg.submit_a_valid_video(**kwargs)
-        self.video_pg.open_page(video_page_url)
+        self.video_pg.open_page(video_page_url + "/")
         video_metadata = self.video_pg.check_video_details(**kwargs)
         for results in video_metadata:
             assert_false(results)

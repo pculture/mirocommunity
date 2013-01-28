@@ -1,10 +1,8 @@
 import time
-
 from django.conf import settings
 from django.core import mail
-
 from localtv.tests.selenium import WebdriverTestCase
-from localtv.tests.selenium.pages.front import user_nav
+from localtv.tests.selenium.pages.front.login import LoginPage 
 
 class UserAuth(WebdriverTestCase):
     """Login tests for site, fb, twitter, google, open id...
@@ -17,15 +15,15 @@ class UserAuth(WebdriverTestCase):
         super(UserAuth, cls).setUpClass()
         cls.create_user(username='user',
                         password='password')
-        cls.nav_pg = user_nav.NavPage(cls)
+        cls.login_pg = LoginPage(cls)
 
     def setUp(self):
         super(UserAuth, self).setUp()
-        self.nav_pg.open_page('login/')
+        self.login_pg.open_page('login/')
 
 
     def tearDown(self):
-        super(UserAuth, self).setUp()
+        super(UserAuth, self).tearDown()
         self.browser.delete_all_cookies()
                 
     def test_login__valid_site(self):
@@ -35,7 +33,7 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'user',
                   'passw': 'password',
                   'success': True}
-        self.assertTrue(self.nav_pg.login(**kwargs))
+        self.assertTrue(self.login_pg.login(**kwargs))
 
     def test_login__facebook(self):
         """Login with facebook creds.
@@ -48,7 +46,7 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'seleniumTestUser',
                   'passw': 'selenium',
                   'kind': 'facebook'}
-        self.assertTrue(self.nav_pg.login(**kwargs))
+        self.assertTrue(self.login_pg.login(**kwargs))
 
     def test_login__openid(self):
         """Login with openid (myopenid.com) creds.
@@ -57,8 +55,8 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'http://pcf-web-qa.myopenid.com/',
                   'passw': 'pcf.web.qa',
                   'kind': 'openid'}
-        self.assertTrue(self.nav_pg.login(**kwargs),
-                        "Login failed at {0}".format(self.nav_pg.current_url()))
+        self.assertTrue(self.login_pg.login(**kwargs),
+                        "Login failed at {0}".format(self.login_pg.current_url()))
 
     def test_login__google(self):
         """Login with google creds.
@@ -67,7 +65,8 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'pculture.qa@gmail.com',
                   'passw': 'Amara@Subtitles',
                   'kind': 'google'}
-        self.assertTrue(self.nav_pg.login(**kwargs))
+
+        self.assertTrue(self.login_pg.login(**kwargs))
 
     def test_login__twitter(self):
         """Login with twitter creds.
@@ -80,8 +79,8 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'PCFQA',
                   'passw': 'MiroCommunity',
                   'kind': 'twitter'}
-        self.assertTrue(self.nav_pg.login(**kwargs),
-                        "Login failed at {0}".format(self.nav_pg.current_url()))
+        self.assertTrue(self.login_pg.login(**kwargs),
+                        "Login failed at {0}".format(self.login_pg.current_url()))
 
     def test_login__bad_password(self):
         """Login with invalid password
@@ -90,7 +89,7 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'user',
                   'passw': 'junk',
                   'success': 'bad password'}
-        self.assertFalse(self.nav_pg.login(**kwargs))
+        self.assertFalse(self.login_pg.login(**kwargs))
 
     def test_login__signup_and_activate(self):
         """Sign up a new user, activate account and login.
@@ -101,7 +100,7 @@ class UserAuth(WebdriverTestCase):
                   'passw': 'test.pass',
                   'email': 'pculture.qa@gmail.com',
                   'kind': 'signup'}
-        self.nav_pg.login(**kwargs)
+        self.login_pg.login(**kwargs)
         #The second email sent has the activation link
         msg = str(mail.outbox[1].message())
         lines = msg.split('\n')
@@ -115,9 +114,9 @@ class UserAuth(WebdriverTestCase):
             self.fail("Did not locate the activation url in the email message")
 
         kwargs['kind'] = 'site'
-        self.nav_pg.open_page(activation_url)
+        self.login_pg.open_page(activation_url)
         kwargs['success'] = True
-        self.assertTrue(self.nav_pg.login(
+        self.assertTrue(self.login_pg.login(
             **kwargs), 'Login failed with new user account')
 
     def test_login__blank_value(self):
@@ -127,9 +126,9 @@ class UserAuth(WebdriverTestCase):
         kwargs = {'user': 'user',
                   'passw': '',
                   'success': 'blank value'}
-        self.assertFalse(self.nav_pg.login(**kwargs))
+        self.assertFalse(self.login_pg.login(**kwargs))
 
     def test_login__forgot(self):
-        self.nav_pg.wait_for_element_present(self.nav_pg.LOGIN['css'])
-        self.nav_pg.click_by_css(self.nav_pg.LOGIN['css'])
-        self.assertTrue(self.nav_pg.is_element_visible(self.nav_pg._FORGOT_PASSWORD))
+        self.login_pg.wait_for_element_present(self.login_pg.LOGIN['css'])
+        self.login_pg.click_by_css(self.login_pg.LOGIN['css'])
+        self.assertTrue(self.login_pg.is_element_visible(self.login_pg._FORGOT_PASSWORD))

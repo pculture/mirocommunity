@@ -1,9 +1,7 @@
 """Google specific login.
 
 """
-
 from localtv.tests.selenium.pages import Page
-
 
 class Google(Page):
     """Google login pages.
@@ -20,7 +18,8 @@ class Google(Page):
         """Enter info into google login form.
 
         """
-        if self.is_element_present(self._GOOGLE_PAGE):
+       
+       self.wait_for_element_present(self._GOOGLE_PAGE, wait_time=10)
             if self.is_element_present(self._EMAIL):
                 self.type_by_css(self._EMAIL, user)
                 self.type_by_css(self._PASSWORD, passw)

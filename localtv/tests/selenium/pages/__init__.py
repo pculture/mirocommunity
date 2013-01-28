@@ -19,15 +19,13 @@ class Page(object):
 
     """
     _DEBUG_ERROR = ".exception_value"
-    _MULTIPLE_ELS = "More than 1 of this element was found on the page."
+    _MULTIPLE_ELS = "More than 1 of the element %s was found on the page."
 
     def __init__(self, testsetup):
         self.browser = testsetup.browser  # BROWSER TO USE FOR TESTING
         self.base_url = testsetup.base_url
         self.logger = testsetup.logger
-        #for setting the login cookie
-        self.host = testsetup.server_thread.host
-        self.port = testsetup.server_thread.port
+        self.testcase = testsetup
 
     def _safe_find(self, element):
         self.wait_for_element_present(element)
@@ -292,7 +290,7 @@ class Page(object):
         except NoSuchElementException:
             return False
         if len(elements_found) > 1:
-            self.record_error(_MULTIPLE_ELS % element)
+            self.record_error(self._MULTIPLE_ELS % element)
         else:
             element_text = self.browser.find_element_by_css_selector(
                 element).text
@@ -321,16 +319,13 @@ class Page(object):
 
         """
         elements_found = self.browser.find_elements_by_css_selector(element)
-        if len(elements_found) > 1:
-            self.record_error(_MULTIPLE_ELS % element)
-        else:
-            element_text = elements_found[0].text
-            if text == element_text:
+        for el in elements_found:
+            if text in el.text:
                 return True
-            else:
-                self.record_error('found:' + element_text +
-                                'but was expecting: ' + text)
-                return False
+        else:
+            self.record_error('Expecting %s but did not find in for element: '
+                              '%s' % (text, element))
+            return False
 
     def _poll_for_condition(self, condition, wait_time, error_message):
         """Poll until an arbitrary condition is met """
@@ -428,7 +423,7 @@ class Page(object):
         except NoSuchElementException:
             self.record_error("%s does not exist on the page" % element)
         if len(elements_found) > 1:
-            self.record_error(_MULTIPLE_ELS % element)
+            self.record_error(self._MULTIPLE_ELS % element)
         return elements_found[0].get_attribute(html_attribute)
 
     def get_elements_list(self, element):
@@ -492,7 +487,10 @@ class Page(object):
         """
         self.logger.info("LOG IN")
         site_obj = Site.objects.get_current()
-        self.logger.info(site_obj.domain)
+        #for setting the login cookie
+        host = self.testcase.server_thread.host
+        port = self.testcase.server_thread.port
+
 
         engine = import_module(settings.SESSION_ENGINE)
         session = engine.SessionStore(self._get_session_id())
@@ -504,7 +502,7 @@ class Page(object):
         session['_auth_user_backend'] = u'localtv.auth_backends.MirocommunityBackend'
         session.save()
         self.logger.info("session saved: %s", session.session_key)
-        self.browser.add_cookie({ u'domain': '%s:%s' % (self.host, self.port),
+        self.browser.add_cookie({ u'domain': '%s:%s' % (host, port),
                                   u'name': u'sessionid',
                                   u'value': session.session_key,
                                   u'path': u'/',
