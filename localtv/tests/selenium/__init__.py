@@ -42,8 +42,8 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
     def setUp(self):
         super(WebdriverTestCase, self).setUp()
         #Set up logging to capture the test steps.
-        self.logger.info('testcase: %s' % self.id())
-        self.logger.info('description: %s' % self.shortDescription())
+        self.logger.info('TESTCASE: %s \n' % self.id())
+        self.logger.info('DESCRIPTION: %s \n' % self.shortDescription())
         if self.NEW_BROWSER_PER_TEST_CASE:
             self.__class__.create_browser()
         

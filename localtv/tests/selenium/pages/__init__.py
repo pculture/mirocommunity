@@ -517,11 +517,6 @@ class Page(object):
             return cookie['value']
         except:
             return None
-     
-        #for cookie in self.browser.get_cookies():
-        #    if (cookie['domain'] == 'unisubs.example.com' and 
-        #        cookie['name'] == 'sessionid'):
-        #        return cookie['value']
         return None
 
 

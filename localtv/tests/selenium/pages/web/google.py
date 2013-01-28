@@ -19,7 +19,7 @@ class Google(Page):
 
         """
        
-       self.wait_for_element_present(self._GOOGLE_PAGE, wait_time=10)
+        self.wait_for_element_present(self._GOOGLE_PAGE, wait_time=10)
             if self.is_element_present(self._EMAIL):
                 self.type_by_css(self._EMAIL, user)
                 self.type_by_css(self._PASSWORD, passw)

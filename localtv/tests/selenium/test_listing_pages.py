@@ -18,11 +18,6 @@ class ListingPages(WebdriverTestCase):
                                     first_name='webby', 
                                     last_name='driver')
 
-    def setUp(self):
-        super(ListingPages, self).setUp()
-        self.listing_pg.open_page('listing/')
-
-
     def tearDown(self):
         super(ListingPages, self).tearDown()
         management.call_command('clear_index', interactive=False)

@@ -52,8 +52,8 @@ class SubmitPage(Page):
         form = kwargs['form']
         self.open_page(self._URL)
         self._submit_video(url)
-        self.logger.info('Submitting the feed %s and expecting the
-                          %s form' % (kwargs['url'], kwargs['form']))
+        self.logger.info('Submitting the feed %s and expecting the'
+                          '%s form' % (kwargs['url'], kwargs['form']))
         if form == 'duplicate':
             return self._duplicate()
         else:

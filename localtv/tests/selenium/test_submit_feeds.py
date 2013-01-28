@@ -37,6 +37,9 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
         """
         self.manage_pg.click_feed_action(kwargs['feed name'], 'View')
+        if self.manage_pg.is_element_present('div.message'):
+            time.sleep(4)
+            self.manage_pg.page_refresh()
         self.assertTrue(self.listing_pg.has_thumbnails())
 
     def test_submit_feed__youtube_user(self):
@@ -108,14 +111,9 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
         """
         kwargs = {
-            'feed url': 'http://vimeo.com/jfinn/likes/rss',
-            'feed name': 'Videos janet likes on Vimeo',
-            'title': 'WADDICT - Kiteskate Edit',
-            'search': 'Kiteskate',
-            'description': ('In addition to WADDICT part I & II, '
-                            'we have done an edit dedicated to '
-                            'kiteskating.'),
-            'source': 'spocky'
+            'feed url': 'http://vimeo.com/user8568767/videos/rss',
+            'feed name': "Andrea Schneider's videos on Vimeo",
+            'source': 'user8568767'
         }
         self.submit_feed(**kwargs)
         self.manage_pg.click_feed_action(kwargs['feed name'], "View")
