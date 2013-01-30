@@ -13,8 +13,8 @@ class MyOpenIDAuth(Page):
 
         """
         self.wait_for_element_present(self._OPENID_PAGE, wait_time=10)
-            if self.is_element_present(self._PASSWORD):
-                self.type_by_css(self._PASSWORD, passw)
-                self.click_by_css(self._SUBMIT)
-            if self.is_element_present(self._CONTINUE):
-                self.click_by_css(self._CONTINUE)
+        if self.is_element_present(self._PASSWORD):
+            self.type_by_css(self._PASSWORD, passw)
+            self.click_by_css(self._SUBMIT)
+        if self.is_element_present(self._CONTINUE):
+            self.click_by_css(self._CONTINUE)
