@@ -29,7 +29,6 @@ class VideoPage(Page):
         site_vid_details = []
         for k, v in video_data.iteritems():
             if v is not None:
-                print v
                 site_vid_details.append(self._video_data(k, v))
         site_vid_details = [x for x in site_vid_details if x is not True]
         return site_vid_details

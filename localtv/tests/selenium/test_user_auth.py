@@ -108,7 +108,6 @@ class UserAuth(WebdriverTestCase):
             if "accounts/activate" in line:
                 activation_url = line.replace(
                     'http://example.com/', self.base_url)
-                print activation_url
                 break
         else:
             self.fail("Did not locate the activation url in the email message")

@@ -79,7 +79,7 @@ class ManagePage(AdminNav):
         self.click_by_css(self._ADD_FEED)
         self._add_feed_form(**feed_data)
         if feed_data['feed source'] is 'duplicate':
-            print '*** Expected this to be a duplicate feed. ***'
+            self.logger.info('Expecting duplicate feed')
             return self._duplicate_feed()
         return self._feed_in_table(feed_data['feed name'])
 
@@ -119,7 +119,6 @@ class ManagePage(AdminNav):
         dup_feed_message = 'Feed with this URL already exists.'
 
         if self.verify_text_present('li', dup_feed_message):
-            print '*** got dup feed message *** '
             return True
 
     def _bulk_edit_action(self, action):

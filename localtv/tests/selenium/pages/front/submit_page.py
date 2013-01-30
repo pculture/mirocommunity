@@ -159,10 +159,10 @@ class SubmitPage(Page):
         """Handle duplicate video submission detection.
 
         """
+        self.logger.info('Checking for duplicate video message')
         message = self.get_text_by_css(self._MESSAGE)
         for mess in self._DUP_MESSAGES:
             if mess in message:
-                print "Duplicate video detected"
                 return self._submitted_video()
 
     def _submit_form(self):

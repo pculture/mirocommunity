@@ -44,7 +44,7 @@ class BulkEditPage(AdminNav):
             self.select_option_by_text(self._BULK_EDIT, action)
             self.click_by_css(self._BULK_EDIT_APPLY)
         else:
-            print 'no items in the table'
+            self.logger.info('No items found in the table')
 
     def _search(self, term):
         """Search in the bulk edit form.
