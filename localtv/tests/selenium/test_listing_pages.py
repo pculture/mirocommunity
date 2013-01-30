@@ -181,7 +181,6 @@ class ListingPages(WebdriverTestCase):
                                   description=description,
                                   authors=[self.user.id],
                                   watches=1)
-        self.logger.info(dir(video))
         self.listing_pg.open_listing_page('popular')
         _, overlay_text = self.listing_pg.has_overlay(video)
 

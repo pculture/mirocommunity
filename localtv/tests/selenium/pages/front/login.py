@@ -141,9 +141,7 @@ class LoginPage(MCFrontPage):
         """
         self.wait_for_element_present(self._GOOGLE)
         self.click_by_css(self._GOOGLE)
-        self.logger.info(dir(self))
         google_pg = google.Google(self)
-        self.logger.info(dir(google_pg))
         google_pg.google_login(user, passw)
 
     def openid(self, user, passw):
