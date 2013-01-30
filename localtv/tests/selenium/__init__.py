@@ -1,95 +1,92 @@
-import time
 import os
-import sys
+import logging
 from django.test import LiveServerTestCase
 from localtv.tests import BaseTestCase
 from selenium import webdriver
 from django.conf import settings
-
+from django.contrib.sites.models import Site
+from django.core import management
 
 class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
+
+    # Subclasses can set this to False to reuse the same browser from test-case
+    # to test-case.
+    NEW_BROWSER_PER_TEST_CASE = True
+
+    # Selenium browser to use in the tests
+    browser = None
 
     @classmethod
     def setUpClass(cls):
         super(WebdriverTestCase, cls).setUpClass()
-        cls.results_dir = getattr(settings, "TEST_RESULTS_DIR")
-        if not os.path.exists(cls.results_dir):
-            os.makedirs(cls.results_dir)
+        management.call_command('clear_index', interactive=False)
+        cls.logger = logging.getLogger('test_steps')
+        cls.logger.setLevel(logging.INFO)
+        site_obj =  Site.objects.get_current()
+        site_obj.domain = '%s:%s' % (cls.server_thread.host, 
+                                     cls.server_thread.port)
+        site_obj.save()
+        if not cls.NEW_BROWSER_PER_TEST_CASE:
+            cls.create_browser()
+        
+
+    @classmethod
+    def tearDownClass(cls):
+        if not cls.NEW_BROWSER_PER_TEST_CASE:
+            cls.destroy_browser()
+        #destroy the selenium browser before teardown to avoid liveserver
+        #shutdown errors.  See https://code.djangoproject.com/ticket/19051
+        super(WebdriverTestCase, cls).tearDownClass()
+ 
 
     def setUp(self):
         super(WebdriverTestCase, self).setUp()
-        """This is where we want to setup the browser configuation.
-
-        If you want to use something other than default (no sauce on ff)
-        then it should be setup as env vars in the system under test. When
-        running sauce on jenkins with the jenkins pluging - then the vars are
-        set there.
-        Environment vars recognized by jenkins sauce plugin.
-        SELENIUM_HOST - The hostname of the Selenium server
-        SELENIUM_PORT - The port of the Selenium server
-        SELENIUM_PLATFORM - The operating system of the selected browser
-        SELENIUM_VERSION - The version number of the selected browser
-        SELENIUM_BROWSER - The browser string.
-        SELENIUM_URL - The initial URL to load when the test begins
-        SAUCE_USER_NAME - The user name used to invoke Sauce OnDemand
-        SAUCE_API_KEY - The access key for the user used to invoke Sauce OnDemand
-
-        We are going to look for a USE_SAUCE = True if we are using sauce,
-        and a default browser TEST_BROWSER if not using sauce.
-        """
-        LiveServerTestCase.setUp(self)
-        BaseTestCase.setUp(self)
-
-        self.use_sauce = os.environ.get('USE_SAUCE', False)
-        self.base_url = os.environ.get('TEST_URL', self.live_server_url + '/')
-        self._clear_index()
-        #If we are using sauce - check if we are running on jenkins.
-        if self.use_sauce:
-            self.sauce_key = os.environ.get('SAUCE_API_KEY')
-            self.sauce_user = os.environ.get('SAUCE_USER_NAME')
-            test_browser = os.environ.get('SELENIUM_BROWSER', 'CHROME')
-            dc = getattr(webdriver.DesiredCapabilities,
-                         test_browser.upper().replace(" ", ""))
-            dc['version'] = os.environ.get('SELENIUM_VERSION', '')
-            dc['platform'] = os.environ.get('SELENIUM_PLATFORM', 'WINDOWS 2008')
-            dc['name'] = self.id()
-
-            #Setup the remote browser capabilities
-            self.browser = webdriver.Remote(
-                desired_capabilities=dc,
-                command_executor=("http://{0}:{1}@ondemand.saucelabs.com:80/"
-                                  "wd/hub".format(self.sauce_user, self.sauce_key)))
-            sys.stdout.write("SauceOnDemandSessionID={0} job-name={1}".format(
-                self.browser.session_id, self.id()))
-        #Otherwise just running locally - setup the browser to use.
-        else:
-            test_browser = getattr(settings, 'TEST_BROWSER')
-            self.browser = getattr(webdriver, test_browser)()
-
-        self.admin_user = 'seleniumTestAdmin'
-        self.admin_pass = 'password'
-        self.normal_user = 'seleniumTestUser'
-        self.normal_pass = 'password'
-        self.create_user(username=self.admin_user,
-                         password=self.admin_pass, is_superuser=True)
-        self.create_user(username=self.normal_user, password=self.normal_pass)
-        self.browser.get(self.base_url)
-
+        #Set up logging to capture the test steps.
+        self.logger.info('TESTCASE: %s \n' % self.id())
+        self.logger.info('DESCRIPTION: %s \n' % self.shortDescription())
+        if self.NEW_BROWSER_PER_TEST_CASE:
+            self.__class__.create_browser()
+        
     def tearDown(self):
         if self.use_sauce:
-            print("Link to the job: https://saucelabs.com/jobs/%s" % self.browser.session_id)
+            self.logger.info("Link to the job: https://saucelabs.com/jobs/%s"
+                             % self.browser.session_id)
+            self.logger.info("SauceOnDemandSessionID={0} job-name={1}".format(
+                             self.browser.session_id, self.id()))
+        if self.NEW_BROWSER_PER_TEST_CASE:
+            self.__class__.destroy_browser()
+
+    @classmethod
+    def create_browser(cls):
+        #If running on sauce config values are from env vars 
+        cls.use_sauce = os.environ.get('USE_SAUCE', False)
+        if cls.use_sauce: 
+            cls.sauce_key = os.environ.get('SAUCE_API_KEY')
+            cls.sauce_user = os.environ.get('SAUCE_USER_NAME')
+            test_browser = os.environ.get('SELENIUM_BROWSER', 'Chrome').upper()
+            dc = getattr(webdriver.DesiredCapabilities, test_browser)
+
+            dc['version'] = os.environ.get('SELENIUM_VERSION', '')
+            dc['platform'] = os.environ.get('SELENIUM_PLATFORM', 'WINDOWS 2008')
+            dc['name'] = cls.__name__
+            dc['tags'] = [os.environ.get('JOB_NAME', 'mc-local'),] 
+
+            #Setup the remote browser capabilities
+            cls.browser = webdriver.Remote(
+                desired_capabilities=dc,
+                command_executor=("http://{0}:{1}@ondemand.saucelabs.com:80/"
+                                  "wd/hub".format(cls.sauce_user, cls.sauce_key)))
+
+        #Otherwise just running locally - setup the browser to use.
         else:
-            # Sauce gets its own screenshots.
-            try:
-                time.sleep(2)
-                screenshot_name = "%s.png" % self.id()
-                filename = os.path.join(self.results_dir, screenshot_name)
-                self.browser.get_screenshot_as_file(filename)
-            except:
-                # Sometimes screenshot fails - test should not fail on this.
-                pass
-        try:
-            self.browser.quit()
-        except:
-            # May already be quit - so don't fail.
-            pass
+            test_browser = os.environ.get('TEST_BROWSER', 'Firefox')
+            cls.browser = getattr(webdriver, test_browser)()
+        cls.base_url = ('http://%s:%s/' % (cls.server_thread.host, 
+                                           cls.server_thread.port))
+
+            
+    @classmethod
+    def destroy_browser(cls):
+        if cls.browser is not None:
+            cls.browser.quit()
+            cls.browser = None

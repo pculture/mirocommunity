@@ -4,18 +4,25 @@ from localtv.tests.selenium.pages.front import video_page
 from localtv.tests.selenium.pages.front import listing_page
 from localtv.tests.selenium.pages.admin import manage_page
 from django.core import management
-
+import datetime
+import time
 
 class SubmitVideoFeeds(WebdriverTestCase):
-    """Test the submission of supported and unsupported feeds.
+    """TestSuite for submitting video feeds to site. """
+    NEW_BROWSER_PER_TEST_CASE = False
 
-    """
+    @classmethod
+    def setUpClass(cls):
+        super(SubmitVideoFeeds, cls).setUpClass()
+        cls.manage_pg = manage_page.ManagePage(cls)
+        cls.listing_pg = listing_page.ListingPage(cls)
+        cls.search_pg = search_page.SearchPage(cls)
+        cls.create_user(username='feedadmin',
+                        password='password',
+                        is_superuser=True)
+        cls.listing_pg.open_page(cls.base_url[:-1])
+        cls.listing_pg.log_in('feedadmin', 'password')
 
-    def setUp(self):
-        WebdriverTestCase.setUp(self)
-        self.manage_pg = manage_page.ManagePage(self)
-        self.listing_pg = listing_page.ListingPage(self)
-        self.manage_pg.login(self.admin_user, self.admin_pass)
 
     def submit_feed(self, **kwargs):
         """Submit the video feed.
@@ -23,35 +30,26 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         self.manage_pg.open_manage_page()
         self.manage_pg.submit_feed(**kwargs)
-        self._update_index()
+        management.call_command('update_index', interactive=False)
 
     def verify_video_page(self, **kwargs):
         """Search for a video from the feed, and verify metadata.
 
         """
-        search_pg = search_page.SearchPage(self)
-        search_pg.on_searchable_page()
-        search_pg.search(kwargs['search'])
-        result, page_url = search_pg.click_first_result()
-        self.assertTrue(result, page_url)
-        video_pg = video_page.VideoPage(self)
-        video_metadata = video_pg.check_video_details(**kwargs)
-        for results in video_metadata:
-            self.assertFalse(results)
+        self.manage_pg.click_feed_action(kwargs['feed name'], 'View')
+        if self.manage_pg.is_element_present('div.message'):
+            time.sleep(4)
+            self.manage_pg.page_refresh()
+        self.assertTrue(self.listing_pg.has_thumbnails())
 
     def test_submit_feed__youtube_user(self):
         """Submit a youtube user feed.
 
         """
         kwargs = {
-            'feed url': 'http://www.youtube.com/user/croatiadivers',
-            'title': ('Scuba Diving Croatia, Duiken Kroatie, '
-                      'Tauchen Kroatien'),
-            'search': 'Duiken Kroatie',
-            'tags': ['boat', 'cave', 'cavern', 'croatia', 'diving'],
-            'description': ('5 Star PADI IDC Resort & BSAC Resort '
-                            'Centre. Vela Luka, Korcula, Croatia'),
-            'source': 'croatiadivers'
+            'feed url': 'http://www.youtube.com/user/janetefinn',
+            'feed name': 'Uploads by Janet Dragojevic',
+            'source': 'Janet Dragojevic'
         }
 
         self.submit_feed(**kwargs)
@@ -64,13 +62,6 @@ class SubmitVideoFeeds(WebdriverTestCase):
         kwargs = {
             'feed url': 'http://blip.tv/reelscience',
             'feed name': 'Reel Science',
-            'title': 'Insects: Aliens on Earth',
-            'search': 'Insects: Aliens',
-            'tags': ['learning', 'animation', 'alien',
-                     'educational', 'humor'],
-            'description': ('Saw Prometheus? What if I told you there '
-                            'are creatures on Earth that are just as '
-                            'freaky?'),
             'source': 'reelscience'
         }
 
@@ -120,14 +111,9 @@ class SubmitVideoFeeds(WebdriverTestCase):
 
         """
         kwargs = {
-            'feed url': 'http://vimeo.com/jfinn/likes/rss',
-            'feed name': 'Videos janet likes',
-            'title': 'WADDICT - Kiteskate Edit',
-            'search': 'Kiteskate',
-            'description': ('In addition to WADDICT part I & II, '
-                            'we have done an edit dedicated to '
-                            'kiteskating.'),
-            'source': 'spocky'
+            'feed url': 'http://vimeo.com/user8568767/videos/rss',
+            'feed name': "Andrea Schneider's videos on Vimeo",
+            'source': 'user8568767'
         }
         self.submit_feed(**kwargs)
         self.manage_pg.click_feed_action(kwargs['feed name'], "View")
@@ -183,14 +169,16 @@ class SubmitVideoFeeds(WebdriverTestCase):
                                  'feed-add-items.php?i=1')
         self.manage_pg.open_manage_page()
         self.manage_pg.submit_feed(**kwargs)
-        search_pg = search_page.SearchPage(self)
-        search_pg.search('Feed update TEST')
-        _, result = search_pg.has_results()
+        self.search_pg = search_page.SearchPage(self)
+        self.search_pg.search('Feed update TEST')
+        _, result = self.search_pg.has_results()
         self.assertTrue(result['titles'] == 1, result)
         self.manage_pg.open_page('http://qa.pculture.org/feeds_test/'
                                  'feed-add-items.php?i=2')
         management.call_command('update_sources')
-        search_pg = search_page.SearchPage(self)
-        search_pg.search('Feed update TEST')
-        _, result = search_pg.has_results()
+        management.call_command('update_index', interactive=False)
+
+        self.search_pg = search_page.SearchPage(self)
+        self.search_pg.search('Feed update TEST')
+        _, result = self.search_pg.has_results()
         self.assertTrue(result['titles'] == 13, result)

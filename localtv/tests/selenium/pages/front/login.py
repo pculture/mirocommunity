@@ -1,14 +1,11 @@
-"""The login form page.
-
-"""
-from localtv.tests.selenium.pages import Page
+from localtv.tests.selenium.pages.front import MCFrontPage
 from localtv.tests.selenium.pages.web import facebook
 from localtv.tests.selenium.pages.web import twitter
 from localtv.tests.selenium.pages.web import google
 from localtv.tests.selenium.pages.web import openid
 
 
-class Login(Page):
+class LoginPage(MCFrontPage):
     """
      Page that displays when the user chooses to login.
      Contains, site, signin, facebook, openinstall, and google options.
@@ -93,6 +90,30 @@ class Login(Page):
                    'Account inactive message not displayed'
         else:
             assert False, "expected an error, but not this one"
+
+    def login(self, user, passw, kind='site', email=None, success=True):
+        """Log in with the specified account type - default as a no-priv user.
+
+        Valid values for kind are: 'site', 'signup', 'facebook',
+        'google', 'openid', 'twitter'
+
+        """
+        if (self.is_logged_in() and
+            not self.is_text_present(self.LOGOUT['css'],
+                                     self.LOGOUT['text'] % user)):
+            self.logout()
+
+        self.wait_for_element_present(self.LOGIN['css'])
+        self.click_by_css(self.LOGIN['css'])
+        kwargs = {'user': user,
+                  'passw': passw,
+                  'email': email,
+                  'tab': kind,
+                  'success': success,
+                  }
+        self.user_login(**kwargs)
+        self.wait_for_element_present(self.SITE_NAME, wait_time=15)
+        return self.is_logged_in()
 
     def signup(self, *args):
         """Complete the signup form.

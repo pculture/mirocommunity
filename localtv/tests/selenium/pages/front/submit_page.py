@@ -52,7 +52,8 @@ class SubmitPage(Page):
         form = kwargs['form']
         self.open_page(self._URL)
         self._submit_video(url)
-
+        self.logger.info('Submitting the feed %s and expecting the'
+                          '%s form' % (kwargs['url'], kwargs['form']))
         if form == 'duplicate':
             return self._duplicate()
         else:
@@ -62,6 +63,7 @@ class SubmitPage(Page):
                     kwargs.pop(field)
             getattr(self, form_action)(**kwargs)
             self._submit_form()
+            self.wait_for_element_present(self._MESSAGE)
             return self._submitted_video()
 
     def _error_message(self):
@@ -157,10 +159,10 @@ class SubmitPage(Page):
         """Handle duplicate video submission detection.
 
         """
+        self.logger.info('Checking for duplicate video message')
         message = self.get_text_by_css(self._MESSAGE)
         for mess in self._DUP_MESSAGES:
             if mess in message:
-                print "Duplicate video detected"
                 return self._submitted_video()
 
     def _submit_form(self):

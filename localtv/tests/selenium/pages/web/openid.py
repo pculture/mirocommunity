@@ -12,10 +12,9 @@ class MyOpenIDAuth(Page):
         """Login to openid.
 
         """
-        if self.is_element_present(self._OPENID_PAGE):
-            time.sleep(3)
-            if self.is_element_present(self._PASSWORD):
-                self.type_by_css(self._PASSWORD, passw)
-                self.click_by_css(self._SUBMIT)
-            if self.is_element_present(self._CONTINUE):
-                self.click_by_css(self._CONTINUE)
+        self.wait_for_element_present(self._OPENID_PAGE, wait_time=10)
+        if self.is_element_present(self._PASSWORD):
+            self.type_by_css(self._PASSWORD, passw)
+            self.click_by_css(self._SUBMIT)
+        if self.is_element_present(self._CONTINUE):
+            self.click_by_css(self._CONTINUE)

@@ -189,7 +189,5 @@ class SettingsPage(AdminNav):
 
         settings.update(kwargs)
         for k, v in settings.iteritems():
-            print k, v
             getattr(self, k)(v)
-
         self.save_settings()
