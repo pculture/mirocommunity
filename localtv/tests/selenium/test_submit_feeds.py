@@ -33,7 +33,6 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         self.manage_pg.open_manage_page()
         self.manage_pg.submit_feed(**kwargs)
-        management.call_command('update_index', interactive=False)
 
     def verify_video_page(self, **kwargs):
         """Search for a video from the feed, and verify metadata.
@@ -98,7 +97,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         kwargs = {
             'feed url': 'http://vimeo.com/jfinn/likes/rss',
-            'feed name': 'Videos janet likes on Vimeo',
+            'feed name': 'Videos janet likes',
             'title': 'WADDICT - Kiteskate Edit',
             'search': 'Kiteskate',
             'description': ('In addition to WADDICT part I & II, '
@@ -115,7 +114,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         kwargs = {
             'feed url': 'http://vimeo.com/user8568767/videos/rss',
-            'feed name': "Andrea Schneider's videos on Vimeo",
+            'feed name': "Andrea Schneider's videos",
             'source': 'user8568767'
         }
         self.submit_feed(**kwargs)
@@ -129,7 +128,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         kwargs = {
             'feed url': 'http://www.dailymotion.com/rss/user/KEXP',
-            'feed name': 'KEXP',
+            'feed name': 'KEXP - Most recent videos - Dailymotion',
             'title': 'Centro-matic (Live at SXSW)',
             'search': 'Centro-matic',
             'description': ('Centro-matic perform live at the '
@@ -146,7 +145,7 @@ class SubmitVideoFeeds(WebdriverTestCase):
         """
         kwargs = {
             'feed url': 'http://vimeo.com/jfinn/likes/rss',
-            'feed name': 'Videos janet likes on Vimeo',
+            'feed name': 'Videos janet likes',
             'title': 'WADDICT - Kiteskate Edit',
             'search': 'Kiteskate',
             'description': ('In addition to WADDICT part I & II, '
@@ -179,7 +178,6 @@ class SubmitVideoFeeds(WebdriverTestCase):
         self.manage_pg.open_page('http://qa.pculture.org/feeds_test/'
                                  'feed-add-items.php?i=2')
         management.call_command('update_sources')
-        management.call_command('update_index', interactive=False)
 
         self.search_pg = search_page.SearchPage(self)
         self.search_pg.search('Feed update TEST')
