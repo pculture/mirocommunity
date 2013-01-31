@@ -1,6 +1,7 @@
 """Google specific login.
 
 """
+import time
 from localtv.tests.selenium.pages import Page
 
 class Google(Page):
@@ -24,5 +25,7 @@ class Google(Page):
             self.type_by_css(self._EMAIL, user)
             self.type_by_css(self._PASSWORD, passw)
             self.click_by_css(self._SUBMIT)
+            time.sleep(2)
+            self.wait_for_text_not_present("Loading, please wait")
         if self.is_element_present(self._APPROVE):
             self.click_by_css(self._APPROVE)
