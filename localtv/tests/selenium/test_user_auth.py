@@ -2,7 +2,8 @@ import time
 from django.conf import settings
 from django.core import mail
 from localtv.tests.selenium import WebdriverTestCase
-from localtv.tests.selenium.pages.front.login import LoginPage 
+from localtv.tests.selenium.pages.front.login import LoginPage
+
 
 class UserAuth(WebdriverTestCase):
     """Login tests for site, fb, twitter, google, open id...
@@ -21,11 +22,10 @@ class UserAuth(WebdriverTestCase):
         super(UserAuth, self).setUp()
         self.login_pg.open_page('login/')
 
-
     def tearDown(self):
         super(UserAuth, self).tearDown()
         self.browser.delete_all_cookies()
-                
+
     def test_login__valid_site(self):
         """Login with valid site creds.
 

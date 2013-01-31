@@ -2,6 +2,8 @@
 
 """
 from localtv.tests.selenium.pages import Page
+
+
 class AdminNav(Page):
     """Define the common elments in the Admin UI.
 

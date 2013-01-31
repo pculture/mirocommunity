@@ -3,9 +3,9 @@ import logging
 from django.test import LiveServerTestCase
 from localtv.tests import BaseTestCase
 from selenium import webdriver
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import management
+
 
 class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
 
@@ -22,13 +22,12 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         management.call_command('clear_index', interactive=False)
         cls.logger = logging.getLogger('test_steps')
         cls.logger.setLevel(logging.INFO)
-        site_obj =  Site.objects.get_current()
-        site_obj.domain = '%s:%s' % (cls.server_thread.host, 
+        site_obj = Site.objects.get_current()
+        site_obj.domain = '%s:%s' % (cls.server_thread.host,
                                      cls.server_thread.port)
         site_obj.save()
         if not cls.NEW_BROWSER_PER_TEST_CASE:
             cls.create_browser()
-        
 
     @classmethod
     def tearDownClass(cls):
@@ -37,7 +36,6 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         #destroy the selenium browser before teardown to avoid liveserver
         #shutdown errors.  See https://code.djangoproject.com/ticket/19051
         super(WebdriverTestCase, cls).tearDownClass()
- 
 
     def setUp(self):
         super(WebdriverTestCase, self).setUp()
@@ -46,7 +44,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         self.logger.info('DESCRIPTION: %s \n' % self.shortDescription())
         if self.NEW_BROWSER_PER_TEST_CASE:
             self.__class__.create_browser()
-        
+
     def tearDown(self):
         if self.use_sauce:
             self.logger.info("Link to the job: https://saucelabs.com/jobs/%s"
@@ -58,9 +56,9 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
 
     @classmethod
     def create_browser(cls):
-        #If running on sauce config values are from env vars 
+        # If running on sauce config values are from env vars
         cls.use_sauce = os.environ.get('USE_SAUCE', False)
-        if cls.use_sauce: 
+        if cls.use_sauce:
             cls.sauce_key = os.environ.get('SAUCE_API_KEY')
             cls.sauce_user = os.environ.get('SAUCE_USER_NAME')
             test_browser = os.environ.get('SELENIUM_BROWSER', 'Chrome').upper()
@@ -69,7 +67,7 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
             dc['version'] = os.environ.get('SELENIUM_VERSION', '')
             dc['platform'] = os.environ.get('SELENIUM_PLATFORM', 'WINDOWS 2008')
             dc['name'] = cls.__name__
-            dc['tags'] = [os.environ.get('JOB_NAME', 'mc-local'),] 
+            dc['tags'] = [os.environ.get('JOB_NAME', 'mc-local')]
 
             #Setup the remote browser capabilities
             cls.browser = webdriver.Remote(
@@ -81,10 +79,9 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         else:
             test_browser = os.environ.get('TEST_BROWSER', 'Firefox')
             cls.browser = getattr(webdriver, test_browser)()
-        cls.base_url = ('http://%s:%s/' % (cls.server_thread.host, 
+        cls.base_url = ('http://%s:%s/' % (cls.server_thread.host,
                                            cls.server_thread.port))
 
-            
     @classmethod
     def destroy_browser(cls):
         if cls.browser is not None:

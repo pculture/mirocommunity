@@ -1,11 +1,10 @@
 from localtv.tests.selenium import WebdriverTestCase
 from localtv.tests.selenium.pages.front import search_page
-from localtv.tests.selenium.pages.front import video_page
 from localtv.tests.selenium.pages.front import listing_page
 from localtv.tests.selenium.pages.admin import manage_page
 from django.core import management
-import datetime
 import time
+
 
 class SubmitVideoFeeds(WebdriverTestCase):
     """TestSuite for submitting video feeds to site. """

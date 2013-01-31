@@ -29,16 +29,17 @@ class SubmitPage(Page):
     _CONTACT = 'input#id_contact'
     _NOTES = 'textarea#id_notes'
 
-    _FORM_DEFAULTS = {'tags': 'test_tag',
-                      'contact': None,
-                      'notes': None,
-                      'title': None,
-                      'website': None,
-                      'embed': None,
-                      'thumb_file': None,
-                      'thumb_url': None,
-                      'description': None
-                      }
+    _FORM_DEFAULTS = {
+        'tags': 'test_tag',
+        'contact': None,
+        'notes': None,
+        'title': None,
+        'website': None,
+        'embed': None,
+        'thumb_file': None,
+        'thumb_url': None,
+        'description': None
+    }
     #VIDEO SUBMITTED OR DUPLICATED LINK
     _SUBMITTED_VID_LINK = 'div.message a'
 

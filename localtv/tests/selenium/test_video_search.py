@@ -3,6 +3,7 @@ from localtv.tests.selenium import WebdriverTestCase
 
 from localtv.tests.selenium.pages.front import search_page
 
+
 class VideoSearch(WebdriverTestCase):
     """TestSuite for site video searches.  """
     NEW_BROWSER_PER_TEST_CASE = False
@@ -15,7 +16,7 @@ class VideoSearch(WebdriverTestCase):
     def setUp(self):
         super(VideoSearch, self).setUp()
         self._clear_index()
-        
+
     def test_search_title__phrase(self):
         """Search for a phrase.
 
