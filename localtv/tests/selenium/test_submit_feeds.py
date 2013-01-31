@@ -23,6 +23,9 @@ class SubmitVideoFeeds(WebdriverTestCase):
         cls.listing_pg.open_page(cls.base_url[:-1])
         cls.listing_pg.log_in('feedadmin', 'password')
 
+    def setUp(self):
+        super(SubmitVideoFeeds, self).setUp()
+        self._clear_index()
 
     def submit_feed(self, **kwargs):
         """Submit the video feed.

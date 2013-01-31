@@ -12,6 +12,9 @@ class VideoSearch(WebdriverTestCase):
         super(VideoSearch, cls).setUpClass()
         cls.search_pg = search_page.SearchPage(cls)
 
+    def setUp(self):
+        super(VideoSearch, self).setUp()
+        self._clear_index()
         
     def test_search_title__phrase(self):
         """Search for a phrase.

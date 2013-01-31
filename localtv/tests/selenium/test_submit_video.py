@@ -118,7 +118,7 @@ class SubmitVideo(WebdriverTestCase):
 
     def setUp(self):
         super(SubmitVideo, self).setUp()
-        #management.call_command('update_index', interactive=False)
+        self._clear_index()
 
     def verify_video_submit(self, testcase):
         """Open the video page and verify the metadata.

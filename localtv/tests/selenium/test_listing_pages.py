@@ -15,15 +15,13 @@ class ListingPages(WebdriverTestCase):
         super(ListingPages, cls).setUpClass()
         cls.listing_pg = listing_page.ListingPage(cls)
         cls.user = cls.create_user(username='autotester',
-                                    first_name='webby', 
-                                    last_name='driver')
+                                   first_name='webby',
+                                   last_name='driver')
 
-    def tearDown(self):
-        super(ListingPages, self).tearDown()
-        management.call_command('clear_index', interactive=False)
-        #management.call_command('flush', interactive=False)
+    def setUp(self):
+        super(ListingPages, self).setUp()
+        self._clear_index()
 
-        
     def test_new__thumbs(self):
         """Verify New listing page has expected thumbnails.
 
@@ -142,7 +140,7 @@ class ListingPages(WebdriverTestCase):
 
         """
         title = 'webdriver test video'
-        
+
         video = self.create_video(name=title,
                                   description=('This is the most awesome test '
                                                'video ever!'),
