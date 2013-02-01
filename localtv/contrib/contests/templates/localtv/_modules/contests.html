@@ -46,7 +46,7 @@ module displaying them.
 									data-user-detail-uri="{{ user_detail_uri }}"
 									data-user="{{ user.pk }}"
 								{% else %}
-									data-login-uri="{{ settings.LOGIN_URL }}?next={{ request.path }}"
+									data-login-uri="{% url 'auth_login' %}?next={{ request.path }}"
 								{% endif %}
 								data-contestvideo="{{ contestvideo.pk }}"
 								data-downvotes="{% if contest.allow_downvotes %}1{% else %}0{% endif %}"

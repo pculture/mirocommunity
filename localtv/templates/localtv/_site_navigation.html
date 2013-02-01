@@ -25,7 +25,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	<li class="nav-item nav-about">
 		<a href="{% url 'localtv_about' %}">{% trans 'About' %}</a>
 	</li>
-	{% if site_settings.display_submit_button %}
+	{% if site_settings.display_submit_button or request.user_is_admin %}
 		<li class="nav-item nav-submit">
 			<a href="{% url 'localtv_submit_video' %}">{% trans 'Submit' %}</a>
 		</li>
@@ -57,13 +57,13 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					</li>
 				{% endif %}
 				<li class="nav-logout">
-					<a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
+					<a href="{% url 'auth_logout' %}?next={{ request.META.PATH_INFO }}">{% trans 'Logout' %}</a>
 				</li>
 			</ul>
 		</li>
 	{% else %}{# if not request.user.is_authentication #}
 		<li class="nav-item nav-login">
-			<a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
+			<a href="{% url 'auth_login' %}?next={{ request.META.PATH_INFO }}">{% trans 'Login' %}</a>
 		</li>
 	{% endif %}
 </ul>

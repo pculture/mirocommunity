@@ -169,7 +169,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 	  var js, fjs = d.getElementsByTagName(s)[0];
 	  if (d.getElementById(id)) return;
 	  js = d.createElement(s); js.id = id;
-	  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1{% if settings.FACEBOOK_APP_ID %}&appId={{ settings.FACEBOOK_APP_ID }}{% endif %}";
+	  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1{% if FACEBOOK_APP_ID %}&appId={{ FACEBOOK_APP_ID }}{% endif %}";
 	  fjs.parentNode.insertBefore(js, fjs);
 	}(document, 'script', 'facebook-jssdk'));</script>
 	{# Twitter #}
