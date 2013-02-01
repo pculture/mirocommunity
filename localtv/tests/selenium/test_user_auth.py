@@ -18,7 +18,7 @@ class UserAuth(WebdriverTestCase):
 
     def setUp(self):
         super(UserAuth, self).setUp()
-        self.login_pg.open_page('login/')
+        self.login_pg.open_page('login')
         self.create_user(username='user',
                          password='password')
 
