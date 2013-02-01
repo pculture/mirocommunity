@@ -296,8 +296,8 @@ class Page(object):
         for elem in elements_found:
             if text == elem.text:
                 return True
-            else:
-                return False
+        else:
+            return False
 
     def verify_text_present(self, element, text):
         """Verify element (by css) text is present.
