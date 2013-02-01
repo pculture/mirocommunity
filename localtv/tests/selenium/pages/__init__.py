@@ -6,11 +6,10 @@ import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.keys import Keys
 from django.utils.importlib import import_module
 from django.contrib.auth import authenticate
 from django.conf import settings
-from django.contrib.sites.models import Site
+
 
 class Page(object):
     """Basic webdriver commands available to all pages.
@@ -120,7 +119,7 @@ class Page(object):
         """Open a hover pulldown and choose a displayed item.
 
         """
-        self.browser.implicitly_wait(5)        
+        self.browser.implicitly_wait(5)
         menu_element = self._safe_find(menu_el)
         mouseAction = (webdriver.ActionChains(self.browser)
                        .move_to_element(menu_element)
@@ -132,7 +131,6 @@ class Page(object):
                        .move_to_element(menu_item_element)
                        .click(menu_item_element)
                        .perform())
-
 
     def hover_by_element(self, webdriver_object, page_element):
         """Find the css element below the webdriver element object and hover.
@@ -152,17 +150,6 @@ class Page(object):
         elem.click()
         if wait_for_element:
             self.wait_for_element_present(wait_for_element)
-
-    def submit_by_css(self, element):
-        """Submit a form based on the css given.
-
-        kwargs no_wait, then use send keys to no wait for page load.
-               wait_for_element, wait for a passed in element to display
-        """
-        elem = self._safe_find(element)
-        self.logger.info( 'submit')
-        elem.submit()
-        self.logger.info( '** done')
 
     def clear_text(self, element):
         """Clear text of css element in form.
@@ -204,7 +191,6 @@ class Page(object):
         except NoSuchElementException:
             return False
 
-
     def type_by_css(self, element, text):
         """Enter text for provided css selector.
 
@@ -214,13 +200,12 @@ class Page(object):
 
     def type_special_key(self, key_name, element="body"):
         """Type a special key -see selenium/webdriver/common/keys.py.
-   
-        ex: ARROR_DOWN, TAB, ENTER, SPACE, DOWN... 
+
+        ex: ARROR_DOWN, TAB, ENTER, SPACE, DOWN...
         If no element is specified, just send the key press to the body.
         """
         elem = self._safe_find(element)
         elem.send_keys(key_name)
-
 
     def get_text_by_css(self, element):
         """Get text of given css selector.
@@ -238,7 +223,7 @@ class Page(object):
 
     def submit_form_text_by_css(self, element, text):
         """Submit form using css selector for form element.
- 
+
         """
         elem = self._safe_find(element)
         elem.send_keys(text)
@@ -344,7 +329,7 @@ class Page(object):
     def wait_for_element_present(self, element, wait_time=5):
         """Wait for element (by css) present on page, within x seconds.
 
-           Settings the default to 5 since we shouldn't have to wait long for 
+           Settings the default to 5 since we shouldn't have to wait long for
            most things.  Using implicit_wait in webdriver_base so this
            is a multiplied by the implicit wait value.
 
@@ -358,23 +343,22 @@ class Page(object):
     def wait_for_element_not_present(self, element, wait_time=10):
         """Wait for element (by css) to disappear on page, within 10 seconds.
 
-           Settings the default to 10 since we shouldn't have to wait long for 
+           Settings the default to 10 since we shouldn't have to wait long for
            most things.  Using implicit_wait in webdriver_base so this
            is a multiplied by the implicit wait value.
 
         """
-
         self._poll_for_condition(
             lambda: self.is_element_present(element) is False,
             wait_time,
             "Element %s is still present." % element)
- 
-    def wait_for_text_not_present(self, text):
+
+    def wait_for_text_not_present(self, element, text):
         """Wait for text to disappear on page, within 20 seconds.
 
         """
         self._poll_for_condition(
-            lambda: self.is_text_present(text) is False,
+            lambda: self.is_text_present(element, text) is False,
             20,
             'The text: %s is still present after 20 seconds' % text)
 
@@ -391,7 +375,6 @@ class Page(object):
         """Wait for element (by css) to be hidden on page, within 20 seconds.
 
         """
-
         def check_not_visible():
             try:
                 self.browser.find_elements_by_css_selector(
@@ -415,7 +398,7 @@ class Page(object):
 
     def get_element_attribute(self, element, html_attribute):
         """Return the attribute of an element (by css).
-  
+
         """
         try:
             elements_found = self.browser.find_elements_by_css_selector(
@@ -428,7 +411,7 @@ class Page(object):
 
     def get_elements_list(self, element):
         """Return the list of elements (webdriver objects).
-  
+
         """
         self.wait_for_element_present(element)
         elements_found = self.browser.find_elements_by_css_selector(element)
@@ -436,20 +419,18 @@ class Page(object):
 
     def get_sub_elements_list(self, parent_el, child_el):
         """If the parent element exists, return a list of the child elements.
-  
+
         """
         if isinstance(parent_el, basestring):
             if not self.is_element_present(parent_el):
                 return None
-            else: 
+            else:
                 parent_el = self.browser.find_element_by_css_selector(parent_el)
         try:
             child_els = parent_el.find_elements_by_css_selector(child_el)
             return child_els
         except NoSuchElementException:
             return None
-
-
 
     def open_page(self, url):
         """Open a page by the full url.
@@ -478,19 +459,17 @@ class Page(object):
                 elem = self.browser.find_element_by_css_selector(elements)
         try:
             elem.send_keys("PAGE_DOWN")
-        except: 
-            pass #Stupid but Chrome has page down issues.
+        except:
+            pass  # Stupid but Chrome has page down issues.
 
     def log_in(self, username, password):
         """Log in with the specified account type - default as a no-priv user.
 
         """
         self.logger.info("LOG IN")
-        site_obj = Site.objects.get_current()
         #for setting the login cookie
         host = self.testcase.server_thread.host
         port = self.testcase.server_thread.port
-
 
         engine = import_module(settings.SESSION_ENGINE)
         session = engine.SessionStore(self._get_session_id())
@@ -502,12 +481,11 @@ class Page(object):
         session['_auth_user_backend'] = u'localtv.auth_backends.MirocommunityBackend'
         session.save()
         self.logger.info("session saved: %s", session.session_key)
-        self.browser.add_cookie({ u'domain': '%s:%s' % (host, port),
-                                  u'name': u'sessionid',
-                                  u'value': session.session_key,
-                                  u'path': u'/',
-                                  u'secure': False,
-                                 })
+        self.browser.add_cookie({u'domain': '%s:%s' % (host, port),
+                                 u'name': u'sessionid',
+                                 u'value': session.session_key,
+                                 u'path': u'/',
+                                 u'secure': False})
         self.logger.info("cookie saved")
 
     def _get_session_id(self):
@@ -519,8 +497,6 @@ class Page(object):
             return None
         return None
 
-
-
     def record_error(self, e=None):
         """
             Records an error.
@@ -530,5 +506,3 @@ class Page(object):
         self.logger.error(str(e) + self.browser.current_url)
         #self.browser.close()
         raise ValueError(e)
-
-
