@@ -24,6 +24,9 @@ class Google(Page):
             self.type_by_css(self._EMAIL, user)
             self.type_by_css(self._PASSWORD, passw)
             self.click_by_css(self._SUBMIT)
-            self.wait_for_text_not_present("p", "Loading, please wait")
+        try:  
+            self.wait_for_element_present(self._APPROVE, wait_time=15)
+        except:
+            pass   # this doesn't always display.
         if self.is_element_present(self._APPROVE):
             self.click_by_css(self._APPROVE)
