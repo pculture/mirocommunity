@@ -4,7 +4,6 @@ from django.test import LiveServerTestCase
 from localtv.tests import BaseTestCase
 from selenium import webdriver
 from django.contrib.sites.models import Site
-from django.core import management
 
 
 class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
@@ -19,13 +18,8 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super(WebdriverTestCase, cls).setUpClass()
-        management.call_command('clear_index', interactive=False)
         cls.logger = logging.getLogger('test_steps')
         cls.logger.setLevel(logging.INFO)
-        site_obj = Site.objects.get_current()
-        site_obj.domain = '%s:%s' % (cls.server_thread.host,
-                                     cls.server_thread.port)
-        site_obj.save()
         if not cls.NEW_BROWSER_PER_TEST_CASE:
             cls.create_browser()
 
@@ -42,10 +36,15 @@ class WebdriverTestCase(LiveServerTestCase, BaseTestCase):
         #Set up logging to capture the test steps.
         self.logger.info('TESTCASE: %s \n' % self.id())
         self.logger.info('DESCRIPTION: %s \n' % self.shortDescription())
+        site_obj = Site.objects.get_current()
+        site_obj.domain = '%s:%s' % (self.server_thread.host,
+                                     self.server_thread.port)
+        site_obj.save()
         if self.NEW_BROWSER_PER_TEST_CASE:
-            self.__class__.create_browser()
+            self.create_browser()
 
     def tearDown(self):
+        super(WebdriverTestCase, self).tearDown()
         if self.use_sauce:
             self.logger.info("Link to the job: https://saucelabs.com/jobs/%s"
                              % self.browser.session_id)

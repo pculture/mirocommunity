@@ -16,15 +16,14 @@ class SubmitVideoFeeds(WebdriverTestCase):
         cls.manage_pg = manage_page.ManagePage(cls)
         cls.listing_pg = listing_page.ListingPage(cls)
         cls.search_pg = search_page.SearchPage(cls)
-        cls.create_user(username='feedadmin',
-                        password='password',
-                        is_superuser=True)
-        cls.listing_pg.open_page(cls.base_url[:-1])
-        cls.listing_pg.log_in('feedadmin', 'password')
 
     def setUp(self):
         super(SubmitVideoFeeds, self).setUp()
         self._clear_index()
+        self.create_user(username='feedadmin',
+                         password='password',
+                         is_superuser=True)
+        self.listing_pg.log_in('feedadmin', 'password')
 
     def submit_feed(self, **kwargs):
         """Submit the video feed.

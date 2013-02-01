@@ -14,13 +14,13 @@ class ListingPages(WebdriverTestCase):
     def setUpClass(cls):
         super(ListingPages, cls).setUpClass()
         cls.listing_pg = listing_page.ListingPage(cls)
-        cls.user = cls.create_user(username='autotester',
-                                   first_name='webby',
-                                   last_name='driver')
 
     def setUp(self):
         super(ListingPages, self).setUp()
         self._clear_index()
+        self.user = self.create_user(username='autotester',
+                                     first_name='webby',
+                                     last_name='driver')
 
     def test_new__thumbs(self):
         """Verify New listing page has expected thumbnails.

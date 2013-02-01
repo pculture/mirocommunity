@@ -14,13 +14,13 @@ class UserAuth(WebdriverTestCase):
     @classmethod
     def setUpClass(cls):
         super(UserAuth, cls).setUpClass()
-        cls.create_user(username='user',
-                        password='password')
         cls.login_pg = LoginPage(cls)
 
     def setUp(self):
         super(UserAuth, self).setUp()
         self.login_pg.open_page('login/')
+        self.create_user(username='user',
+                         password='password')
 
     def tearDown(self):
         super(UserAuth, self).tearDown()

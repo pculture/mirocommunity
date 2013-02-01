@@ -13,11 +13,6 @@ class SubmitVideo(WebdriverTestCase):
         super(SubmitVideo, cls).setUpClass()
         cls.video_pg = video_page.VideoPage(cls)
         cls.submit_pg = submit_page.SubmitPage(cls)
-        cls.create_user(username='admin',
-                        password='password',
-                        is_superuser=True)
-        cls.video_pg.open_page(cls.base_url[:-1])
-        cls.submit_pg.log_in('admin', 'password')
 
         cls.test_videos = {
             'youtube': {
@@ -113,6 +108,10 @@ class SubmitVideo(WebdriverTestCase):
     def setUp(self):
         super(SubmitVideo, self).setUp()
         self._clear_index()
+        self.create_user(username='admin',
+                         password='password',
+                         is_superuser=True)
+        self.submit_pg.log_in('admin', 'password')
 
     def verify_video_submit(self, testcase):
         """Open the video page and verify the metadata.
