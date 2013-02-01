@@ -14,7 +14,7 @@
 
 	{% block meta %}
 		<meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
-		{% if site_settings.logo %}<link rel="image_src" href="{{ settings.MEDIA_URL }}{{ site_settings.logo }}" />{% endif %}
+		{% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
 	{% endblock meta %}
 
 	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
@@ -55,12 +55,12 @@
 			<script src="{% get_static_url 'localtv/front/js/localtv.shrinkydink.js' %}"></script>
 			<script src="{% get_static_url 'localtv/front/js/localtv.kickoff.js' %}"></script>
 	
-			{% if settings.GOOGLE_ANALYTICS_UA %}
+			{% if GOOGLE_ANALYTICS_UA %}
 				<script type="text/javascript">
 					var _gaq = _gaq || [];
-					_gaq.push(['_setAccount', '{{ settings.GOOGLE_ANALYTICS_UA }}']);
-					{% if settings.GOOGLE_ANALYTICS_DOMAIN %}
-						_gaq.push(['_setDomainName', '{{ settings.GOOGLE_ANALYTICS_DOMAIN }}'])
+					_gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_UA }}']);
+					{% if GOOGLE_ANALYTICS_DOMAIN %}
+						_gaq.push(['_setDomainName', '{{ GOOGLE_ANALYTICS_DOMAIN }}'])
 					{% endif %}
 					_gaq.push(['_trackPageview']);
 

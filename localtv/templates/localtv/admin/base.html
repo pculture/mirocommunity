@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load static i18n %}{% load url from future %}
 
 {% get_static_prefix as STATIC_URL %}
 <!DOCTYPE html>
@@ -15,7 +15,7 @@
 <![endif]-->
     <script src="{{ STATIC_URL }}localtv/js/extern/jquery.tools-1.1.2.min.js"></script>
     <script src="{{ STATIC_URL }}localtv/js/extern/jquery.form.js" type="text/javascript"></script>
-    <script src="{{ STATIC_URL }}localtv/js/miro_community.js?version={{ mc_version }}" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}localtv/js/miro_community.js" type="text/javascript"></script>
     <title>{% block title %}{% trans "Admin" %} – {{ site_settings.site.name }}{% endblock title %}</title>
     {% block extrahead %}
     {% endblock extrahead %}
@@ -36,13 +36,13 @@
           <div id="user_panel">
             {% if request.user.is_authenticated %}
               <span>logged in as <em>{{ request.user.username }}</em></span>
-              <a href="{{ settings.LOGOUT_URL }}?next={{ request.META.PATH_INFO }}">Sign Out</a>
+              <a href="{% url 'auth_logout' %}?next={{ request.META.PATH_INFO }}">Sign Out</a>
               {% else %}
-              <a href="{{ settings.LOGIN_URL }}?next={{ request.META.PATH_INFO }}" title="Please Sign In"><span>Sign In</span></a>
+              <a href="{% url 'auth_login' %}?next={{ request.META.PATH_INFO }}" title="Please Sign In"><span>Sign In</span></a>
             {% endif %}
           </div><!-- // user_pane -->
         <div id="logo">
-          {% url localtv_index as localtv_index %}
+          {% url 'localtv_index' as localtv_index %}
             <a href="{{ localtv_index }}">
               <img alt="{{ site_settings.site.name }} Logo" src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{{ STATIC_URL }}localtv/images/logo.gif{% endif %}" />
               <span class="site_name">{{ site_settings.site.name }}</span>
@@ -81,7 +81,7 @@
 <div class="contentWrap"></div> 
 </div><!-- // overlay -->
 
-      {% if settings.GOOGLE_ANALYTICS_UA %}
+      {% if GOOGLE_ANALYTICS_UA %}
     <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ?
   "https://ssl." : "http://www.");
@@ -90,9 +90,9 @@
   </script>
   <script type="text/javascript">
   try {
-      var pageTracker = _gat._getTracker("{{ settings.GOOGLE_ANALYTICS_UA }}");
-      {% if settings.GOOGLE_ANALYTICS_DOMAIN %}
-      pageTracker._setDomainName(".{{ settings.GOOGLE_ANALYTICS_DOMAIN }}");
+      var pageTracker = _gat._getTracker("{{ GOOGLE_ANALYTICS_UA }}");
+      {% if GOOGLE_ANALYTICS_DOMAIN %}
+      pageTracker._setDomainName(".{{ GOOGLE_ANALYTICS_DOMAIN }}");
       {% endif %}
       pageTracker._trackPageview();
   } catch(err) {}</script>

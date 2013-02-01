@@ -12,39 +12,40 @@ BROWSE_NAVIGATION_MODULES = [
 def localtv(request):
     site_settings = SiteSettings.objects.get_current()
 
-    display_submit_button = site_settings.display_submit_button
-    if display_submit_button:
-        if request.user.is_anonymous() and \
-                site_settings.submission_requires_login:
-            display_submit_button = False
-    else:
-        if request.user_is_admin():
-            display_submit_button = True
+    display_submit_button = (site_settings.display_submit_button or
+                             request.user_is_admin())
 
-    try:
-        cache_invalidator = str(Video.objects.order_by(
-                '-when_modified').values_list(
-                'when_modified', flat=True)[0])
-    except IndexError:
-        cache_invalidator = None
+    safe_settings = ('FACEBOOK_APP_ID', 'LOGIN_URL', 'LOGOUT_URL',
+                     'GOOGLE_ANALYTICS_UA', 'GOOGLE_ANALYTICS_DOMAIN',
+                     'MEDIA_URL', 'RECAPTCHA_PUBLIC_KEY')
+    settings_context = dict((setting, getattr(settings, setting, ''))
+                            for setting in safe_settings)
 
-    return  {
-        'mc_version': '1.2',
+    new_context = settings_context.copy()
+
+    # LOGIN_URL and LOGOUT_URL should be handled via {% url %} tags.
+    del new_context['LOGIN_URL']
+    del new_context['LOGOUT_URL']
+
+    # MEDIA_URL shouldn't be necessary - ImageFile.url works better.
+    del new_context['MEDIA_URL']
+
+    new_context.update({
         'site_settings': site_settings,
-        # Backwards-compatible for custom themes.
-        'sitelocation': site_settings,
-        'user_is_admin': request.user_is_admin(),
         'categories':  Category.objects._mptt_filter(site=site_settings.site,
                                                      parent__isnull=True),
-        'cache_invalidator': cache_invalidator,
 
+        # Deprecated/backwards-compatibility.
+        'settings': settings_context,
+        'sitelocation': site_settings,
+        'user_is_admin': request.user_is_admin(),
         'display_submit_button': display_submit_button,
-
-        'settings': settings,
-
         'VIDEO_STATUS_UNAPPROVED': Video.UNAPPROVED,
         'VIDEO_STATUS_ACTIVE': Video.ACTIVE,
-        'VIDEO_STATUS_REJECTED': Video.REJECTED}
+        'VIDEO_STATUS_REJECTED': Video.REJECTED,
+    })
+
+    return new_context
 
 
 def browse_modules(request):

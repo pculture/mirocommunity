@@ -1,6 +1,7 @@
 {% extends "localtv/__layouts/100.html" %}
 
 {% load uploadtemplate_tags i18n %}
+{% load url from future %}
 
 {% block body_classes %}{{ block.super }} login-page{% endblock %}
 
@@ -30,7 +31,7 @@
 					<div class="col-one-half">
 						<div class="padded">
 							<h3>Login</h3>
-							<form action="{{ settings.LOGIN_URL }}{% if next %}?next={{ next }}{% endif %}" method="post">
+							<form action="{% url 'auth_login' %}{% if next %}?next={{ next }}{% endif %}" method="post">
 								{% csrf_token %}
 								{% include "localtv/_form_inner.html" %}
 							
@@ -38,7 +39,7 @@
 								<div class="control-group">
 									<div class="controls">
 										<button>Login</button>
-										<a href="{% url auth_password_reset %}">Forgot your password?</a>
+										<a href="{% url 'auth_password_reset' %}">Forgot your password?</a>
 									</div>
 								</div>
 							</form>
@@ -89,7 +90,7 @@
 			<div id="facebook" class="tab-pane">
 				<div class="padded">
 					<h3>Login with Facebook</h3>
-					<a href="{% url socialauth_begin backend='facebook' %}{% if next %}?next={{ next }}{% endif %}">
+					<a href="{% url 'socialauth_begin' backend='facebook' %}{% if next %}?next={{ next }}{% endif %}">
 						<img src="{% get_static_url 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Facebook" />
 					</a>
 				</div>
@@ -97,7 +98,7 @@
 			<div id="twitter" class="tab-pane">
 				<div class="padded">
 					<h3>Login with Twitter</h3>
-					<a href="{% url socialauth_begin backend='twitter' %}{% if next %}?next={{ next }}{% endif %}">
+					<a href="{% url 'socialauth_begin' backend='twitter' %}{% if next %}?next={{ next }}{% endif %}">
 						<img src="{% get_static_url 'localtv/images/twitter_login.gif' %}" width="151" height="24" alt="Sign In with Twitter" />
 					</a>
 				</div>
@@ -105,7 +106,7 @@
 			<div id="openid" class="tab-pane">
 				<div class="padded">
 					<h3>Login with OpenID</h3>
-					<form action="{% url socialauth_begin backend='openid' %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
+					<form action="{% url 'socialauth_begin' backend='openid' %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
 						{% csrf_token %}
 						<div class="control-group">
 							<label for="openid_identifier">OpenID Url</label>
@@ -125,7 +126,7 @@
 			<div id="google" class="tab-pane">
 				<div class="padded">
 					<h3>Login with Google Account</h3>
-					<form action="{% url socialauth_begin backend='google' %}" method="post">{% csrf_token %}
+					<form action="{% url 'socialauth_begin' backend='google' %}" method="post">{% csrf_token %}
 					<p><input type="submit" value="Sign in" class="button" /></p>
 					</form>
 				</div>
