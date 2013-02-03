@@ -194,7 +194,8 @@ INSTALLED_APPS = (
 
 if os.environ.get('MIGRATIONS'):
     if 'south' not in INSTALLED_APPS:
-        INSTALLED_APPS = INSTALLED_APPS + ('south',)
+        # South needs to come before django-nose for this to work right.
+        INSTALLED_APPS = INSTALLED_APPS[:-1] + ('south',) + INSTALLED_APPS[-1:]
     SOUTH_TESTS_MIGRATE = True
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
