@@ -1,4 +1,4 @@
-{% load uploadtemplate_tags i18n daguerre compress %}
+{% load uploadtemplate i18n daguerre compress %}
 {% load url from future %}
 
 <!doctype html>
@@ -21,7 +21,7 @@
 	
 	{% block styles %}
 		{#% compress css %#}
-			<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/front/stylesheets/screen.css' %}" media="screen" />
+			<link rel="stylesheet" type="text/css" href="{% static 'localtv/front/stylesheets/screen.css' %}" media="screen" />
 			{% if site_settings.css %}
 				<style type="text/css">
 					{{ site_settings.css|safe }}
@@ -44,16 +44,16 @@
 					window.STATIC_URL = "{{ STATIC_URL }}";
 				}());
 			</script>
-			<script src="{% get_static_url 'localtv/front/js/modernizr-2.5.3.min.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/jquery-1.7.2.min.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/jquery.cycle.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/jquery.infinitescroll.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/bootstrap.tooltip.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/bootstrap.popover.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.dropdown.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.tabs.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.shrinkydink.js' %}"></script>
-			<script src="{% get_static_url 'localtv/front/js/localtv.kickoff.js' %}"></script>
+			<script src="{% static 'localtv/front/js/modernizr-2.5.3.min.js' %}"></script>
+			<script src="{% static 'localtv/front/js/jquery-1.7.2.min.js' %}"></script>
+			<script src="{% static 'localtv/front/js/jquery.cycle.js' %}"></script>
+			<script src="{% static 'localtv/front/js/jquery.infinitescroll.js' %}"></script>
+			<script src="{% static 'localtv/front/js/bootstrap.tooltip.js' %}"></script>
+			<script src="{% static 'localtv/front/js/bootstrap.popover.js' %}"></script>
+			<script src="{% static 'localtv/front/js/localtv.dropdown.js' %}"></script>
+			<script src="{% static 'localtv/front/js/localtv.tabs.js' %}"></script>
+			<script src="{% static 'localtv/front/js/localtv.shrinkydink.js' %}"></script>
+			<script src="{% static 'localtv/front/js/localtv.kickoff.js' %}"></script>
 	
 			{% if GOOGLE_ANALYTICS_UA %}
 				<script type="text/javascript">

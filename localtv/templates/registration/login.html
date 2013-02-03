@@ -1,6 +1,6 @@
 {% extends "localtv/__layouts/100.html" %}
 
-{% load uploadtemplate_tags i18n %}
+{% load uploadtemplate i18n %}
 {% load url from future %}
 
 {% block body_classes %}{{ block.super }} login-page{% endblock %}
@@ -91,7 +91,7 @@
 				<div class="padded">
 					<h3>Login with Facebook</h3>
 					<a href="{% url 'socialauth_begin' backend='facebook' %}{% if next %}?next={{ next }}{% endif %}">
-						<img src="{% get_static_url 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Facebook" />
+						<img src="{% static 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Facebook" />
 					</a>
 				</div>
 			</div>
@@ -99,7 +99,7 @@
 				<div class="padded">
 					<h3>Login with Twitter</h3>
 					<a href="{% url 'socialauth_begin' backend='twitter' %}{% if next %}?next={{ next }}{% endif %}">
-						<img src="{% get_static_url 'localtv/images/twitter_login.gif' %}" width="151" height="24" alt="Sign In with Twitter" />
+						<img src="{% static 'localtv/images/twitter_login.gif' %}" width="151" height="24" alt="Sign In with Twitter" />
 					</a>
 				</div>
 			</div>

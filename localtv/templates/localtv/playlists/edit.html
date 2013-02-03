@@ -1,13 +1,13 @@
 {% extends "localtv/admin/bulk_edit.html" %}
 
-{% load filters editable_widget uploadtemplate_tags %}
+{% load filters editable_widget uploadtemplate %}
 {% block body_id %}goodies{% endblock body_id %}
 {% block body_class %}playlists{% endblock body_class %}
 {% block title %}Playlist: {{ playlist.name }}{% endblock %}
 {% block head %}
   {{ block.super }}
   {% include "localtv/inline_edit/header.html" %}
-  <script type="text/javascript" src="{% get_static_url 'localtv/js/admin/urlify.js' %}localtv/_grid/video_list.html"></script>
+  <script type="text/javascript" src="{% static 'localtv/js/admin/urlify.js' %}localtv/_grid/video_list.html"></script>
   </script>
   <script type="text/javascript">
       $(document).ready(function() {
@@ -58,8 +58,8 @@
   </div>
 </td>
 <td valign="middle">{{ form.ORDER }}
-<img class="up" src="{% get_static_url 'localtv/images/playlist/up.png' %}" alt="Up" />
-<img class="down" src="{% get_static_url 'localtv/images/playlist/down.png' %}" alt="Down" />
+<img class="up" src="{% static 'localtv/images/playlist/up.png' %}" alt="Up" />
+<img class="down" src="{% static 'localtv/images/playlist/down.png' %}" alt="Down" />
 </td>
 {% endblock %}
 

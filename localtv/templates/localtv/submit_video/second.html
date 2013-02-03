@@ -1,6 +1,6 @@
 {% extends "localtv/submit_video/__base.html" %}
 
-{% load i18n uploadtemplate_tags filters %}
+{% load i18n uploadtemplate filters %}
 
 {% block inner_form %}
 	{% with field=form.url %}{% include "localtv/_form_field.html" %}{% endwith %}

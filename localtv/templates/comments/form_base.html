@@ -1,4 +1,4 @@
-{% load i18n uploadtemplate_tags %}
+{% load i18n uploadtemplate %}
 {% if request.user.is_authenticated %}
       <p class="posting-as">Posting as {{ request.user.username }}</p>
 {% endif %}
@@ -46,5 +46,5 @@
   <input type="hidden" name="next" value="{{ form.target_object.get_absolute_url }}" />
   {% endif %}
   <p class="submit">
-    <input name="submit" class="submit-post floatright" alt="Post" type="image" src="{% get_static_url 'localtv/images/post.png' %}" />
+    <input name="submit" class="submit-post floatright" alt="Post" type="image" src="{% static 'localtv/images/post.png' %}" />
   </p>

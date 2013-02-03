@@ -1,6 +1,6 @@
 {% extends "localtv/submit_video/second.html" %}
 
-{% load i18n uploadtemplate_tags filters %}
+{% load i18n uploadtemplate filters %}
 
 {% block form_action %}{% url localtv_submit_scraped_video %}{% endblock %}
 
@@ -13,7 +13,7 @@
 	<div class="row-nested">
 		<figure class="col-one-quarter">
 			<a href="{{ video.website_url }}" class="thumbnail">
-				{% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="210" />{% else %}<img src="{% get_static_url "localtv/images/default.jpg" %}" />{% endif %}
+				{% if video.thumbnail_url %}<img src="{{ video.thumbnail_url }}" width="210" />{% else %}<img src="{% static "localtv/images/default.jpg" %}" />{% endif %}
 			</a>
 		</figure>{# /.col-two-quarters #}
 		<div class="col-three-quarters">

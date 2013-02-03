@@ -1,16 +1,16 @@
 {% extends 'localtv/__layouts/100.html' %}
 
-{% load markup i18n uploadtemplate_tags %}
+{% load markup i18n uploadtemplate %}
 {% load url from future %}
 
 {% block scripts %}
 	{{ block.super }}
-	<script src="{% get_static_url 'localtv/js/localtv.contests.js' bundled %}"></script>
+	<script src="{% static 'localtv/js/localtv.contests.js' %}"></script>
 {% endblock %}
 
 {% block styles %}
 	{{ block.super }}
-	<link rel="stylesheet" type="text/css" href="{% get_static_url 'localtv/stylesheets/localtv.contests.screen.css' bundled %}" media="screen" />
+	<link rel="stylesheet" type="text/css" href="{% static 'localtv/stylesheets/localtv.contests.screen.css' %}" media="screen" />
 {% endblock %}
 
 {% block precontent %}

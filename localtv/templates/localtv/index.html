@@ -1,6 +1,6 @@
 {% extends "localtv/__layouts/75_25.html" %}
 
-{% load uploadtemplate_tags cache i18n daguerre static %}
+{% load uploadtemplate cache i18n daguerre %}
 {% load url from future %}
 
 {% block title %}{{ block.super }}{% if site_settings.tagline %} - {{ site_settings.tagline }}{% endif %}{% endblock %}

@@ -1,12 +1,12 @@
 {% extends "localtv/admin/bulk_edit.html" %}
 
-{% load filters uploadtemplate_tags %}
+{% load filters uploadtemplate %}
 {% block body_id %}goodies{% endblock body_id %}
 {% block body_class %}playlists{% endblock body_class %}
 {% block subheader %}{% include "localtv/goodies/header.html" %}{% endblock %}
 {% block head %}
   {{ block.super }}
-  <script type="text/javascript" src="{% get_static_url 'localtv/js/admin/urlify.js' %}"></script>
+  <script type="text/javascript" src="{% static 'localtv/js/admin/urlify.js' %}"></script>
   </script>
   <script type="text/javascript">
       $(document).ready(function() {
