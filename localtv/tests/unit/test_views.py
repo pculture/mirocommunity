@@ -16,10 +16,11 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 from django.http import Http404
 
 from localtv.listing.views import CompatibleListingView
-from localtv.models import Video
+from localtv.models import Video, Category
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterView
 from localtv.tests import BaseTestCase
@@ -139,6 +140,7 @@ class SortFilterViewTestCase(BaseTestCase):
         view.kwargs = {'slug': category.slug}
         view.filter_name = 'category'
         view.filter_kwarg = 'slug'
+        view.object = view.get_object()
         context = view.get_context_data(object_list=view.get_queryset())
         self.assertEqual(context['category'], category)
         self.assertTrue('videos' in context)
@@ -167,6 +169,31 @@ class SortFilterViewTestCase(BaseTestCase):
 
         """
         view = SortFilterView()
-        view.request = self.factory.get('/', {'category': '1'})
+        view.filter_name = 'category'
+        view.filter_kwarg = 'slug'
+        self.assertRaises(Category.DoesNotExist,
+                          Category.objects.get,
+                          slug__iexact='test')
+        view.kwargs = {'slug': 'test'}
+        view.request = self.factory.get('/')
         queryset = view.get_queryset()
         self.assertEqual(len(queryset), 0)
+
+    def test_iexact_filter_value(self):
+        """
+        If a filter value of incorrect case is provided, the user should be
+        redirected to the absolute url of the object.
+
+        """
+        category = self.create_category(slug='test')
+        url = reverse('localtv_category', kwargs={'slug': 'Test'})
+        real_url = reverse('localtv_category', kwargs={'slug': 'test'})
+        self.assertEqual(category.get_absolute_url(), real_url)
+
+        view = SortFilterView()
+        view.filter_name = 'category'
+        view.filter_kwarg = 'slug'
+        view.request = self.factory.get(url)
+        view.kwargs = {'slug': 'Test'}
+        response = view.get(view.request, **view.kwargs)
+        self.assertRedirects(response, real_url, netloc='')

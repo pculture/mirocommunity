@@ -16,7 +16,9 @@
 # along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.http import Http404
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from django.http import Http404, HttpResponseRedirect
 from django.views.generic import ListView
 
 from localtv.search.forms import SearchForm, ModelFilterField
@@ -90,14 +92,27 @@ class SortFilterView(ListView, SortFilterMixin):
             if isinstance(field, ModelFilterField):
                 model = field.model
                 try:
-                    key = field.to_field_name or 'pk'
-                    obj = model.objects.get(**{
-                                            key: self.kwargs[self.filter_kwarg]})
+                    key = '{0}__iexact'.format(field.to_field_name or 'pk')
+                    kwargs = {key: self.kwargs[self.filter_kwarg]}
+                    obj = model.objects.get(**kwargs)
                 except (ValueError, model.DoesNotExist):
                     raise Http404
                 else:
                     return obj
         return None
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if hasattr(self.object, 'get_absolute_url'):
+            # User doesn't have a useful get_absolute_url.
+            if isinstance(self.object, User):
+                absolute_url = reverse('localtv_author',
+                                       args=(self.object.pk,))
+            else:
+                absolute_url = self.object.get_absolute_url()
+            if absolute_url != request.path:
+                return HttpResponseRedirect(absolute_url)
+        return super(SortFilterView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SortFilterView, self).get_context_data(**kwargs)
@@ -107,5 +122,5 @@ class SortFilterView(ListView, SortFilterMixin):
                        ModelFilterField)):
             # If there is a model instance that's being filtered on, put it
             # into the context.
-            context[self.filter_name] = self.get_object()
+            context[self.filter_name] = self.object
         return context
