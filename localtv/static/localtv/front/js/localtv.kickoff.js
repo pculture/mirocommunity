@@ -43,7 +43,7 @@
 		var ajax_image = new Image();
 		ajax_image.src = STATIC_URL + "localtv/front/images/ajax-loader.gif";
 		// kick off the infinite scrolling
-		$('.video-grid').infinitescroll({
+		$('.grid').infinitescroll({
 			loading: {
 				img: null,
 				// override a lot of the default behavior
@@ -68,7 +68,7 @@
 					}
 				},
 				start: function (opts) {
-					opts.loading.msg = $("<li class=\"media-item loading\" id=\"infscr-loading\">Loading&hellip;</li>")
+					opts.loading.msg = $("<li class=\"grid-item loading\" id=\"infscr-loading\">Loading&hellip;</li>")
 					$(opts.navSelector).hide();
 					opts.loading.msg
 						.appendTo(opts.loading.selector)
@@ -80,14 +80,14 @@
 			errorCallback: function (error) {
 				if(error === "done"){
 					var $infscrLoading = $('#infscr-loading');
-					$infscrLoading.after("<li class=\"media-item done\" id=\"infscr-done\">End of Videos</li>");
+					$infscrLoading.after("<li class=\"grid-item done\" id=\"infscr-done\">End of Videos</li>");
 					$infscrLoading.remove();
 					$this.data('infscr_next_button').remove();
 				}
 			},
 			navSelector: '.pagetabs',
 			nextSelector: '.pagetabs > .selected + li > a',
-			itemSelector: '.media-item'
+			itemSelector: '.grid-item'
 		});
 	};
 	

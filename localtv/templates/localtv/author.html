@@ -23,7 +23,8 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block title %}{{ block.super }} - {% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}{% endblock %}
 
-{% block body_classes %}{{ block.super }} author-page{% endblock %}
+{# video-list-page is an infinitescroll trigger #}
+{% block body_classes %}{{ block.super }} author-page video-list-page{% endblock %}
 
 {% block top %}
 	<header class="page-header">
