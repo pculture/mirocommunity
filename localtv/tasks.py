@@ -259,10 +259,16 @@ def video_from_vidscraper_video(video_dict, site_pk,
                                             commit=False,
                                             update_index=False)
         try:
-            video.full_clean()
+            video.clean_fields()
+            # If clear_rejected is True, we've already deleted any rejected
+            # videos, so there's no need to explicitly exclude them.
+            # If clear_rejected is False, this is not the first run, and
+            # so rejected videos need to not be excluded in this check.
+            video._check_for_duplicates(exclude_rejected=False)
+            video.validate_unique()
         except ValidationError, e:
             source_import.handle_error(("Skipping %r: %r" % (
-                                        vidscraper_video.url, e.message_dict)),
+                                        vidscraper_video.url, e.message)),
                                         is_skip=True, using=using)
             return
         else:
