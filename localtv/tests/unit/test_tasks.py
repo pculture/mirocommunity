@@ -5,6 +5,7 @@ from django.db import connections
 from django.test.utils import override_settings
 from haystack.query import SearchQuerySet
 import mock
+from vidscraper.videos import Video as VidscraperVideo
 
 from localtv.models import Video
 from localtv.tasks import (haystack_update, haystack_remove,
@@ -25,12 +26,12 @@ class VideoFromVidscraperTestCase(BaseTestCase):
         video = mock.MagicMock(save_m2m=mock.MagicMock(
                                                    side_effect=FakeException))
         kwargs = {'from_vidscraper_video.return_value': video}
-        vidscraper_video = mock.MagicMock(link=None, guid=None, user=None)
+        vidscraper_video = VidscraperVideo(None)
 
         with mock.patch('localtv.tasks.get_model'):
             with mock.patch('localtv.tasks.Video', **kwargs):
                 with self.assertRaises(FakeException):
-                    video_from_vidscraper_video.apply(args=(vidscraper_video, 1))
+                    video_from_vidscraper_video.apply(args=(vidscraper_video.serialize(), 1))
 
         video.save.assert_called_once_with(update_index=False)
         video.save_m2m.assert_called_once_with()

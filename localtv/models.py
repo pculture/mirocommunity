@@ -306,7 +306,7 @@ class Source(Thumbnailable):
                 total_videos += 1
                 try:
                     video_from_vidscraper_video.delay(
-                        vidscraper_video,
+                        vidscraper_video.serialize(),
                         site_pk=self.site_id,
                         import_app_label=import_opts.app_label,
                         import_model=import_opts.module_name,

@@ -58,12 +58,7 @@ else:
 # Comment these lines out to use a celery server.
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-# Uncomment and modify these lines to use a celery server
-# BROKER_HOST = 'localhost'
-# BROKER_PORT = 5672
-# BROKER_USER = 'celery'
-# BROKER_PASSWORD = 'testing'
-# BROKER_VHOST = '/'
+CELERY_TASK_SERIALIZER = 'json'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

@@ -16,8 +16,7 @@ from django.core.files.base import ContentFile
 from django.forms import ImageField
 from haystack import connections
 from haystack.query import SearchQuerySet
-
-from localtv.signals import pre_mark_as_active
+from vidscraper.videos import Video as VidscraperVideo
 
 class DummyException(Exception):
     """
@@ -25,7 +24,7 @@ class DummyException(Exception):
     """
 
 try:
-   from xapian import DatabaseError
+    from xapian import DatabaseError
 except ImportError:
     DatabaseError = DummyException
 try:
@@ -34,7 +33,8 @@ except ImportError:
     LockError = DummyException
 
 from localtv.models import Video, Feed, SavedSearch, Category
-from localtv.settings import USE_HAYSTACK
+from localtv.settings import USE_HAYSTACK, API_KEYS
+from localtv.signals import pre_mark_as_active
 from localtv.utils import quote_unicode_url
 
 
@@ -213,11 +213,12 @@ def mark_import_complete(import_app_label, import_model, import_pk,
 
 
 @task(ignore_result=True, max_retries=6, default_retry_delay=10)
-def video_from_vidscraper_video(vidscraper_video, site_pk,
+def video_from_vidscraper_video(video_dict, site_pk,
                                 import_app_label=None, import_model=None,
                                 import_pk=None, status=None, author_pks=None,
                                 category_pks=None, clear_rejected=False,
                                 using='default'):
+    vidscraper_video = VidscraperVideo.deserialize(video_dict, API_KEYS)
     import_class = get_model(import_app_label, import_model)
     try:
         source_import = import_class.objects.using(using).get(
@@ -432,4 +433,3 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
         end = min(start + batch_size, total)
         haystack_update.delay(app_label, model_name, pks[start:end],
                               remove=remove, using=using)
-
