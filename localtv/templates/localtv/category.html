@@ -5,7 +5,8 @@
 
 {% block title %}{{ block.super }} - {{ category.name }}{% endblock %}
 
-{% block body_classes %}{{ block.super }} category-detail-page{% endblock %}
+{# video-list-page is an infinitescroll trigger #}
+{% block body_classes %}{{ block.super }} category-detail-page video-list-page{% endblock %}
 
 {% block top %}
 	<header class="page-header">
