@@ -1280,11 +1280,20 @@ class Video(Thumbnailable, VideoBase):
         return self.name
 
     def clean(self):
+        # clean is always run during ModelForm cleaning. If a model form is in
+        # play, rejected videos don't matter; the submission of that form
+        # should be considered valid. During automated imports, rejected
+        # videos are not excluded.
+        self._check_for_duplicates(exclude_rejected=True)
+
+    def _check_for_duplicates(self, exclude_rejected=True):
         if not self.embed_code and not self.file_url:
             raise ValidationError("Video has no embed code or file url.")
 
-        qs = Video.objects.using(self._state.db).filter(site=self.site_id
-                                              ).exclude(status=Video.REJECTED)
+        qs = Video.objects.using(self._state.db).filter(site=self.site_id)
+
+        if exclude_rejected:
+            qs = qs.exclude(status=Video.REJECTED)
 
         if self.pk is not None:
             qs = qs.exclude(pk=self.pk)
