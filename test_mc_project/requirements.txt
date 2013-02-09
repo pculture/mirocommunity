@@ -3,6 +3,7 @@ git+git://github.com/pculture/django-uploadtemplate.git@233bdf6dce5108e9ed3d6efe
 git+git://github.com/pculture/djvideo.git@ddc27014800a3432abc82872d8bacf103ab91c2f#egg=djvideo
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
 git+git://github.com/toastdriven/django-haystack.git@6065c8525bea4b9a116c7fa279b9e3e26ac7362f#egg=django-haystack
+git+git://github.com/oberlin/django-daguerre.git@0dd8c126a1b45d22e1ccb6db4a111a3dba585696#egg=django-daguerre
 django-registration==0.8
 vidscraper==1.0.2
 beautifulsoup4==4.0.4
@@ -33,7 +34,6 @@ django_compressor==1.1.2
 django-appconf==0.5
 django-mptt==0.5.2
 Markdown==2.1.1
-django-daguerre==0.1
 django-social-auth==0.7.9
 python-openid==2.2.4
 django-nose==1.1

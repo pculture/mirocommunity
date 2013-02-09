@@ -1,3 +1,3 @@
 {% load i18n %}
 {% trans "No authors have been added yet." as empty_message %}
-{% include "localtv/_grid/_list.html" with columns=columns|default:4 object_list=authors grid_item_template="localtv/_grid/author_item.html" %}
+{% include "localtv/_grid/_list.html" with columns=columns|default:4 object_list=authors lookup="get_profile.logo" grid_item_template="localtv/_grid/author_item.html" %}
