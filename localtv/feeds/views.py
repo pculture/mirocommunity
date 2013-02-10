@@ -1,6 +1,5 @@
 from hashlib import sha1
 
-from daguerre.models import Image
 from daguerre.utils.adjustments import BulkAdjustmentHelper
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
@@ -277,8 +276,8 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
                         thumbnail_url = 'http://%s%s' % (site.domain,
                                                          thumbnail_url)
                     kwargs['thumbnails_resized'].append(
-                                              {'width': width,
-                                               'height': height,
+                                              {'width': size[0],
+                                               'height': size[1],
                                                'url': thumbnail_url})
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
