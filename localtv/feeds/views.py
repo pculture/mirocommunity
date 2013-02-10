@@ -1,7 +1,7 @@
 from hashlib import sha1
 
 from daguerre.models import Image
-from daguerre.utils.adjustments import DEFAULT_ADJUSTMENT, get_adjustment_class
+from daguerre.utils.adjustments import BulkAdjustmentHelper
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
@@ -21,10 +21,12 @@ from localtv.templatetags.filters import simpletimesince
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
 LOCALTV_FEED_LENGTH = 30
+ITEM_THUMBNAIL_SIZE = (375, 295)
+# Thumbnail sizes for the JSON feed which is used for the widget.
 WIDGET_THUMBNAIL_SIZES = (
-    (222, 169), # large widget
-    (140, 110), # medium widget
-    (88, 68),   # small widget
+    (222, 169), # large thumbnail
+    (140, 110), # medium thumbnail
+    (88, 68),   # small thumbnail
 )
 
 
@@ -153,7 +155,8 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
                 filter_value = [filter_value]
         form = self.get_form(obj['request'].GET.dict(), filter_value)
         items = NormalizedVideoList(form.search())
-        return self._opensearch_items(items, obj)
+        items = self._opensearch_items(items, obj)
+        return self._bulk_adjusted_items(items)
 
     def _opensearch_items(self, items, obj):
         opensearch = self._get_opensearch_data(obj)
@@ -161,6 +164,23 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         end = start + opensearch['itemsperpage']
         opensearch['totalresults'] = len(items)
         return items[start:end]
+
+    def _bulk_adjusted_items(self, items):
+        sizes = (ITEM_THUMBNAIL_SIZE,)
+        if self.feed_type is JSONGenerator:
+            sizes += WIDGET_THUMBNAIL_SIZES
+        for size in sizes:
+            helper = BulkAdjustmentHelper(items,
+                                          "thumbnail",
+                                          width=size[0],
+                                          height=size[1],
+                                          adjustment='fill')
+            for item, info_dict in helper.info_dicts():
+                # Set a private attribute so we can retrieve this later.
+                if not hasattr(item, '_adjusted'):
+                    item._adjusted = {}
+                item._adjusted[size] = info_dict
+        return items
 
     def _get_opensearch_data(self, obj):
         """
@@ -229,49 +249,37 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             }
         if item.website_url:
             kwargs['website_url'] = iri_to_uri(item.website_url)
-        if item.thumbnail:
+        # _adjusted is set in self._bulk_adjusted_items.
+        if not item._adjusted[ITEM_THUMBNAIL_SIZE]:
+            kwargs['thumbnail_url'] = ''
+        else:
             site = Site.objects.get_current()
-            try:
-                image = Image.objects.for_storage_path(item.thumbnail_path)
-                adjustment_class = get_adjustment_class(DEFAULT_ADJUSTMENT)
-                # Raises IOError if the original image can't be found.
-                adjustment = adjustment_class.from_image(image,
-                                                         width=375,
-                                                         height=295)
-            except (Image.DoesNotExist, IOError):
-                kwargs['thumbnail_url'] = ''
-            else:
-                thumbnail_url = adjustment.url
-                if not (thumbnail_url.startswith('http://') or
-                        thumbnail_url.startswith('https://')):
-                    thumbnail_url = 'http://%s%s' % (site.domain,
-                                                     thumbnail_url)
-                kwargs['thumbnail'] = iri_to_uri(thumbnail_url)
-                if self.feed_type is JSONGenerator:
-                    # Version 2 of the MC widgets expect a
-                    # 'thumbnails_resized' argument which includes thumbnails
-                    # of these sizes for the various sizes of widget. These
-                    # are only here for backwards compatibility with those
-                    # widgets.
-                    kwargs['thumbnails_resized'] = []
+            thumbnail_url = item._adjusted[ITEM_THUMBNAIL_SIZE]['url']
+            if not (thumbnail_url.startswith('http://') or
+                    thumbnail_url.startswith('https://')):
+                thumbnail_url = 'http://%s%s' % (site.domain,
+                                                 thumbnail_url)
+            kwargs['thumbnail'] = iri_to_uri(thumbnail_url)
 
-                    for width, height in WIDGET_THUMBNAIL_SIZES:
-                        try:
-                            adjustment = adjustment_class.from_image(image,
-                                                                width=width,
-                                                                height=height)
-                        except IOError:
-                            thumbnail_url = ''
-                        else:
-                            thumbnail_url = adjustment.url
-                        if not (thumbnail_url.startswith('http://') or
-                                thumbnail_url.startswith('https://')):
-                            thumbnail_url = 'http://%s%s' % (site.domain,
-                                                             thumbnail_url)
-                        kwargs['thumbnails_resized'].append(
-                                                  {'width': width,
-                                                   'height': height,
-                                                   'url': thumbnail_url})
+            if self.feed_type is JSONGenerator:
+                # Version 2 of the MC widgets expect a
+                # 'thumbnails_resized' argument which includes thumbnails
+                # of these sizes for the various sizes of widget. These
+                # are only here for backwards compatibility with those
+                # widgets.
+                kwargs['thumbnails_resized'] = []
+
+                for size in WIDGET_THUMBNAIL_SIZES:
+                    info_dict = item._adjusted.get(size, {})
+                    thumbnail_url = info_dict.get('url', '')
+                    if not (thumbnail_url.startswith('http://') or
+                            thumbnail_url.startswith('https://')):
+                        thumbnail_url = 'http://%s%s' % (site.domain,
+                                                         thumbnail_url)
+                    kwargs['thumbnails_resized'].append(
+                                              {'width': width,
+                                               'height': height,
+                                               'url': thumbnail_url})
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
         return kwargs
