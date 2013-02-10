@@ -1,9 +1,7 @@
 from django import template
-from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 
-from daguerre.models import Image
-from daguerre.utils import AdjustmentInfoDict
-from daguerre.utils.adjustments import get_adjustment_class
+from daguerre.utils.adjustments import AdjustmentHelper, AdjustmentInfoDict
 
 
 register = template.Library()
@@ -28,58 +26,42 @@ class ThumbnailNode(template.Node):
 
         # Backwards-compat: livesearch should just use the thumbnail_url.
         if getattr(video, '_livesearch', False):
-            if self.asvar is not None:
-                context[self.asvar] = AdjustmentInfoDict({
-                    'width': self.width,
-                    'height': self.height,
-                    'url': video.thumbnail_url
-                })
-                return ''
-            return video.thumbnail_url
-
-        storage_path = None
-
-        if video.thumbnail:
-            storage_path = video.thumbnail.file
-        elif video.feed_id and video.feed.thumbnail:
-            storage_path = video.feed.thumbnail.name
-        elif video.search_id and video.search.thumbnail:
-            storage_path = video.search.thumbnail.name
-
-        if storage_path is None:
-            image = None
+            info_dict = AdjustmentInfoDict({
+                'width': self.width,
+                'height': self.height,
+                'url': video.thumbnail_url
+            })
         else:
-            try:
-                image = Image.objects.for_storage_path(storage_path)
-            except Image.DoesNotExist:
-                image = None
+            storage_path = None
 
-        if image is not None:
-            adjustment_class = get_adjustment_class('fill')
-            try:
-                adjustment = adjustment_class.from_image(image,
-                                                         width=self.width,
-                                                         height=self.height)
-            except IOError:
-                # IOError pops up if image.image doesn't reference
-                # a present file. In this case, fall back to default.
-                image = None
+            if video.thumbnail:
+                storage_path = video.thumbnail.file
+            elif video.feed_id and video.feed.thumbnail:
+                storage_path = video.feed.thumbnail.name
+            elif video.search_id and video.search.thumbnail:
+                storage_path = video.search.thumbnail.name
 
-        if image is None:
-            url = settings.STATIC_URL + 'localtv/images/default_vid.gif'
-            if self.asvar is not None:
-                context[self.asvar] = AdjustmentInfoDict({
+            kwargs = {
+                'width': self.width,
+                'height': self.height,
+                'adjustment': 'fill'
+            }
+
+            helper = AdjustmentHelper(storage_path, **kwargs)
+            info_dict = helper.info_dict()
+
+            # localtv_thumbnail has always fallen back in the code.
+            if not info_dict:
+                info_dict = AdjustmentInfoDict({
                     'width': self.width,
                     'height': self.height,
-                    'url': url
+                    'url': staticfiles_storage.url('localtv/images/default_vid.gif')
                 })
-                return ''
-            return url
         
         if self.asvar is not None:
-            context[self.asvar] = adjustment.info_dict()
+            context[self.asvar] = info_dict
             return ''
-        return adjustment.url
+        return info_dict
 
 
 @register.tag('get_thumbnail_url')
