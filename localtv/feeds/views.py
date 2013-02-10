@@ -20,12 +20,11 @@ from localtv.templatetags.filters import simpletimesince
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
 LOCALTV_FEED_LENGTH = 30
-ITEM_THUMBNAIL_SIZE = (375, 295)
-# Thumbnail sizes for the JSON feed which is used for the widget.
-WIDGET_THUMBNAIL_SIZES = (
-    (222, 169), # large thumbnail
-    (140, 110), # medium thumbnail
-    (88, 68),   # small thumbnail
+THUMBNAIL_SIZES = (
+    (375, 295), # largest thumbnail (thumbnail_url)
+    (222, 169), # large thumbnail (description thumbnail)
+    (140, 110), # medium thumbnail (widget only)
+    (88, 68),   # small thumbnail (widget only)
 )
 
 
@@ -165,9 +164,10 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         return items[start:end]
 
     def _bulk_adjusted_items(self, items):
-        sizes = (ITEM_THUMBNAIL_SIZE,)
         if self.feed_type is JSONGenerator:
-            sizes += WIDGET_THUMBNAIL_SIZES
+            sizes = THUMBNAIL_SIZES
+        else:
+            sizes = THUMBNAIL_SIZES[:2]
         for size in sizes:
             helper = BulkAdjustmentHelper(items,
                                           "thumbnail",
@@ -179,6 +179,10 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
                 if not hasattr(item, '_adjusted'):
                     item._adjusted = {}
                 item._adjusted[size] = info_dict
+        # set the default adjustment as a public attribute so that it
+        # can be accessed from the description template.
+        for item in items:
+            item.description_thumbnail = item._adjusted[THUMBNAIL_SIZES[1]]
         return items
 
     def _get_opensearch_data(self, obj):
@@ -248,12 +252,12 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             }
         if item.website_url:
             kwargs['website_url'] = iri_to_uri(item.website_url)
-        # _adjusted is set in self._bulk_adjusted_items.
-        if not item._adjusted[ITEM_THUMBNAIL_SIZE]:
+        # adjusted is set in self._bulk_adjusted_items.
+        if not item._adjusted[THUMBNAIL_SIZES[0]]:
             kwargs['thumbnail_url'] = ''
         else:
             site = Site.objects.get_current()
-            thumbnail_url = item._adjusted[ITEM_THUMBNAIL_SIZE]['url']
+            thumbnail_url = item._adjusted[THUMBNAIL_SIZES[0]]['url']
             if not (thumbnail_url.startswith('http://') or
                     thumbnail_url.startswith('https://')):
                 thumbnail_url = 'http://%s%s' % (site.domain,
@@ -268,7 +272,7 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
                 # widgets.
                 kwargs['thumbnails_resized'] = []
 
-                for size in WIDGET_THUMBNAIL_SIZES:
+                for size in THUMBNAIL_SIZES[1:]:
                     info_dict = item._adjusted.get(size, {})
                     thumbnail_url = info_dict.get('url', '')
                     if not (thumbnail_url.startswith('http://') or

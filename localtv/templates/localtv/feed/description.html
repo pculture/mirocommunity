@@ -1,10 +1,13 @@
-{% load i18n filters daguerre %}
+{% load i18n filters %}
 <table>
   <tr>
     <td width="230" valign="top">
-      <a href="{{ obj.get_absolute_url }}">
-        <img src="{% adjust obj.thumbnail_path width=222 height=169 %}">
-      </a>
+      {# This is set in FeedView._bulk_adjusted_items. #}
+      {% if obj.description_thumbnail %}
+        <a href="{{ obj.get_absolute_url }}">
+          <img src="{{ obj.description_thumbnail }}" />
+        </a>
+      {% endif %}
     </td>
     <td width="300" valign="top">
       <div class="miro-community-description">{{ obj.description|sanitize }}</div>
