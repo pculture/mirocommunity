@@ -442,12 +442,13 @@ class PlaylistVideosFeed(BaseVideosFeed):
             # This is a HACK for backwards-compatibility.
             order_by = '{0}playlistitem___order'.format(
                                '-' if obj['playlist_order'][0] == '-' else '')
-            queryset = obj['obj'].items.order_by(order_by)
-            queryset = form._filter(queryset)
+            items = obj['obj'].items.order_by(order_by)
+            items = form._filter(items)
         else:
-            queryset = form.search()
-        queryset = NormalizedVideoList(queryset)
-        return self._opensearch_items(queryset, obj)
+            items = form.search()
+        items = NormalizedVideoList(items)
+        items = self._opensearch_items(items, obj)
+        return self._bulk_adjusted_items(items)
 
     def title(self, obj):
         return u"%s: %s" % (
