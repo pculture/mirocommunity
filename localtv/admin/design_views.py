@@ -51,14 +51,13 @@ def widget_settings(request):
             return HttpResponseRedirect(
                 reverse('localtv_admin_widget_settings'))
     else:
+        widgetsettings = WidgetSettings.objects.get_current()
         form = forms.WidgetSettingsForm(
-            instance=WidgetSettings.objects.get_current(),
+            instance=widgetsettings,
             initial={
-                'title':
-                WidgetSettings.objects.get().get_title_or_reasonable_default()})
+                'title': widgetsettings.get_title_or_reasonable_default()})
 
     return render_to_response(
         'localtv/admin/widget_settings.html',
         {'form': form},
         context_instance=RequestContext(request))
-
