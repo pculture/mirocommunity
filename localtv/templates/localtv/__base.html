@@ -41,12 +41,19 @@
 		{#% compress js %#}
 			<script type="text/javascript">
 				(function () {
+	                // if a querystring is present in the hash, redirect
+	                // This is due to History.js's strange behavior.
+	                if (window.location.hash.slice(0, 2) == '#?') {
+	                    window.location = window.location.hash.slice(1)
+	                }
+
 					window.STATIC_URL = "{{ STATIC_URL }}";
 				}());
 			</script>
 			<script src="{% static 'localtv/front/js/modernizr-2.5.3.min.js' %}"></script>
 			<script src="{% static 'localtv/front/js/jquery-1.7.2.min.js' %}"></script>
 			<script src="{% static 'localtv/front/js/jquery.cycle.js' %}"></script>
+			<script src="{% static 'localtv/front/js/jquery.history.js' %}"></script>
 			<script src="{% static 'localtv/front/js/jquery.infinitescroll.js' %}"></script>
 			<script src="{% static 'localtv/front/js/bootstrap.tooltip.js' %}"></script>
 			<script src="{% static 'localtv/front/js/bootstrap.popover.js' %}"></script>
