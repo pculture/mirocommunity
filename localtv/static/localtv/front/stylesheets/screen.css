@@ -217,7 +217,7 @@ form { margin-bottom: 18px; }
   .grid > li:nth-child(odd) { clear: left; } }
 @media screen and (max-width: 400px) { .grid > li { width: 100%; float: none; } }
 
-.grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1345840025') center center no-repeat; }
+.grid > #infscr-loading { float: none; clear: both; text-indent: -9999px; height: 66px; background: transparent url('/static/localtv/front/images/ajax-loader.gif?1358904015') center center no-repeat; }
 
 .grid > #infscr-done { float: none; clear: both; height: 66px; font-size: 30px; line-height: 36px; font-weight: bold; margin-top: 18px; }
 
@@ -234,7 +234,7 @@ form { margin-bottom: 18px; }
 
 .replaced, .search-icon { text-indent: -9999px; display: block; }
 
-.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1345840025'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
+.search-icon { background-image: url('/static/localtv/front/images/glyphicons_027_search.png?1358904015'); background-size: 16px 16px; background-position: center center; background-repeat: no-repeat; width: 16px; height: 16px; }
 
 ul, ol { padding-left: 1.5em; }
 
@@ -536,7 +536,7 @@ input:focus, textarea:focus { border-color: #344f6d; -webkit-box-shadow: 0 0 6px
 .message.info { background-color: #c4dffc; border-color: #94acc6; text: #021326; }
 .message.warning { background-color: #fffcc5; border-color: #cfcc8f; text: #2c2a00; }
 
-.precontent { background: #343639 url('/static/localtv/front/images/classy_fabric.png?1345840025'); }
+.precontent { background: #343639 url('/static/localtv/front/images/classy_fabric.png?1358904015'); }
 
 .precontent a { color: #66ccff; }
 
