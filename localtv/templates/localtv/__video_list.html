@@ -23,17 +23,20 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block body_classes %}{{ block.super }} video-list-page{% endblock %}
 
-{% block main %}
-
+{% block top %}
 	<header class="page-header">
+		{% block page_header %}
 		<h1>{% block page_title %}Video List{% endblock %}</h1>
 		<div class="page-actions">
 			<ul class="action-list">
 				<li>{% block rss_link %}<a class="rss" href="{% block rss_url %}{% endblock %}" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a>{% endblock %}</li>
 			</ul>
 		</div>
+		{% endblock %}
 	</header>
+{% endblock %}
 
+{% block main %}
 	<div class="page-content">
 		<div class="padded">
 			{% if page_obj.has_other_pages %}
@@ -41,7 +44,7 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 					{% pagetabs page_obj %}
 				</div>
 			{% endif %}
-			
+
 			{% include "localtv/_grid/video_list.html" %}
 
 			{% if page_obj.has_other_pages %}
@@ -51,5 +54,4 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 			{% endif %}
 		</div>
 	</div>
-	
 {% endblock %}

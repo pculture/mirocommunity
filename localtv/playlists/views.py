@@ -151,7 +151,7 @@ def index(request):
 
 class PlaylistView(ListView):
     allow_empty = True
-    context_object_name = 'videos'
+    context_object_name = 'video_list'
 
     def get_paginate_by(self, queryset):
         return 15 if 'count' not in self.kwargs else self.kwargs['count']
