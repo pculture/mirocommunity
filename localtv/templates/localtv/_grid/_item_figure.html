@@ -10,12 +10,7 @@
         <ul class="tiles tiles-{% if image or not video_list or video_list|length < 2 %}1{% elif video_list|length < 6 %}2{% else %}6{% endif %}">
             {% if image %}
                 <li class="tiles-item">
-                    {% adjust image width=300 height=216 adjustment="fill" as image_adjusted %}
-                    {% if image_adjusted %}
-                        <img src="{{ image_adjusted }}" />
-                    {% else %}
-                        <img src="{% static "localtv/front/images/nounproject_2650_television_white.png" %}" />
-                    {% endif %}
+                    <img src="{{ image }}" />
                 </li>
             {% elif not video_list %}
                 <li class="tiles-item">
@@ -26,12 +21,14 @@
                     <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" %}" /></li>
                 {% endfor %}
             {% elif video_list|length < 6 %}
-                {% for video in video_list %}
-                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=150 height=216 adjustment="fill" %}" /></li>
+                {% adjust_bulk video_list|slice:":2" "thumbnail" width=150 height=216 adjustment="fill" as adjusted_list %}
+                {% for video, image in adjusted_list %}
+                    <li class="tiles-item"><img src="{{ image }}" /></li>
                 {% endfor %}
             {% else %}
-                {% for video in video_list %}
-                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=100 height=108 adjustment="fill" %}" /></li>
+                {% adjust_bulk video_list|slice:":6" "thumbnail" width=100 height=108 adjustment="fill" as adjusted_list %}
+                {% for video, image in adjusted_list %}
+                    <li class="tiles-item"><img src="{{ image }}" /></li>
                 {% endfor %}
             {% endif %}
         </ul>

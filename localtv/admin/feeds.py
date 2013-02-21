@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 from localtv.feeds.views import BaseVideosFeed
 from localtv.models import Video
 
+
 def generate_secret():
     sha = hashlib.sha1(settings.DATABASES['default']['NAME'])
     sha.update('admin_feed')
@@ -16,12 +17,14 @@ def generate_secret():
     sha.update(settings.SECRET_KEY)
     return sha.hexdigest()[:16]
 
+
 def verify_secret(func):
     def wrapper(request, secret):
         if secret != generate_secret():
             raise Http404
         return func(request)
     return wrapper
+
 
 class UnapprovedVideosFeed(BaseVideosFeed):
     def link(self):
@@ -31,13 +34,15 @@ class UnapprovedVideosFeed(BaseVideosFeed):
         return "%s: %s" % (
             Site.objects.get_current().name, _('Videos Awaiting Moderation'))
 
-    def items(self):
-        return Video.objects.filter(
+    def items(self, obj):
+        items = Video.objects.filter(
             status=Video.UNAPPROVED,
             site=Site.objects.get_current()
         ).order_by(
             'when_submitted', 'when_published'
         )
+        items = self._opensearch_items(items, obj)
+        return self._bulk_adjusted_items(items)
 
 
 class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
@@ -45,8 +50,8 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
         return "%s: %s" % (
             Site.objects.get_current().name, _('Unapproved User Submissions'))
 
-    def items(self):
-        return Video.objects.filter(
+    def items(self, obj):
+        items = Video.objects.filter(
             status=Video.UNAPPROVED,
             site=Site.objects.get_current(),
             feed=None,
@@ -54,6 +59,8 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
         ).order_by(
             'when_submitted', 'when_published'
         )
+        items = self._opensearch_items(items, obj)
+        return self._bulk_adjusted_items(items)
 
 
 unapproved = verify_secret(UnapprovedVideosFeed())

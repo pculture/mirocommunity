@@ -1,9 +1,10 @@
-{# Expects columns, object_list, and grid_item_template #}
+{# Expects columns, object_list, lookup, and grid_item_template #}
 {# empty_message is optional #}
-
+{% load daguerre %}
 {% if object_list %}
+    {% adjust_bulk object_list lookup width=300 height=216 adjustment="fill" as adjusted_list %}
     <ul class="grid grid-{{ columns }}">
-        {% for object in object_list %}
+        {% for object, image in adjusted_list %}
             <li class="grid-item">
                 {% include grid_item_template %}
             </li>
