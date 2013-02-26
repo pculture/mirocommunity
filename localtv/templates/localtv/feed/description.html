@@ -21,9 +21,12 @@ along with Miro Community.  If not, see <http://www.gnu.org/licenses/>.
 <table>
   <tr>
     <td width="230" valign="top">
-      <a href="{{ obj.get_absolute_url }}">
-        <img src="{% adjust obj.thumbnail_path width=222 height=169 %}">
-      </a>
+      {% adjust obj.thumbnail_path width=222 height=169 as thumbnail_url %}
+      {% if thumbnail_url %}
+        <a href="{{ obj.get_absolute_url }}">
+          <img src="{% if not thumbnail_url|slice:':7' == 'http://' and not thumbnail_url|slice:':8' == 'https://' %}http://{{ site_settings.site.domain }}{% endif %}{{ thumbnail_url }}">
+        </a>
+      {% endif %}
     </td>
     <td width="300" valign="top">
       <div class="miro-community-description">{{ obj.description|sanitize }}</div>
