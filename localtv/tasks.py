@@ -3,20 +3,25 @@ import httplib
 import logging
 import random
 import urllib
-import urlparse
 
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
+from daguerre.utils import make_hash, KEEP_FORMATS, DEFAULT_FORMAT
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.base import File
+from django.core.files.temp import NamedTemporaryFile
+from django.core.files.storage import default_storage
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
-from django.forms import ImageField
 from haystack import connections
 from haystack.query import SearchQuerySet
 from vidscraper.videos import Video as VidscraperVideo
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 
 class DummyException(Exception):
     """
@@ -319,9 +324,9 @@ def video_save_thumbnail(video_pk, using='default'):
                      remote_file.getcode(), video.thumbnail_url)
         video_save_thumbnail.retry()
 
-    thumb_name = urlparse.urlsplit(thumbnail_url).path.rsplit('/')[-1]
+    temp = NamedTemporaryFile()
     try:
-        thumb_file = ContentFile(remote_file.read(), name=thumb_name)
+        temp.write(remote_file.read())
     except IOError:
         # Could be a temporary disruption - try again later if this was
         # a task. Otherwise reraise.
@@ -329,23 +334,30 @@ def video_save_thumbnail(video_pk, using='default'):
             raise
         video_save_thumbnail.retry()
 
-    # We use Django's forms.ImageField to validate the downloaded file.
-    field = ImageField()
+    temp.seek(0)
     try:
-        thumb_file = field.to_python(thumb_file)
-    except ValidationError:
+        im = Image.open(temp)
+        im.verify()
+    except Exception:
         # If the file isn't valid, erase the url.
         Video.objects.using(using).filter(pk=video.pk
                     ).update(thumbnail_url='')
         return
 
-    # Save the thumbnail file without saving the video instance.
-    # Avoids a race condition as much as possible.
-    video.thumbnail.save(thumb_file.name, thumb_file, save=False)
+    f = video._meta.get_field('thumbnail')
+    format = im.format if im.format in KEEP_FORMATS else DEFAULT_FORMAT
+    args = (video.thumbnail_url, video.pk, datetime.datetime.now().isoformat())
+    filename = ''.join((make_hash(*args, step=2), format.lower()))
+    storage_path = f.generate_filename(video, filename)
+
+    # We save the thumbnail file and then update the path on the instance
+    # to avoid overwriting other changes that might have happened
+    # simultaneously.
+    final_path = default_storage.save(storage_path, File(temp))
     Video.objects.using(using).filter(pk=video.pk
-                ).update(thumbnail=video.thumbnail.name)
+                ).update(thumbnail=final_path)
     remote_file.close()
-    thumb_file.close()
+    temp.close()
 
 
 def _haystack_database_retry(task, callback):
