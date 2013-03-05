@@ -7,6 +7,7 @@ import operator
 import logging
 import sys
 import traceback
+import warnings
 
 import tagging
 import tagging.models
@@ -58,10 +59,14 @@ class Thumbnailable(models.Model):
 
     @property
     def has_thumbnail(self):
+        warnings.warn("has_thumbnail is deprecated and will be removed in a "
+                      "future version.", DeprecationWarning)
         return bool(getattr(self, self.thumbnail_attribute))
 
     @property
     def thumbnail_path(self):
+        warnings.warn("thumbnail_path is deprecated and will be removed in a "
+                      "future version.", DeprecationWarning)
         thumb_file = getattr(self, self.thumbnail_attribute)
         if thumb_file:
             return thumb_file.name
