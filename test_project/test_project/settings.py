@@ -2,6 +2,8 @@
 
 import os
 
+_PROJECT_DIR = os.path.dirname(__file__)
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -33,7 +35,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(os.path.dirname(__file__), 'test_mc_project.sl3'),
+            'NAME': os.path.join(_PROJECT_DIR, 'db.sl3'),
         }
     }
 
@@ -51,7 +53,7 @@ else:
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-            'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+            'PATH': os.path.join(_PROJECT_DIR, 'whoosh_index'),
             }
         }
 
@@ -77,7 +79,7 @@ SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = False
 
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale
@@ -85,7 +87,7 @@ USE_L10N = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = 'media/'
+MEDIA_ROOT = os.path.join(_PROJECT_DIR, 'media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -96,7 +98,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = 'static/'
+STATIC_ROOT = os.path.join(_PROJECT_DIR, 'static')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -119,7 +121,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'test_mc_project_secret_key'
+SECRET_KEY = 'not_secret_key'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -142,7 +144,7 @@ MIDDLEWARE_CLASSES = (
     'localtv.middleware.UserIsAdminMiddleware',
 )
 
-ROOT_URLCONF = 'test_mc_project.urls'
+ROOT_URLCONF = 'test_project.urls'
 
 UPLOADTEMPLATE_MEDIA_ROOT = MEDIA_ROOT + 'uploadtemplate/'
 UPLOADTEMPLATE_MEDIA_URL = MEDIA_URL + 'uploadtemplate/'
@@ -197,7 +199,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 # Webdriver test settings
 TEST_BROWSER = 'Firefox'
-TEST_RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'webdriver_results')
+TEST_RESULTS_DIR = os.path.join(_PROJECT_DIR, 'webdriver_results')
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',

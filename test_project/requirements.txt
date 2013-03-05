@@ -1,4 +1,5 @@
 git+http://git.participatoryculture.org/django-email-share/@master#egg=django_email_share
+git+http://git.participatoryculture.org/djpagetabs@0d5ec5a1a318830380728e04d2160bc35db8469a#egg=djpagetabs
 git+git://github.com/pculture/django-uploadtemplate.git@233bdf6dce5108e9ed3d6efec6593148d62e5b0c#egg=django-uploadtemplate
 git+git://github.com/pculture/djvideo.git@ddc27014800a3432abc82872d8bacf103ab91c2f#egg=djvideo
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk

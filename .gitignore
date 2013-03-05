@@ -3,8 +3,8 @@
 /mirocommunity.egg-info/*
 /docs/_build/*
 /.tox/
-/test_mc_project/media/
-/test_mc_project/test_mc_project.sl3
-/test_mc_project/whoosh_index/
-/test_mc_project/nosetests*.xml
-/test_mc_project/webdriver_results/
+/test_project/test_project/media/
+/test_project/test_project/db.sl3
+/test_project/test_project/whoosh_index/
+/test_project/test_project/nosetests*.xml
+/test_project/test_project/webdriver_results/
