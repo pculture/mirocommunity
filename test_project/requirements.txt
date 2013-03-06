@@ -4,7 +4,7 @@ git+git://github.com/pculture/django-uploadtemplate.git@233bdf6dce5108e9ed3d6efe
 git+git://github.com/pculture/djvideo.git@ddc27014800a3432abc82872d8bacf103ab91c2f#egg=djvideo
 git+git://github.com/pythonforfacebook/facebook-sdk.git@master#egg=facebook_python_sdk
 git+git://github.com/toastdriven/django-haystack.git@6065c8525bea4b9a116c7fa279b9e3e26ac7362f#egg=django-haystack
-git+git://github.com/oberlin/django-daguerre.git@6d0dfb9c7626c5a51ab92cc125ba2076104ebddd#egg=django-daguerre
+git+git://github.com/oberlin/django-daguerre.git@a585928f2f43c35ec87de0ba8d71eafa8d2ccf54#egg=django-daguerre
 django-registration==0.8
 vidscraper==1.0.2
 beautifulsoup4==4.0.4
