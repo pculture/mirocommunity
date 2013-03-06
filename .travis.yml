@@ -21,4 +21,6 @@ before_script:
 script:
   - cd test_project
   - MC_DIR=`python -c "import localtv, os; print(os.path.dirname(localtv.__file__))"`
-  - ./manage.py test --verbosity=2 localtv.tests localtv.contrib --exclude-dir=$MC_DIR/tests/selenium
+  # Run contrib tests first so that contest/video foreign keys
+  # get set up correctly.
+  - ./manage.py test --verbosity=2 localtv.contrib localtv.tests --exclude-dir=$MC_DIR/tests/selenium
