@@ -57,10 +57,12 @@ else:
             }
         }
 
+import djcelery
+djcelery.setup_loader()
+CELERY_TASK_SERIALIZER = 'json'
 # Comment these lines out to use a celery server.
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-CELERY_TASK_SERIALIZER = 'json'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
