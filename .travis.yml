@@ -7,6 +7,7 @@ env:
   - MIGRATIONS=yes
   - SEARCH=elasticsearch
   - DB=mysql
+  - MIGRATIONS=yes DB=mysql
 before_install:
   - if [ $SEARCH == 'elasticsearch' ]; then sudo service elasticsearch start; sleep 3; fi
 install:
@@ -23,4 +24,6 @@ script:
   - MC_DIR=`python -c "import localtv, os; print(os.path.dirname(localtv.__file__))"`
   # Run contrib tests first so that contest/video foreign keys
   # get set up correctly.
-  - ./manage.py test --verbosity=2 localtv.contrib localtv.tests --exclude-dir=$MC_DIR/tests/selenium
+  - if [ ! $MIGRATIONS ]; then ./manage.py test --verbosity=2 localtv.contrib localtv.tests --exclude-dir=$MC_DIR/tests/selenium; fi
+  - if [ $MIGRATIONS == 'yes' ]; then ./manage.py syncdb --noinput; fi
+  - if [ $MIGRATIONS == 'yes' ]; then ./manage.py migrate --noinput; fi
