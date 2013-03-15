@@ -3,7 +3,7 @@ from localtv.tests.selenium.pages import Page
 
 
 class MyOpenIDAuth(Page):
-    _OPENID_PAGE = "html head base[href='https://www.myopenid.com/']"
+    _OPENID_PAGE = "a[href='https://www.myopenid.com/']"
     _CONTINUE = "button#continue-button"
     _PASSWORD = "form#password-signin-form td input#password"
     _SUBMIT = "input#signin_button"
