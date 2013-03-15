@@ -151,7 +151,7 @@ class SubmitVideo(WebdriverTestCase):
         """
         testcase = 'amara embed code'
         self.verify_video_submit(testcase)
-        self.video_pg.verify_amara_widget()
+        self.assertTrue(self.video_pg.verify_amara_widget())
 
     def test_submit__amara_video_direct(self):
         """Submit a video on amara site.
@@ -160,7 +160,7 @@ class SubmitVideo(WebdriverTestCase):
         """
         testcase = 'amara direct detect'
         self.verify_video_submit(testcase)
-        self.video_pg.verify_amara_widget()
+        self.assertTrue(self.video_pg.verify_amara_widget())
 
     def test_submit__duplicate(self):
         """Submit a duplicate video.
