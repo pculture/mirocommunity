@@ -53,5 +53,4 @@ class VideoPage(Page):
         """Check if the Amara widget is present.
 
         """
-        if self.is_element_present(self._AMARA_WIDGET):
-            return True
+        return self.is_element_present(self._AMARA_WIDGET)
