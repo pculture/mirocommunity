@@ -65,32 +65,6 @@ class SubmitVideo(WebdriverTestCase):
                                 'time to 1987 to the famous Sunset '
                                 'Strip in Los Angeles'),
             },
-            'amara embed code': {
-                'url': ('http://www.universalsubtitles.org/en/videos/'
-                        'zrd5s48bQYg6/info/what-is-a-flame/'),
-                'form': 'embed',
-                'title': 'What is a Flame',
-                'thumb_url': ('http://s3.amazonaws.com/s3.userdata.www.'
-                              'universalsubtitles.org/video/thumbnail/'
-                              '761aa7b2e5981b228460a8626b8b424ca3f75b31'
-                              '_jpg_120x90'
-                              '_crop-smart_upscale-True_q85.jpg'),
-                'search': 'Flame Challange',
-                'description': ('Although this Flame Challenge entry '
-                                'was first submitted on Vimeo, this '
-                                'goes out to all the YouTube viewers'
-                                'out there. Thanks to Alan Alda and '
-                                'The Center for Communicating Science '
-                                'for creating such an educational and '
-                                'creative venue!'),
-                'tags': 'educational',
-                'embed': ('<script type="text/javascript'
-                          'src="http://s3.amazonaws.com/'
-                          's3.www.universalsubtitles.org/embed.js">'
-                          '({"video_url": "http://www.youtube.com/'
-                          'watch?v=5ymAXKXhvHI"})'
-                          '</script>'),
-            },
             'amara direct detect': {
                 'url': ('http://qa.pculture.org/feeds_test/'
                         'short-video.ogv'),
@@ -130,6 +104,7 @@ class SubmitVideo(WebdriverTestCase):
         """
         testcase = 'youtube'
         self.verify_video_submit(testcase)
+        self.assertTrue(self.video_pg.verify_amara_widget())
 
     def test_submit__vimeo(self):
         """Submit a vimeo video.
@@ -137,6 +112,7 @@ class SubmitVideo(WebdriverTestCase):
         """
         testcase = 'vimeo'
         self.verify_video_submit(testcase)
+        self.assertTrue(self.video_pg.verify_amara_widget())
 
     def test_submit__blip(self):
         """Submit a blip video.
@@ -144,14 +120,6 @@ class SubmitVideo(WebdriverTestCase):
         """
         testcase = 'blip'
         self.verify_video_submit(testcase)
-
-    def test_submit__amara_embed(self):
-        """Submit a video with amara embed code.
-
-        """
-        testcase = 'amara embed code'
-        self.verify_video_submit(testcase)
-        self.assertTrue(self.video_pg.verify_amara_widget())
 
     def test_submit__amara_video_direct(self):
         """Submit a video on amara site.
@@ -169,3 +137,4 @@ class SubmitVideo(WebdriverTestCase):
         kwargs = self.test_videos['youtube']
         self.submit_pg.submit_a_valid_video(**kwargs)
         self.verify_video_submit('youtube duplicate')
+        self.assertTrue(self.video_pg.verify_amara_widget())
