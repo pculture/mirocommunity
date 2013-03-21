@@ -78,7 +78,7 @@ class CompatibleListingView(SortFilterView):
         context = super(CompatibleListingView, self).get_context_data(
                                                                      **kwargs)
         form = context['form']
-        context['query'] = form.cleaned_data['q']
+        context['query'] = form['q'].value()
         context['video_list'] = context['videos']
         return context
 
@@ -86,7 +86,7 @@ class CompatibleListingView(SortFilterView):
 class SiteListView(ListView):
     """
     Filters the ordinary queryset according to the current site.
-    
+
     """
     def get_queryset(self):
         return super(SiteListView, self).get_queryset().filter(
