@@ -34,12 +34,12 @@ class ThumbnailNode(template.Node):
         else:
             storage_path = None
 
-            if video.thumbnail:
-                storage_path = video.thumbnail.file
-            elif video.feed_id and video.feed.thumbnail:
-                storage_path = video.feed.thumbnail.name
-            elif video.search_id and video.search.thumbnail:
-                storage_path = video.search.thumbnail.name
+            if video.has_thumbnail:
+                storage_path = video.thumbnail_path
+            elif video.feed_id and video.feed.has_thumbnail:
+                storage_path = video.feed.thumbnail_path
+            elif video.search_id and video.search.has_thumbnail:
+                storage_path = video.search.thumbnail_path
 
             kwargs = {
                 'width': self.width,
