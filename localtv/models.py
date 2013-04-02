@@ -165,17 +165,10 @@ class SiteSettings(Thumbnailable):
         return self.admins.filter(pk=user.pk).exists()
 
     def should_show_dashboard(self):
-        '''On /admin/, most sites will see a dashboard that gives them
-        information at a glance about the site.
-
-        Some sites want to disable that, which they can do by setting the
-        LOCALTV_SHOW_ADMIN_DASHBOARD variable to False.
-
-        In that case (in the default theme) the left-hand navigation
-        will omit the link to the Dashboard, and also the dashboard itself
-        will be an empty page with a META REFRESH that points to
-        /admin/approve_reject/.'''
-        return lsettings.SHOW_ADMIN_DASHBOARD
+        """Returns True for backwards-compatibility."""
+        warnings.warn("should_show_dashboard is deprecated and will be "
+                      "removed in a future version.", DeprecationWarning)
+        return True
 
 
 class WidgetSettingsManager(SiteRelatedManager):
