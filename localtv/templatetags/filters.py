@@ -3,7 +3,9 @@ import re
 
 from bs4 import BeautifulSoup, Comment
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.template import Library
+from django.utils.encoding import force_unicode
 from django.utils.html import urlize
 from django.utils.safestring import mark_safe
 import lxml.html
@@ -132,3 +134,17 @@ def same_db_tags(video):
     tags = Tag.objects.using(using).filter(items__content_type__pk=ct.pk,
                                            items__object_id=video.pk)
     return u'\n'.join([unicode(t) for t in tags])
+
+
+@register.filter
+def full_url(url):
+    """
+    If necessary, adds protocol and host to a URL.
+    """
+    url = force_unicode(url)
+    if not url:
+        return url
+    if not url.startswith(u'http://') or url.startswith(u'https://'):
+        site = Site.objects.get_current()
+        url = u'http://{host}{url}'.format(host=site.domain, url=url)
+    return url

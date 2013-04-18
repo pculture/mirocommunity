@@ -15,7 +15,7 @@ from localtv.models import Video
 from localtv.search.forms import ModelFilterField
 from localtv.search.utils import NormalizedVideoList
 from localtv.search.views import SortFilterMixin
-from localtv.templatetags.filters import simpletimesince
+from localtv.templatetags.filters import simpletimesince, full_url
 
 
 FLASH_ENCLOSURE_STATIC_LENGTH = 1
@@ -249,20 +249,15 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             'when': '%s %s ago' % (
                 item.when_prefix(),
                 simpletimesince(item.when()))
-            }
+        }
         if item.website_url:
             kwargs['website_url'] = iri_to_uri(item.website_url)
         # adjusted is set in self._bulk_adjusted_items.
         if not item._adjusted[THUMBNAIL_SIZES[0]]:
             kwargs['thumbnail_url'] = ''
         else:
-            site = Site.objects.get_current()
-            thumbnail_url = item._adjusted[THUMBNAIL_SIZES[0]]['url']
-            if not (thumbnail_url.startswith('http://') or
-                    thumbnail_url.startswith('https://')):
-                thumbnail_url = 'http://%s%s' % (site.domain,
-                                                 thumbnail_url)
-            kwargs['thumbnail'] = iri_to_uri(thumbnail_url)
+            url = full_url(item._adjusted[THUMBNAIL_SIZES[0]]['url'])
+            kwargs['thumbnail'] = iri_to_uri(url)
 
             if self.feed_type is JSONGenerator:
                 # Version 2 of the MC widgets expect a
@@ -274,15 +269,10 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
 
                 for size in THUMBNAIL_SIZES[1:]:
                     info_dict = item._adjusted.get(size, {})
-                    thumbnail_url = info_dict.get('url', '')
-                    if not (thumbnail_url.startswith('http://') or
-                            thumbnail_url.startswith('https://')):
-                        thumbnail_url = 'http://%s%s' % (site.domain,
-                                                         thumbnail_url)
-                    kwargs['thumbnails_resized'].append(
-                                              {'width': size[0],
-                                               'height': size[1],
-                                               'url': thumbnail_url})
+                    url = full_url(info_dict.get('url', ''))
+                    kwargs['thumbnails_resized'].append({'width': size[0],
+                                                         'height': size[1],
+                                                         'url': url})
         if item.embed_code:
             kwargs['embed_code'] = item.embed_code
         return kwargs
