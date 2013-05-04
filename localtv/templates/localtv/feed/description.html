@@ -13,7 +13,7 @@
       <div class="miro-community-description">{{ obj.description|sanitize }}</div>
     </td>
     <td width="250" valign="top">
-      {% with authors=obj.authors.all categories=obj.categories.all tags=obj.tags.all %}
+      {% with authors=obj.authors.all categories=obj.categories.all tags=obj.get_tags %}
       <div>{% if authors %}<b>By:</b> {% for author in authors %}<a href="{% url 'localtv_author' author.pk as url %}{{ url|full_url }}">{% if author.firstname %}{{ author.get_full_name }}{% else %}{{ author.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
       <div>{% if categories %}<b>Categories:</b> {% for cat in categories %}<a href="{{ cat.get_absolute_url|full_url }}">{{ cat.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>
       <div>{% if tags %}<b>Tags:</b> {% for tag in tags %}{% url 'localtv_list_tag' tag.name as tag_url %}{% if tag_url %}<a href="{{ tag_url|full_url }}">{% endif %}{{ tag.name }}{% if tag_url %}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</div>

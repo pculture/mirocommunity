@@ -152,7 +152,11 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
             if isinstance(field, ModelFilterField):
                 filter_value = [filter_value]
         form = self.get_form(obj['request'].GET.dict(), filter_value)
-        items = NormalizedVideoList(form.search())
+        items = NormalizedVideoList(form.search(),
+                                    select_related=[],
+                                    prefetch_related=['authors',
+                                                      'taggeditem_set__tag',
+                                                      'categories'])
         items = self._opensearch_items(items, obj)
         return self._bulk_adjusted_items(items)
 
@@ -436,7 +440,11 @@ class PlaylistVideosFeed(BaseVideosFeed):
             items = form._filter(items)
         else:
             items = form.search()
-        items = NormalizedVideoList(items)
+        items = NormalizedVideoList(items,
+                                    select_related=[],
+                                    prefetch_related=['authors',
+                                                      'taggeditem_set__tag',
+                                                      'categories'])
         items = self._opensearch_items(items, obj)
         return self._bulk_adjusted_items(items)
 

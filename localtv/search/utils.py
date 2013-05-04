@@ -7,7 +7,7 @@ from haystack import connections
 from haystack.backends import SQ
 from haystack.query import SearchQuerySet
 
-from localtv.models import SiteSettings
+from localtv.models import SiteSettings, Video
 
 
 EMPTY = object()
@@ -56,24 +56,48 @@ class NormalizedVideoList(object):
     efficiently as possible.
 
     """
-    def __init__(self, queryset):
+    def __init__(self, queryset, select_related=None, prefetch_related=None):
+        select_related = (['feed', 'user', 'search']
+                          if select_related is None else select_related)
+        prefetch_related = (['authors']
+                            if prefetch_related is None else prefetch_related)
+
         self.is_haystack = isinstance(queryset, SearchQuerySet)
         if self.is_haystack:
-            queryset = queryset.load_all()
             if 'WhooshEngine' in connections[queryset.query._using
                                              ].options['ENGINE']:
                 # Workaround for django-haystack #574.
                 # https://github.com/toastdriven/django-haystack/issues/574
                 list(queryset)
+        else:
+            queryset = queryset.select_related(*select_related)
+            queryset = queryset.prefetch_related(*prefetch_related)
 
         self.queryset = queryset
+        self.select_related = select_related
+        self.prefetch_related = prefetch_related
 
     def __getitem__(self, k):
         if self.is_haystack:
             results = self.queryset[k]
             if isinstance(results, list):
-                return [result.object for result in results
-                        if result is not None]
+                pks = [r.pk for r in results]
+                qs = Video.objects.filter(status=Video.ACTIVE)
+                qs = qs.select_related(*self.select_related)
+                qs = qs.prefetch_related(*self.prefetch_related)
+                video_dict = qs.in_bulk(pks)
+                videos = []
+                for pk in pks:
+                    if pk not in video_dict:
+                        try:
+                            pk = int(pk)
+                        except ValueError:
+                            pass
+                    try:
+                        videos.append(video_dict[pk])
+                    except KeyError:
+                        continue
+                return videos
             if results is not None:
                 return results.object
             raise IndexError

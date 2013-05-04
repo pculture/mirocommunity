@@ -1088,6 +1088,10 @@ class Video(Thumbnailable):
         if self.pk is None:
             vidscraper_video = getattr(self, '_vidscraper_video', None)
             return getattr(vidscraper_video, 'tags', None) or []
+        if (hasattr(self, '_prefetched_objects_cache') and
+                'taggeditem_set' in self._prefetched_objects_cache):
+            return [item.tag for item in
+                    self._prefetched_objects_cache['taggeditem_set']]
         return self.tags
 
     def try_to_get_file_url_data(self):
