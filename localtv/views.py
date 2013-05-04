@@ -23,23 +23,24 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        featured_videos = Video.objects.get_featured_videos()
-        form = SearchForm({'sort': 'popular'})
-        popular_videos = form.search()
-        new_videos = Video.objects.get_latest_videos()
+        featured_form = SearchForm({'sort': 'featured'})
+        popular_form = SearchForm({'sort': 'popular'})
+        new_form = SearchForm({'sort': 'newest'})
 
-        site_settings_videos = Video.objects.get_site_settings_videos()
+        video_pks = Video.objects.filter(site=settings.SITE_ID,
+                                         status=Video.ACTIVE
+                                         ).values_list('pk', flat=True)
         recent_comments = comments.get_model().objects.filter(
             site=settings.SITE_ID,
             content_type=ContentType.objects.get_for_model(Video),
-            object_pk__in=site_settings_videos.values_list('pk', flat=True),
+            object_pk__in=video_pks,
             is_removed=False,
             is_public=True).order_by('-submit_date')
 
         context.update({
-            'featured_videos': featured_videos,
-            'popular_videos': NormalizedVideoList(popular_videos),
-            'new_videos': new_videos,
+            'featured_videos': NormalizedVideoList(featured_form.search()),
+            'popular_videos': NormalizedVideoList(popular_form.search()),
+            'new_videos': NormalizedVideoList(new_form.search()),
             'comments': recent_comments
         })
         return context

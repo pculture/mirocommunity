@@ -188,7 +188,8 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         """
         model = self.get_model()
         return model._default_manager.filter(status=model.ACTIVE
-                                    ).select_related('feed', 'user', 'search')
+                                    ).select_related('feed', 'user', 'search'
+                                    ).prefetch_related('authors')
 
     def get_updated_field(self):
         return 'when_modified'
