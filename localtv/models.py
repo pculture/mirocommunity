@@ -1136,9 +1136,9 @@ class Video(Thumbnailable):
         Simple method for getting the when_published date if the video came
         from a feed or a search, otherwise the when_approved date.
         """
-        if SiteSettings.objects.db_manager(self._state.db).get(
-            site=self.site_id).use_original_date and \
-            self.when_published:
+        site_settings = SiteSettings.objects.get_cached(self.site_id,
+                                                        self._state.db)
+        if site_settings.use_original_date and self.when_published:
             return self.when_published
         return self.when_approved or self.when_submitted
 
