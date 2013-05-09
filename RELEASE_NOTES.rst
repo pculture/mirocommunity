@@ -1,3 +1,18 @@
+Miro Community 1.10.0
+=====================
+
+* Upgraded to vidscraper 1.0.X.
+* Switched thumbnail saving to use ImageFields.
+* Upgraded theme handling.
+* Moved "submission requires email address" setting to SiteSettings.
+* Removed OriginalVideo model.
+* Removed filesystem timestamps.
+* Removed legacy commands: update_index_in_tmpdir
+* Upgraded daguerre to use more efficient bulk adjustments.
+* Set up amara use as default for video embeds.
+* Improved feed efficiency with prefetch_related.
+* Corrected issues with relative thumbnail URLs in widgets and feeds.
+
 Miro Community 1.9.1
 ====================
 
