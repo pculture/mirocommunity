@@ -347,7 +347,7 @@ def video_save_thumbnail(video_pk, using='default'):
     f = video._meta.get_field('thumbnail')
     format = im.format if im.format in KEEP_FORMATS else DEFAULT_FORMAT
     args = (video.thumbnail_url, video.pk, datetime.datetime.now().isoformat())
-    filename = ''.join((make_hash(*args, step=2), format.lower()))
+    filename = '.'.join((make_hash(*args, step=2), format.lower()))
     storage_path = f.generate_filename(video, filename)
 
     # We save the thumbnail file and then update the path on the instance
