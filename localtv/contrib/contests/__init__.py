@@ -1,3 +1,7 @@
+# Make sure that Video/ContestVideo relation gets set up before doing
+# other forced imports like api.
+from localtv.contrib.contests.models import ContestVideo
+
 # Trigger some adjustments to core registries.
 from localtv import context_processors
 from localtv.contrib.contests.api import v1
