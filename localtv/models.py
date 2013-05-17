@@ -24,13 +24,13 @@ from django.core.signals import request_finished
 from django.core.validators import ipv4_re
 from django.db import models
 from django.template import Context, loader
-from django.template.defaultfilters import slugify
 from django.utils.html import escape as html_escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from haystack import connections
 from mptt.models import MPTTModel
 from notification import models as notification
+from slugify import slugify
 
 from localtv import utils, settings as lsettings
 from localtv.managers import SiteRelatedManager, VideoManager

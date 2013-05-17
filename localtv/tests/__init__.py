@@ -9,7 +9,6 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.management import call_command
 from django.db import transaction
 from django.http import QueryDict
-from django.template.defaultfilters import slugify
 from django.test.testcases import (TestCase,
                                    disable_transaction_methods,
                                    restore_transaction_methods,
@@ -17,6 +16,7 @@ from django.test.testcases import (TestCase,
 from django.test.client import Client, RequestFactory
 from haystack import connections
 from requests.models import Response
+from slugify import slugify
 from tagging.models import Tag
 import vidscraper
 

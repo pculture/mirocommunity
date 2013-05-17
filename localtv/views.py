@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.utils.encoding import iri_to_uri
 from django.views.generic import TemplateView, DetailView
 
 from localtv.models import Video, Watch, Category, SiteSettings
@@ -71,7 +72,7 @@ class VideoView(DetailView):
         self.object = self.get_object()
 
         abs_url = self.object.get_absolute_url()
-        if self.kwargs['slug'] is None or request.path != abs_url:
+        if self.kwargs['slug'] is None or iri_to_uri(request.path) != abs_url:
             return HttpResponseRedirect(abs_url)
 
         context = self.get_context_data(object=self.object)

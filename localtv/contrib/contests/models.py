@@ -4,8 +4,8 @@ from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.sql.aggregates import Aggregate
-from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
+from slugify import slugify
 
 from localtv.models import Video
 
