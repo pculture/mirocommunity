@@ -1,6 +1,6 @@
 from hashlib import sha1
 
-from daguerre.utils.adjustments import BulkAdjustmentHelper
+from daguerre.helpers import BulkAdjustmentHelper
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache

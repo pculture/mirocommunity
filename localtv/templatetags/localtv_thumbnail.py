@@ -1,7 +1,7 @@
 from django import template
 from django.contrib.staticfiles.storage import staticfiles_storage
 
-from daguerre.utils.adjustments import AdjustmentHelper, AdjustmentInfoDict
+from daguerre.helpers import AdjustmentHelper, AdjustmentInfoDict
 
 
 register = template.Library()
