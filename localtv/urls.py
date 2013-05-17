@@ -14,7 +14,7 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='localtv_index'),
     url(r'^about/$', 'about', name='localtv_about'),
     url(r'^share/(\d+)/(\d+)', 'share_email', name='email-share'),
-    url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w-]+))?/?$',
+    url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w~-]+))?/?$',
         VideoView.as_view(),
         name='localtv_view_video'),
     url(r'^api/', include(api_v1.urls)))
