@@ -4,7 +4,7 @@
 {% elif current_video.embed_code %}
   {{ current_video.embed_code|wmode_transparent }}
 {% else %}
-  {% adjust current_video.thumbnail_path width=800 height=500 as video_thumbnail %}
+  {% adjust current_video.thumbnail_path 'fill' width=800 height=500 as video_thumbnail %}
   {% generate_embed current_video.file_url mime_type=current_video.file_url_mimetype width=800 height=500 autoplay=0 poster=video_thumbnail %}
   {% if current_video.file_url_mimetype|is_ogg_media %}
   <p class="help">

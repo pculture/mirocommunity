@@ -22,7 +22,7 @@
 {% block side %}
 	<div class="padded">
 		{% if author.get_profile.logo %}
-			{% adjust author.get_profile.logo.name adjustment="fit" width=200 height=400 as profile_image %}
+			{% adjust author.get_profile.logo.name "fit" width=200 height=400 as profile_image %}
 			<a href="{{ author.get_profile.logo.url }}"><img src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" /></a>
 		{% endif %}
 		<ul class="author-detail-list">

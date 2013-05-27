@@ -18,15 +18,15 @@
                 </li>
             {% elif video_list|length == 1 %}
                 {% for video in video_list %}
-                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path width=300 height=216 adjustment="fill" %}" /></li>
+                    <li class="tiles-item"><img src="{% adjust video.thumbnail_path 'fill' width=300 height=216 %}" /></li>
                 {% endfor %}
             {% elif video_list|length < 6 %}
-                {% adjust_bulk video_list|slice:":2" "thumbnail" width=150 height=216 adjustment="fill" as adjusted_list %}
+                {% adjust_bulk video_list|slice:":2" "thumbnail" 'fill' width=150 height=216 as adjusted_list %}
                 {% for video, image in adjusted_list %}
                     <li class="tiles-item"><img src="{{ image }}" /></li>
                 {% endfor %}
             {% else %}
-                {% adjust_bulk video_list|slice:":6" "thumbnail" width=100 height=108 adjustment="fill" as adjusted_list %}
+                {% adjust_bulk video_list|slice:":6" "thumbnail" 'fill' width=100 height=108 as adjusted_list %}
                 {% for video, image in adjusted_list %}
                     <li class="tiles-item"><img src="{{ image }}" /></li>
                 {% endfor %}
