@@ -47,6 +47,16 @@ class VideoViewTestCase(BaseTestCase):
         self.assertEqual(list(context['popular_videos']),
                         [video1, video2, video3, video5])
 
+    def test_unicode_name(self):
+        name = u'\u1015\u103c\u1031\u102c\u1004\u103a\u1038\u200b\u1016\u1030\u1038\u200b\u1000\u103c\u1031\u102c\u103a\u200b\u101b\u200b\u1021\u1031\u102c\u1004\u103a\u200b'
+        slug = u'\u1015\u1004\u1016\u1000\u101b\u1021\u1004'
+        video = self.create_video(name)
+        view = VideoView()
+        view.request = self.factory.get(video.get_absolute_url())
+        view.kwargs = {'slug': slug, 'video_id': video.pk}
+        response = view.get(view.request)
+        self.assertEqual(response.status_code, 200)
+
 
 class CompatibleListingViewTestCase(BaseTestCase):
     def test_paginate_by(self):

@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from django.contrib.sites.models import Site
 from django.core.files.base import File
+from django.core.urlresolvers import reverse
 
 from localtv.models import SiteSettings, SiteRelatedManager, WidgetSettings
 from localtv.tests import BaseTestCase
@@ -129,3 +130,13 @@ class WidgetSettingsModelTestCase(BaseTestCase):
                          len(site_settings_logo))
         self.assertEqual(widget_icon, site_settings_logo)
         self.assertTrue(widget_settings.icon)
+
+
+class VideoTestCase(BaseTestCase):
+    def test_unicode_name__absolute_url(self):
+        name = u'\u1015\u103c\u1031\u102c\u1004\u103a\u1038\u200b\u1016\u1030\u1038\u200b\u1000\u103c\u1031\u102c\u103a\u200b\u101b\u200b\u1021\u1031\u102c\u1004\u103a\u200b'
+        slug = u'\u1015\u1004\u1016\u1000\u101b\u1021\u1004'
+        video = self.create_video(name)
+        url = reverse('localtv_view_video',
+                      kwargs={'video_id': video.pk, 'slug': slug})
+        self.assertEqual(video.get_absolute_url(), url)
