@@ -51,9 +51,6 @@ class QueuedSearchIndex(indexes.SearchIndex):
 class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
 
-    # HACK because xapian-haystack django_id/pk filtering is broken.
-    pk_hack = indexes.IntegerField(model_attr='pk')
-
     # ForeignKey relationships
     feed = indexes.IntegerField(model_attr='feed_id', null=True)
     search = indexes.IntegerField(model_attr='search_id', null=True)
