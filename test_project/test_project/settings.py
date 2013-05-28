@@ -63,6 +63,7 @@ CELERY_TASK_SERIALIZER = 'json'
 # Comment these lines out to use a celery server.
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+# BROKER_URL = 'django://'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -189,6 +190,8 @@ INSTALLED_APPS = (
     'compressor',
     'mptt',
     'django_nose',
+    # Uncomment this line to use celery with django broker
+    # 'kombu.transport.django',
 )
 
 if os.environ.get('MIGRATIONS'):

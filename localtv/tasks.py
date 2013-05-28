@@ -7,7 +7,6 @@ import urllib
 from celery.exceptions import MaxRetriesExceededError
 from celery.task import task
 from daguerre.utils import make_hash, KEEP_FORMATS, DEFAULT_FORMAT
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import File
 from django.core.files.temp import NamedTemporaryFile
@@ -15,7 +14,7 @@ from django.core.files.storage import default_storage
 from django.db.models import Q
 from django.db.models.loading import get_model
 from django.contrib.auth.models import User
-from haystack import connections
+from haystack import connection_router, connections
 from haystack.query import SearchQuerySet
 from vidscraper.videos import Video as VidscraperVideo
 try:
@@ -27,11 +26,6 @@ class DummyException(Exception):
     """
     Dummy exception; nothing raises me.
     """
-
-try:
-    from xapian import DatabaseError
-except ImportError:
-    DatabaseError = DummyException
 try:
     from whoosh.store import LockError
 except ImportError:
@@ -43,49 +37,45 @@ from localtv.signals import pre_mark_as_active
 from localtv.utils import quote_unicode_url
 
 
-CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
-
-
 @task(ignore_result=True)
-def update_sources(using='default'):
-    feeds = Feed.objects.using(using).filter(status=Feed.ACTIVE,
-                                             auto_update=True)
+def update_sources():
+    feeds = Feed.objects.filter(status=Feed.ACTIVE,
+                                auto_update=True)
     for feed_pk in feeds.values_list('pk', flat=True):
-        feed_update.delay(feed_pk, using=using)
+        feed_update.delay(feed_pk)
 
-    searches = SavedSearch.objects.using(using).filter(auto_update=True)
+    searches = SavedSearch.objects.filter(auto_update=True)
     for search_pk in searches.values_list('pk', flat=True):
-        search_update.delay(search_pk, using=using)
+        search_update.delay(search_pk)
 
 
 @task(ignore_result=True)
-def feed_update(feed_id, using='default', clear_rejected=False):
+def feed_update(feed_id, clear_rejected=False):
     try:
-        feed = Feed.objects.using(using).filter(auto_update=True
+        feed = Feed.objects.filter(auto_update=True
                                                 ).get(pk=feed_id)
     except Feed.DoesNotExist:
-        logging.warn('feed_update(%s, using=%r) could not find feed',
-                     feed_id, using)
+        logging.warn('feed_update(%s) could not find feed',
+                     feed_id)
         return
 
-    feed.update(using=using, clear_rejected=clear_rejected)
+    feed.update(clear_rejected=clear_rejected)
 
 
 @task(ignore_result=True)
-def search_update(search_id, using='default'):
+def search_update(search_id):
     try:
-        search = SavedSearch.objects.using(using).filter(auto_update=True
-                                                   ).get(pk=search_id)
+        search = SavedSearch.objects.filter(auto_update=True
+                                            ).get(pk=search_id)
     except SavedSearch.DoesNotExist:
-        logging.warn('search_update(%s, using=%r) could not find search',
-                     search_id, using)
+        logging.warn('search_update(%s) could not find search',
+                     search_id)
         return
-    search.update(using=using, clear_rejected=True)
+    search.update(clear_rejected=True)
 
 
 @task(ignore_result=True, max_retries=None, default_retry_delay=30)
-def mark_import_pending(import_app_label, import_model, import_pk,
-                        using='default'):
+def mark_import_pending(import_app_label, import_model, import_pk):
     """
     Checks whether an import's first stage is complete. If it's not, retries
     the task with a countdown of 30.
@@ -93,7 +83,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
     """
     import_class = get_model(import_app_label, import_model)
     try:
-        source_import = import_class._default_manager.using(using).get(
+        source_import = import_class._default_manager.get(
                                                     pk=import_pk,
                                                     status=import_class.STARTED)
     except import_class.DoesNotExist:
@@ -125,7 +115,7 @@ def mark_import_pending(import_app_label, import_model, import_pk,
     # Otherwise the first stage is complete. Check whether they can take all
     # the videos.
     if source_import.auto_approve:
-        active_set = source_import.get_videos(using).filter(
+        active_set = source_import.get_videos().filter(
             status=Video.PENDING)
 
         for receiver, response in pre_mark_as_active.send_robust(
@@ -139,27 +129,24 @@ def mark_import_pending(import_app_label, import_model, import_pk,
 
         active_set.update(status=Video.ACTIVE)
 
-    source_import.get_videos(using).filter(status=Video.PENDING).update(
+    source_import.get_videos().filter(status=Video.PENDING).update(
         status=Video.UNAPPROVED)
 
     source_import.status = import_class.PENDING
     source_import.save()
 
-    active_pks = source_import.get_videos(using).filter(
+    active_pks = source_import.get_videos().filter(
                          status=Video.ACTIVE).values_list('pk', flat=True)
     if active_pks:
         opts = Video._meta
         haystack_batch_update.delay(opts.app_label, opts.module_name,
-                                    pks=list(active_pks), remove=False,
-                                    using=using)
+                                    pks=list(active_pks), remove=False)
 
-    mark_import_complete.delay(import_app_label, import_model, import_pk,
-                               using=using)
+    mark_import_complete.delay(import_app_label, import_model, import_pk)
 
 
 @task(ignore_result=True, max_retries=None, default_retry_delay=30)
-def mark_import_complete(import_app_label, import_model, import_pk,
-                         using='default'):
+def mark_import_complete(import_app_label, import_model, import_pk):
     """
     Checks whether an import's second stage is complete. If it's not, retries
     the task with a countdown of 30.
@@ -167,7 +154,7 @@ def mark_import_complete(import_app_label, import_model, import_pk,
     """
     import_class = get_model(import_app_label, import_model)
     try:
-        source_import = import_class._default_manager.using(using).get(
+        source_import = import_class._default_manager.get(
                                                     pk=import_pk,
                                                     status=import_class.PENDING)
     except import_class.DoesNotExist:
@@ -181,28 +168,23 @@ def mark_import_complete(import_app_label, import_model, import_pk,
     if not USE_HAYSTACK:
         # No need to do any comparisons - just mark it complete.
         video_count = haystack_count = 0
-        logging.debug(('mark_import_complete(%s, %s, %i, using=%s). Skipping '
+        logging.debug(('mark_import_complete(%s, %s, %i). Skipping '
                        'check because haystack is disabled.'), import_app_label,
-                       import_model, import_pk, using)
+                       import_model, import_pk)
     else:
-        video_pks = list(source_import.get_videos(using).filter(
+        video_pks = list(source_import.get_videos().filter(
                                 status=Video.ACTIVE).values_list('pk', flat=True))
         video_count = len(video_pks)
         if not video_pks:
             # Don't bother with the haystack query.
             haystack_count = 0
         else:
-            if 'xapian' in connections[using].options['ENGINE']:
-                # The pk_hack field shadows the model's pk/django_id because
-                # xapian-haystack's django_id filtering is broken.
-                haystack_filter = {'pk_hack__in': video_pks}
-            else:
-                haystack_filter = {'django_id__in': video_pks}
-            haystack_count = SearchQuerySet().using(using).models(Video).filter(
+            haystack_filter = {'django_id__in': video_pks}
+            haystack_count = SearchQuerySet().models(Video).filter(
                **haystack_filter).count()
-        logging.debug(('mark_import_complete(%s, %s, %i, using=%s). video_count: '
+        logging.debug(('mark_import_complete(%s, %s, %i). video_count: '
                        '%i, haystack_count: %i'), import_app_label, import_model,
-                       import_pk, using, video_count, haystack_count)
+                       import_pk, video_count, haystack_count)
 
     if haystack_count >= video_count:
         source_import.status = import_class.COMPLETE
@@ -221,12 +203,11 @@ def mark_import_complete(import_app_label, import_model, import_pk,
 def video_from_vidscraper_video(video_dict, site_pk,
                                 import_app_label=None, import_model=None,
                                 import_pk=None, status=None, author_pks=None,
-                                category_pks=None, clear_rejected=False,
-                                using='default'):
+                                category_pks=None, clear_rejected=False):
     vidscraper_video = VidscraperVideo.deserialize(video_dict, API_KEYS)
     import_class = get_model(import_app_label, import_model)
     try:
-        source_import = import_class.objects.using(using).get(
+        source_import = import_class.objects.get(
            pk=import_pk,
            status=import_class.STARTED)
     except import_class.DoesNotExist:
@@ -241,22 +222,20 @@ def video_from_vidscraper_video(video_dict, site_pk,
             source_import.handle_error(
                 ('Skipped %r: Could not load video data.'
                  % vidscraper_video.url),
-                using=using, is_skip=True,
-                with_exception=True)
+                is_skip=True, with_exception=True)
             return
 
         if category_pks:
-            categories = Category.objects.using(using).filter(pk__in=category_pks)
+            categories = Category.objects.filter(pk__in=category_pks)
         else:
             categories = None
 
         if author_pks:
-            authors = User.objects.using(using).filter(pk__in=author_pks)
+            authors = User.objects.filter(pk__in=author_pks)
         else:
             authors = None
 
         video = Video.from_vidscraper_video(vidscraper_video, status=status,
-                                            using=using,
                                             source_import=source_import,
                                             authors=authors,
                                             categories=categories,
@@ -274,7 +253,7 @@ def video_from_vidscraper_video(video_dict, site_pk,
         except ValidationError, e:
             source_import.handle_error(("Skipping %r: %r" % (
                                         vidscraper_video.url, e.message)),
-                                        is_skip=True, using=using)
+                                       is_skip=True)
             return
         else:
             video.save(update_index=False)
@@ -288,22 +267,21 @@ def video_from_vidscraper_video(video_dict, site_pk,
 
             logging.debug('Made video %i: %r', video.pk, video.name)
             if video.thumbnail_url:
-                video_save_thumbnail.delay(video.pk, using=using)
+                video_save_thumbnail.delay(video.pk)
     except Exception:
         source_import.handle_error(('Unknown error during import of %r'
                                     % vidscraper_video.url),
-                                   is_skip=True, using=using,
-                                   with_exception=True)
+                                   is_skip=True, with_exception=True)
         raise # so it shows up in the Celery log
 
 @task(ignore_result=True)
-def video_save_thumbnail(video_pk, using='default'):
+def video_save_thumbnail(video_pk):
     try:
-        video = Video.objects.using(using).get(pk=video_pk)
+        video = Video.objects.get(pk=video_pk)
     except Video.DoesNotExist:
         logging.warn(
-            'video_save_thumbnail(%s, using=%r) could not find video',
-            video_pk, using)
+            'video_save_thumbnail(%s) could not find video',
+            video_pk)
         return
 
     if not video.thumbnail_url:
@@ -315,7 +293,7 @@ def video_save_thumbnail(video_pk, using='default'):
         remote_file = urllib.urlopen(thumbnail_url)
     except httplib.InvalidURL:
         # If the URL isn't valid, erase it.
-        Video.objects.using(using).filter(pk=video.pk
+        Video.objects.filter(pk=video.pk
                     ).update(thumbnail_url='')
         return
 
@@ -340,7 +318,7 @@ def video_save_thumbnail(video_pk, using='default'):
         im.verify()
     except Exception:
         # If the file isn't valid, erase the url.
-        Video.objects.using(using).filter(pk=video.pk
+        Video.objects.filter(pk=video.pk
                     ).update(thumbnail_url='')
         return
 
@@ -354,7 +332,7 @@ def video_save_thumbnail(video_pk, using='default'):
     # to avoid overwriting other changes that might have happened
     # simultaneously.
     final_path = default_storage.save(storage_path, File(temp))
-    Video.objects.using(using).filter(pk=video.pk
+    Video.objects.filter(pk=video.pk
                 ).update(thumbnail=final_path)
     remote_file.close()
     temp.close()
@@ -368,7 +346,7 @@ def _haystack_database_retry(task, callback):
     """
     try:
         callback()
-    except (DatabaseError, LockError), e:
+    except LockError, e:
         # These errors might be resolved if we just wait a bit. The wait time is
         # slightly random, with the intention of preventing LockError retries
         # from reoccurring. Maximum wait is ~30s.
@@ -381,7 +359,7 @@ def _haystack_database_retry(task, callback):
 
 
 @task(ignore_result=True, max_retries=None)
-def haystack_update(app_label, model_name, pks, remove=True, using='default'):
+def haystack_update(app_label, model_name, pks, remove=True):
     """
     Updates the haystack records for any valid instances with the given pks.
     Generally, ``remove`` should be ``True`` so that items which are no longer
@@ -391,10 +369,11 @@ def haystack_update(app_label, model_name, pks, remove=True, using='default'):
 
     """
     model_class = get_model(app_label, model_name)
+    using = connection_router.for_write()
     backend = connections[using].get_backend()
     index = connections[using].get_unified_index().get_index(model_class)
 
-    qs = index.index_queryset().using(using).filter(pk__in=pks)
+    qs = index.index_queryset().filter(pk__in=pks)
 
     if qs:
         _haystack_database_retry(haystack_update,
@@ -402,15 +381,16 @@ def haystack_update(app_label, model_name, pks, remove=True, using='default'):
 
     if remove:
         unseen_pks = set(pks) - set((instance.pk for instance in qs))
-        haystack_remove.apply(args=(app_label, model_name, unseen_pks, using))
+        haystack_remove.apply(args=(app_label, model_name, unseen_pks))
 
 
 @task(ignore_result=True, max_retries=None)
-def haystack_remove(app_label, model_name, pks, using='default'):
+def haystack_remove(app_label, model_name, pks):
     """
     Removes the haystack records for any instances with the given pks.
 
     """
+    using = connection_router.for_write()
     backend = connections[using].get_backend()
 
     def callback():
@@ -423,16 +403,17 @@ def haystack_remove(app_label, model_name, pks, using='default'):
 @task(ignore_result=True)
 def haystack_batch_update(app_label, model_name, pks=None, start=None,
                           end=None, date_lookup=None, batch_size=100,
-                          remove=True, using='default'):
+                          remove=True):
     """
     Batches haystack index updates for the given model. If no pks are given, a
     general reindex will be launched.
 
     """
     model_class = get_model(app_label, model_name)
+    using = connection_router.for_write()
     index = connections[using].get_unified_index().get_index(model_class)
 
-    pk_qs = index.index_queryset().using(using)
+    pk_qs = index.index_queryset()
     if pks is not None:
         pk_qs = pk_qs.filter(pk__in=pks)
 
@@ -450,4 +431,4 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
     for start in xrange(0, total, batch_size):
         end = min(start + batch_size, total)
         haystack_update.delay(app_label, model_name, pks[start:end],
-                              remove=remove, using=using)
+                              remove=remove)

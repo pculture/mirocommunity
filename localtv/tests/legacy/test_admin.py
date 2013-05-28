@@ -1065,7 +1065,6 @@ class FeedAdministrationTestCase(BaseTestCase):
                                    'auto_approve': 'yes'})
                 feed = Feed.objects.get()
                 feed_update.delay.assert_called_once_with(feed.pk,
-                                                          using='default',
                                                           clear_rejected=True)
         self.assertStatusCodeEquals(response, 302)
         self.assertEqual(response['Location'],

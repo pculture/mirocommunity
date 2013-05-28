@@ -1,6 +1,6 @@
 {% load filters %}{{ object.name }}
 {{ object.description|striptags }}
-{{ object|same_db_tags }}
+{{ object.tags|join:" " }}
 {% for cat in object.all_categories %}{{ cat.name }}
 {% endfor %}
 {% for author in object.authors.all %}{{ author.get_full_name }} {{ author.username }}

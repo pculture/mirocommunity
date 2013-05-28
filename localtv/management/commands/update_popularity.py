@@ -18,10 +18,9 @@ class Command(LabelCommand):
             return
 
         since = options['since']
-        from localtv.tasks import haystack_batch_update, CELERY_USING
+        from localtv.tasks import haystack_batch_update
 
         haystack_batch_update.delay(Video._meta.app_label,
                                     Video._meta.module_name,
                                     start=datetime.now() - timedelta(since),
-                                    date_lookup='watch__timestamp',
-                                    using=CELERY_USING)
+                                    date_lookup='watch__timestamp')

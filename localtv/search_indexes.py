@@ -1,21 +1,15 @@
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db.models import signals
-from django.template import loader
 from haystack import indexes
 from haystack.query import SearchQuerySet
-from tagging.models import Tag
 
 from localtv.models import Video, Feed, SavedSearch
 from localtv.playlists.models import PlaylistItem
 from localtv.tasks import haystack_update, haystack_remove
 
-
-CELERY_USING = getattr(settings, 'LOCALTV_CELERY_USING', 'default')
 
 #: We use a placeholder value because support for filtering on null values is
 #: lacking. We use January 1st, 1900 because Whoosh doesn't support datetime
@@ -28,7 +22,7 @@ DATETIME_NULL_PLACEHOLDER = datetime(1900, 1, 1)
 class QueuedSearchIndex(indexes.SearchIndex):
     def _setup_save(self):
         signals.post_save.connect(self._enqueue_update,
-                                    sender=self.get_model())
+                                  sender=self.get_model())
 
     def _setup_delete(self):
         signals.post_delete.connect(self._enqueue_removal,
@@ -36,7 +30,7 @@ class QueuedSearchIndex(indexes.SearchIndex):
 
     def _teardown_save(self):
         signals.post_save.disconnect(self._enqueue_update,
-                                    sender=self.get_model())
+                                     sender=self.get_model())
 
     def _teardown_delete(self):
         signals.post_delete.connect(self._enqueue_removal,
@@ -49,19 +43,9 @@ class QueuedSearchIndex(indexes.SearchIndex):
         self._enqueue_instance(instance, haystack_remove)
 
     def _enqueue_instance(self, instance, task):
-        self._enqueue(instance._meta.app_label,
-                      instance._meta.module_name,
-                      [instance.pk], task,
-                      using=instance._state.db)
-
-    def _enqueue(self, app_label, model_name, pks, task, using='default'):
-        if using == 'default':
-            # This gets called from both Celery and from the MC application.
-            # If we're in the web app, `using` is generally 'default', so we
-            # need to use CELERY_USING as our database.  If they're the same,
-            # or we're not using separate databases, this is a no-op.
-            using = CELERY_USING
-        task.delay(app_label, model_name, pks, using=using)
+        task.delay(instance._meta.app_label,
+                   instance._meta.module_name,
+                   [instance.pk])
 
 
 class VideoIndex(QueuedSearchIndex, indexes.Indexable):
@@ -145,29 +129,9 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         sqs = SearchQuerySet().models(self.get_model()).filter(
                                                   **{field_name: instance.pk})
         pks = [r.pk for r in sqs]
-        self._enqueue(Video._meta.app_label,
-                      Video._meta.module_name,
-                      pks, haystack_remove,
-                      using=instance._state.db)
-
-    def prepare(self, obj):
-        """
-        Disable uploadtemplate loader - it always uses the default database.
-        This is a trailing necessity of the CELERY_USING hack.
-
-        """
-        if 'uploadtemplate.loader.Loader' in settings.TEMPLATE_LOADERS:
-            old_template_loaders = settings.TEMPLATE_LOADERS
-            loader.template_source_loaders = None
-            settings.TEMPLATE_LOADERS = tuple(loader
-                                     for loader in settings.TEMPLATE_LOADERS
-                                     if loader != 'uploadtemplate.loader.Loader')
-            super(VideoIndex, self).prepare(obj)
-            loader.template_source_loaders = None
-            settings.TEMPLATE_LOADERS = old_template_loaders
-        else:
-            super(VideoIndex, self).prepare(obj)
-        return self.prepared_data
+        haystack_remove.delay(Video._meta.app_label,
+                              Video._meta.module_name,
+                              pks)
 
     def get_model(self):
         return Video
@@ -198,13 +162,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return [int(rel.pk) for rel in getattr(video, field).all()]
 
     def prepare_tags(self, video):
-        # We manually run this process to be sure that the tags are fetched
-        # from the correct database (not just "default").
-        using = video._state.db
-        ct = ContentType.objects.db_manager(using).get_for_model(video)
-        tags = Tag.objects.using(using).filter(items__content_type__pk=ct.pk,
-                                               items__object_id=video.pk)
-        return [int(tag.pk) for tag in tags]
+        return [int(tag.pk) for tag in video.tags]
 
     def prepare_categories(self, video):
         return [int(rel.pk) for rel in video.all_categories]

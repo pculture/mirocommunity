@@ -254,7 +254,7 @@ class HaystackBatchUpdateUnitTestCase(BaseTestCase):
                                                 'date_lookup': 'watch__timestamp'})
             delay.assert_called_once_with(Video._meta.app_label,
                                           Video._meta.module_name,
-                                          [video1.pk], using='default', remove=True)
+                                          [video1.pk], remove=True)
 
 
 class VideoSaveThumbnailTestCase(BaseTestCase):

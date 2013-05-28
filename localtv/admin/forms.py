@@ -21,7 +21,7 @@ from tagging.forms import TagField
 
 from localtv import models, utils
 from localtv.settings import API_KEYS
-from localtv.tasks import video_save_thumbnail, feed_update, CELERY_USING
+from localtv.tasks import video_save_thumbnail, feed_update
 from localtv.user_profile import forms as user_profile_forms
 
 from vidscraper import auto_feed
@@ -66,8 +66,7 @@ class EditVideoForm(forms.ModelForm):
             if (thumbnail_url and not
                 models.Video.objects.get(id=self.instance.id).thumbnail_url == thumbnail_url):
                 self.instance.thumbnail_url = thumbnail_url
-                video_save_thumbnail.delay(self.instance.pk,
-                                           using=CELERY_USING)
+                video_save_thumbnail.delay(self.instance.pk)
         return forms.ModelForm.save(self, commit=commit)
 
 
@@ -1002,7 +1001,6 @@ class AddFeedForm(forms.ModelForm):
         self.instance.name = self.instance.feed_url
         instance = super(AddFeedForm, self).save(commit)
         feed_update.delay(instance.pk,
-                          using=CELERY_USING,
                           clear_rejected=True)
         return instance
 

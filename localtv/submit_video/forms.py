@@ -11,7 +11,7 @@ from vidscraper.exceptions import UnhandledVideo
 
 from localtv.models import Video, SiteSettings
 from localtv.settings import API_KEYS
-from localtv.tasks import video_save_thumbnail, CELERY_USING
+from localtv.tasks import video_save_thumbnail
 from localtv.templatetags.filters import sanitize
 
 
@@ -149,7 +149,7 @@ class SubmitVideoFormBase(forms.ModelForm):
                 instance.save_m2m()
 
             if instance.thumbnail_url and not instance.thumbnail:
-                video_save_thumbnail.delay(instance.pk, using=CELERY_USING)
+                video_save_thumbnail.delay(instance.pk)
 
             if self.cleaned_data.get('tags'):
                 instance.tags = self.cleaned_data['tags']

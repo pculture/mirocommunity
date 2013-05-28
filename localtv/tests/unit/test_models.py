@@ -123,8 +123,8 @@ class WidgetSettingsModelTestCase(BaseTestCase):
         widget_settings = WidgetSettings.objects.get_current()
 
         widget_settings.icon.open()
-        site_settings.logo.open()
         widget_icon = widget_settings.icon.read()
+        site_settings.logo.open()
         site_settings_logo = site_settings.logo.read()
         self.assertEqual(len(widget_icon),
                          len(site_settings_logo))

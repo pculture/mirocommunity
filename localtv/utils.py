@@ -22,13 +22,13 @@ from notification import models as notification
 from localtv.settings import API_KEYS
 
 
-def get_tag(tag_text, using='default'):
+def get_tag(tag_text):
     while True:
         try:
-            tags = tagging.models.Tag.objects.using(using).filter(
+            tags = tagging.models.Tag.objects.filter(
                 name=tag_text)
             if not tags.count():
-                return tagging.models.Tag.objects.using(using).create(
+                return tagging.models.Tag.objects.create(
                     name=tag_text)
             elif tags.count() == 1:
                 return tags[0]
@@ -59,14 +59,14 @@ def edit_string_for_tags(tag_list):
     return edit_string
 
 
-def get_or_create_tags(tag_list, using='default'):
+def get_or_create_tags(tag_list):
     tag_set = set()
     for tag_text in tag_list:
         if isinstance(tag_text, basestring):
             tag_text = tag_text[:50] # tags can only by 50 chars
         if settings.FORCE_LOWERCASE_TAGS:
             tag_text = tag_text.lower()
-        tag = get_tag(tag_text, using)
+        tag = get_tag(tag_text)
         tag_set.add(tag)
     return edit_string_for_tags(list(tag_set))
 

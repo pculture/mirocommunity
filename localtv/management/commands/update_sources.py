@@ -7,6 +7,6 @@ class Command(NoArgsCommand):
         if site_too_old():
             return
 
-        from localtv.tasks import update_sources, CELERY_USING
-        
-        update_sources.delay(using=CELERY_USING)
+        from localtv.tasks import update_sources
+
+        update_sources.delay()

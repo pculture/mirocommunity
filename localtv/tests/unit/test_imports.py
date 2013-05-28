@@ -67,7 +67,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(),
             self.create_vidscraper_video()
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         self.assertEqual(Feed.objects.get(pk=feed.pk).status, Feed.ACTIVE)
 
     def test_auto_approve_True(self):
@@ -82,7 +82,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(),
             self.create_vidscraper_video()
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         self.assertEqual(Video.objects.count(), 2)
         self.assertEqual(Video.objects.filter(
                 status=Video.ACTIVE).count(), 2)
@@ -98,7 +98,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(),
             self.create_vidscraper_video()
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         self.assertEqual(Video.objects.count(), 2)
         self.assertEqual(Video.objects.filter(
                 status=Video.UNAPPROVED).count(), 2)
@@ -114,7 +114,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(guid='2'),
             self.create_vidscraper_video(guid='1')
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         db_guids = Video.objects.in_feed_order().values_list('guid',
                                                              flat=True)
         self.assertEqual(list(db_guids), ['1', '2'])
@@ -130,7 +130,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(guid='duplicate'),
             self.create_vidscraper_video(guid='duplicate')
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         feed_import = FeedImport.objects.get(pk=feed_import.pk) # reload
         self.assertEqual(feed_import.videos_skipped, 1)
         self.assertEqual(feed_import.videos_imported, 1)
@@ -147,7 +147,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(link='http://duplicate.com/'),
             self.create_vidscraper_video(link='http://duplicate.com/')
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         feed_import = FeedImport.objects.get(pk=feed_import.pk) # reload
         self.assertEqual(feed_import.videos_skipped, 1)
         self.assertEqual(feed_import.videos_imported, 1)
@@ -186,7 +186,7 @@ class FeedImportUnitTestCase(BaseTestCase):
                 tags=['tag1', 'tag2']
                 ),
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         vv = video_iter[0]
         video = Video.objects.get()
         self.assertEqual(video.feed, feed)
@@ -211,7 +211,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video()
             ]
         video_iter[0].url = video_iter[0].link = None
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         self.assertEqual(Video.objects.count(), 1)
 
     def test_entries_enclosure_type_optional(self):
@@ -225,7 +225,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(
                 files=[VidscraperVideoFile('http://example.com/media.ogg')])
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         self.assertEqual(Video.objects.count(), 1)
 
     def test_entries_multiple_imports(self):
@@ -239,14 +239,14 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video(guid='2'),
             self.create_vidscraper_video(guid='1')
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         feed_import = FeedImport.objects.get(pk=feed_import.pk) # reload
         self.assertEqual(feed_import.videos_skipped, 0)
         self.assertEqual(feed_import.videos_imported, 2)
         self.assertEqual(Video.objects.count(), 2)
 
         feed_import2 = FeedImport.objects.create(source=feed)
-        Source.update(feed, video_iter, feed_import2, using='default')
+        Source.update(feed, video_iter, feed_import2)
         feed_import2 = FeedImport.objects.get(pk=feed_import2.pk) # reload
         self.assertEqual(feed_import2.videos_skipped, 2)
         self.assertEqual(feed_import2.videos_imported, 0)
@@ -271,7 +271,7 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
 
                 ),
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         vv = video_iter[0]
         video = Video.objects.get()
         self.assertEqual(video.website_url, vv.link)
@@ -291,7 +291,7 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
                 link='http://example.com/' + 'link' * 200,
                 files=[VidscraperVideoFile('http://example.com/' + 'f.ogg' * 200)])
             ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         v = Video.objects.get()
         self.assertEqual(v.website_url, video_iter[0].link)
         self.assertEqual(v.file_url, video_iter[0].files[0].url)
@@ -318,7 +318,7 @@ Original Link: <a href="http://example.com/link">http://example.com/link</a>
             self.create_vidscraper_video(),
             self.create_vidscraper_video(),
         ]
-        Source.update(feed, video_iter, feed_import, using='default')
+        Source.update(feed, video_iter, feed_import)
         self.assertEqual(self.updates, 1)
         self.assertEqual(self.removals, 0)
         self.assertEqual(SearchQuerySet().count(), len(video_iter))
