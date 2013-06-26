@@ -30,7 +30,7 @@
       <td>{{ form.title_editable }}</td>
     </tr>
     <tr>
-      <td>{{ form.icon.label_tag }}{% if form.instance.thumbnail %}<img src="{% adjust form.instance.thumbnail.name width=88 height=68 %}" />{% endif %}{{ form.icon.errors }}</td>
+      <td>{{ form.icon.label_tag }}{% if form.instance.thumbnail %}<img src="{% adjust form.instance.thumbnail.name 'fill' width=88 height=68 %}" />{% endif %}{{ form.icon.errors }}</td>
       <td>
           {{ form.icon }}
           <input type="submit" name="delete_icon" value="delete"></td>

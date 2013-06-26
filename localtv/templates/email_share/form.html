@@ -21,7 +21,7 @@
 			</div>{# /.padded #}
 		</div>{# /.col-one-half #}
 		
-		{% adjust content_object.thumbnail_path adjustment="fit" width=440 as image %}
+		{% adjust content_object.thumbnail_path "fit" width=440 as image %}
 		{% if image %}
 			<div class="col-one-half">
 				<div class="padded">

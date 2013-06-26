@@ -15,7 +15,7 @@
        {% url localtv_admin_preview_video %}?video_id={{ video.id }}
      {% endif %}
   </span>
-  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% if is_livesearch %}{{ video.thumbnail_url }}{% else %}{% adjust video.thumbnail_path height=140 width=110 %}{% endif %}) center no-repeat;" href="#">
+  <a class="thumbnail" style="height: 110px; width: 140px; background: url({% if is_livesearch %}{{ video.thumbnail_url }}{% else %}{% adjust video.thumbnail_path 'fill' height=140 width=110 %}{% endif %}) center no-repeat;" href="#">
     <span>
     </span>
   </a>

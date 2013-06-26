@@ -40,11 +40,11 @@ function update_widget() {
     widget_text = $("input[name=text]").val()
     {% if site_settings.site.widgetsettings.logo %}
     if (widget_size == 'small') {
-        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=88 height=68 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path "fill" width=88 height=68 %}';
     } else if (widget_size == 'medium') {
-        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=140 height=110 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path "fill" width=140 height=110 %}';
     } else {
-        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path width=222 height=169 %}';
+        widget_logo = '{% adjust site_settings.site.widgetsettings.thumbnail_path "fill" width=222 height=169 %}';
     }
     widget_logo = full_url(widget_logo);
     {% else %}

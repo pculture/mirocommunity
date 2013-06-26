@@ -2,7 +2,7 @@
 {# empty_message is optional #}
 {% load daguerre %}
 {% if object_list %}
-    {% adjust_bulk object_list lookup width=300 height=216 adjustment="fill" as adjusted_list %}
+    {% adjust_bulk object_list lookup 'fill' width=300 height=216 as adjusted_list %}
     <ul class="grid grid-{{ columns }}">
         {% for object, image in adjusted_list %}
             <li class="grid-item">

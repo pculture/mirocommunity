@@ -14,7 +14,7 @@
 		<div class="pod-content">
 			{% if site_settings.logo %}
 				<figure class="figure-left">
-					<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% adjust site_settings.logo.name width=480 height=160 adjustment="fit" %}" />
+					<img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% adjust site_settings.logo.name 'fit' width=480 height=160 %}" />
 				</figure>
 			{% endif %}
 			{% autoescape off %}

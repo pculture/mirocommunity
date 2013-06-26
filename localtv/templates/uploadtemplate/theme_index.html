@@ -26,7 +26,7 @@
   <div id="default_theme" class="theme">
   
   <span id="check_bubble"></span>
-  {% if default.thumbnail %}<img src="{% adjust default.thumbnail width=200 %}" />{% endif %}
+  {% if default.thumbnail %}<img src="{% adjust default.thumbnail 'fill' width=200 %}" />{% endif %}
  
   <h3>{{ default.name }}</h3>
   <div class="description">{{ default.description }}</div>
@@ -40,7 +40,7 @@
       {% for theme in themes %}
         {% if theme != default %}
           <li class="theme">
-            {% if theme.thumbnail %}<img src="{% adjust theme.thumbnail width=200 %}" />{% endif %}
+            {% if theme.thumbnail %}<img src="{% adjust theme.thumbnail 'fill' width=200 %}" />{% endif %}
             <h3>{{ theme.name }}</h3>
             <div class="description">{{ theme.description }}</div>
             <a class="activate_theme" href="{% url uploadtemplate-set_default theme.pk %}">Activate</a>

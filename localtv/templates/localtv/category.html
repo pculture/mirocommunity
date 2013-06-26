@@ -21,7 +21,7 @@
 
 {% block side %}
 	<div class="padded">
-		{% if category.logo %}<img class="scaled" src="{% adjust category.logo width=700 adjustment="fit" %}">{% endif %}
+		{% if category.logo %}<img class="scaled" src="{% adjust category.logo 'fit' width=700 %}">{% endif %}
 		{{ category.description|safe }}
 	</div>{# /.padded #}
 	{% with child_set=category.child_set.all %}

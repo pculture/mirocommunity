@@ -1,6 +1,7 @@
 from hashlib import sha1
 
-from daguerre.utils.adjustments import BulkAdjustmentHelper
+from daguerre.adjustments import Fill
+from daguerre.helpers import AdjustmentHelper
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed as FeedView, add_domain
 from django.core.cache import cache
@@ -173,11 +174,9 @@ class BaseVideosFeed(FeedView, SortFilterMixin):
         else:
             sizes = THUMBNAIL_SIZES[:2]
         for size in sizes:
-            helper = BulkAdjustmentHelper(items,
-                                          "thumbnail",
-                                          width=size[0],
-                                          height=size[1],
-                                          adjustment='fill')
+            helper = AdjustmentHelper(items,
+                                      [Fill(width=size[0], height=size[1])],
+                                      "thumbnail")
             for item, info_dict in helper.info_dicts():
                 # Set a private attribute so we can retrieve this later.
                 if not hasattr(item, '_adjusted'):

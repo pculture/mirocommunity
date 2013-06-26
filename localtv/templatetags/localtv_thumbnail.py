@@ -1,7 +1,8 @@
 from django import template
 from django.contrib.staticfiles.storage import staticfiles_storage
 
-from daguerre.utils.adjustments import AdjustmentHelper, AdjustmentInfoDict
+from daguerre.adjustments import Fill
+from daguerre.helpers import AdjustmentHelper, AdjustmentInfoDict
 
 
 register = template.Library()
@@ -41,14 +42,10 @@ class ThumbnailNode(template.Node):
             elif video.search_id and video.search.has_thumbnail:
                 storage_path = video.search.thumbnail_path
 
-            kwargs = {
-                'width': self.width,
-                'height': self.height,
-                'adjustment': 'fill'
-            }
-
-            helper = AdjustmentHelper(storage_path, **kwargs)
-            info_dict = helper.info_dict()
+            helper = AdjustmentHelper([storage_path],
+                                      [Fill(width=self.width,
+                                            height=self.height)])
+            info_dict = helper.info_dicts()[0][1]
 
             # localtv_thumbnail has always fallen back in the code.
             if not info_dict:
