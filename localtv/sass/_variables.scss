@@ -1,8 +1,10 @@
 $sansFontFamily: "Helvetica Neue", Arial, Helvetica, sans-serif;
 $FontAwesomePath: "../fonts";
+$chosenPath: "../../djam/images";
 
 @import "bootstrap/variables";
 
 $navbarBackground: $white;
+$navbarBackgroundHighlight: $grayLighter;
 
 $headingsFontWeight: bold !default;

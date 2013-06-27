@@ -5,12 +5,12 @@
 <ul class="nav pull-right">
   {% url 'localtv_about' as url %}
   {% trans 'About' as text %}
-  {% include 'mirocommunity/admin/_nav_item.html' with url=url text=text only %}
+  {% include 'djam/_nav_item.html' with url=url text=text request=request only %}
 
   {% if site_settings.display_submit_button %}
     {% url 'localtv_submit_video' as url %}
     {% trans 'Submit' as text %}
-    {% include 'mirocommunity/admin/_nav_item.html' with url=url text=text only %}
+    {% include 'djam/_nav_item.html' with url=url text=text request=request only %}
   {% endif %}
   {% if browse_modules %}
     <li class="dropdown">
@@ -25,26 +25,26 @@
     <li class="nav-item">
       {% url 'localtv_list_new' as url %}
       {% trans 'All Videos' as text %}
-      {% include 'mirocommunity/admin/_nav_item.html' with url=url text=text only %}
+      {% include 'djam/_nav_item.html' with url=url text=text request=request only %}
     </li>
   {% endif %}
   {% if request.user.is_authenticated %}
     {% url 'localtv_user_profile' as url %}
     {% trans 'Your Profile' as title %}
-    {% include 'mirocommunity/admin/_nav_item.html' with url=url title=title text=request.user.get_full_name|default:request.user.username icon='icon-user' only %}
+    {% include 'djam/_nav_item.html' with url=url title=title text=request.user.get_full_name|default:request.user.username icon='icon-user' request=request only %}
 
     {% if user_is_admin %}
-      {% url 'localtv_admin_index' as url %}
+      {% url 'mirocommunity_admin_videos' as url %}
       {% trans 'Admin' as title %}
-      {% include 'mirocommunity/admin/_nav_item.html' with icon='icon-cogs' url=url title=title only %}
+      {% include 'djam/_nav_item.html' with icon='icon-cogs' url=url title=title request=request only %}
     {% endif %}
 
     {% url 'auth_logout' as url %}
     {% trans 'Logout' as title %}
-    {% include 'mirocommunity/admin/_nav_item.html' with icon='icon-signout' url=url|add:"?next="|add:request.META.PATH_INFO title=title only %}
+    {% include 'djam/_nav_item.html' with icon='icon-signout' url=url|add:"?next="|add:request.META.PATH_INFO title=title request=request only %}
   {% else %}{# if not request.user.is_authenticated #}
     {% url 'auth_login' as url %}
     {% trans 'Login' as text %}
-    {% include 'mirocommunity/admin/_nav_item.html' with url=url|add:"?next="|add:request.META.PATH_INFO text=text only %}
+    {% include 'djam/_nav_item.html' with url=url|add:"?next="|add:request.META.PATH_INFO text=text request=request only %}
   {% endif %}
 </ul>

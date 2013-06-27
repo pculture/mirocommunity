@@ -860,7 +860,10 @@ class Video(Thumbnailable):
                                          default=datetime.datetime.now)
     when_submitted = models.DateTimeField(auto_now_add=True)
     when_approved = models.DateTimeField(null=True, blank=True)
-    when_published = models.DateTimeField(null=True, blank=True)
+    when_published = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Format: yyyy-mm-dd hh:mm:ss')
     last_featured = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
     feed = models.ForeignKey(Feed, null=True, blank=True)

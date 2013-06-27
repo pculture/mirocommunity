@@ -1,0 +1,1 @@
+<li{% if active or url == request.path %} class="active"{% endif %}><a href="{{ url }}"{% if title %} title="{{ title }}"{% endif %}>{% if icon %}<i class="{{ icon }}"></i>{% if text %} {% endif %}{% endif %}{{ text }}</a></li>

@@ -192,6 +192,8 @@ INSTALLED_APPS = (
     'django_nose',
     # Uncomment this line to use celery with django broker
     # 'kombu.transport.django',
+    'djam',
+    'floppyforms',
 )
 
 if os.environ.get('MIGRATIONS'):

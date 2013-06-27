@@ -1,0 +1,17 @@
+{% load i18n djam %}{% load url from future %}
+
+<div class="navbar">
+    <div class="navbar-inner">
+        <ul class='nav'>
+            {% with current_riff=riff %}
+                {% for riff in base_riff.riffs %}
+                    {% if riff == current_riff %}
+                        {% include 'djam/_nav_item.html' with active=1 url=riff.get_default_url text=riff.display_name request=request only %}
+                    {% else %}
+                        {% include 'djam/_nav_item.html' with active=0 url=riff.get_default_url text=riff.display_name request=request only %}
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+        </ul>
+    </div>
+</div>

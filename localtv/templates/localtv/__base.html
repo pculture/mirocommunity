@@ -1,4 +1,4 @@
-{% extends 'mirocommunity/admin/__base.html' %}
+{% extends 'djam/__base.html' %}
 
 {% load uploadtemplate %}
 
@@ -18,4 +18,11 @@
             }
         </style>
     {% endif %}
+{% endblock %}
+
+{% block main-outer %}
+    <div class='container'>
+        {% block main %}
+        {% endblock %}
+    </div>
 {% endblock %}
