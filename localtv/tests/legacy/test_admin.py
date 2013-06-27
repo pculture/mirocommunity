@@ -22,7 +22,7 @@ from vidscraper.suites.youtube import Suite as YouTubeSuite
 from vidscraper.utils.search import intersperse_results
 
 from localtv import utils
-from localtv.admin.livesearch.views import LiveSearchView
+from localtv.admin.legacy.livesearch.views import LiveSearchView
 from localtv.models import Feed, Video, SavedSearch, Category, SiteSettings
 from localtv.tests.legacy.test_localtv import BaseTestCase
 import localtv.admin.user_views
@@ -2103,7 +2103,7 @@ class BulkEditVideoFormTestCase(BaseTestCase):
         same authors and categories that they have.
 
         """
-        from localtv.admin.forms import BulkEditVideoForm
+        from localtv.admin.legacy.forms import BulkEditVideoForm
         instance = Video.objects.filter(status=Video.ACTIVE)[0]
         result = SearchQuerySet().filter(django_id=instance.pk)[0]
 

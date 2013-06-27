@@ -4,6 +4,7 @@
 /docs/_build/*
 /.tox/
 /test_project/test_project/media/
+/test_project/test_project/static/
 /test_project/test_project/db.sl3
 /test_project/test_project/whoosh_index/
 /test_project/test_project/nosetests*.xml

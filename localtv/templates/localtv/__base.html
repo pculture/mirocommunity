@@ -1,120 +1,21 @@
-{% load uploadtemplate i18n daguerre compress %}
-{% load url from future %}
+{% extends 'mirocommunity/admin/__base.html' %}
 
-<!doctype html>
-<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+{% load uploadtemplate %}
 
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<meta name="viewport" content="width=device-width,initial-scale=1">
+{% block title %}{{ site_settings.site.name }}{% endblock %}
 
-	{% block meta %}
-		<meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
-		{% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
-	{% endblock meta %}
-
-	<title>{% block title %}{{ site_settings.site.name }}{% endblock title %}</title>
-	
-	{% block styles %}
-		{#% compress css %#}
-			<link rel="stylesheet" type="text/css" href="{% static 'localtv/front/stylesheets/screen.css' %}" media="screen" />
-			{% if site_settings.css %}
-				<style type="text/css">
-					{{ site_settings.css|safe }}
-				</style>
-			{% endif %}
-			{% if site_settings.background %}
-				<style type="text/css">
-					body {
-						background: url("{{ site_settings.background.url }}") !important;
-					}
-				</style>
-			{% endif %}
-		{#% endcompress %#}
-	{% endblock %}
-
-	{% block scripts %}
-		{#% compress js %#}
-			<script type="text/javascript">
-				(function () {
-	                // if a querystring is present in the hash, redirect
-	                // This is due to History.js's strange behavior.
-	                if (window.location.hash.slice(0, 2) == '#?') {
-	                    window.location = window.location.hash.slice(1)
-	                }
-
-					window.STATIC_URL = "{{ STATIC_URL }}";
-				}());
-			</script>
-			<script src="{% static 'localtv/front/js/modernizr-2.5.3.min.js' %}"></script>
-			<script src="{% static 'localtv/front/js/jquery-1.7.2.min.js' %}"></script>
-			<script src="{% static 'localtv/front/js/jquery.cycle.js' %}"></script>
-			<script src="{% static 'localtv/front/js/jquery.history.js' %}"></script>
-			<script src="{% static 'localtv/front/js/jquery.infinitescroll.js' %}"></script>
-			<script src="{% static 'localtv/front/js/bootstrap.tooltip.js' %}"></script>
-			<script src="{% static 'localtv/front/js/bootstrap.popover.js' %}"></script>
-			<script src="{% static 'localtv/front/js/localtv.dropdown.js' %}"></script>
-			<script src="{% static 'localtv/front/js/localtv.tabs.js' %}"></script>
-			<script src="{% static 'localtv/front/js/localtv.shrinkydink.js' %}"></script>
-			<script src="{% static 'localtv/front/js/localtv.kickoff.js' %}"></script>
-	
-			{% if GOOGLE_ANALYTICS_UA %}
-				<script type="text/javascript">
-					var _gaq = _gaq || [];
-					_gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_UA }}']);
-					{% if GOOGLE_ANALYTICS_DOMAIN %}
-						_gaq.push(['_setDomainName', '{{ GOOGLE_ANALYTICS_DOMAIN }}'])
-					{% endif %}
-					_gaq.push(['_trackPageview']);
-
-					(function() {
-						var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-						ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-						var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-					})();
-				</script>
-			{% endif %}
-		{#% endcompress %#}
-	{% endblock %}
-</head>
-<body class="{% block body_classes %}miro_community{% endblock %}">
-	
-	{% url 'localtv_index' as localtv_index %}
-	
-	<div id="container">
-		
-		<header id="header">
-			<div class="container">
-				{% block header %}
-					{% include "localtv/_site_header_small.html" %}
-				{% endblock %}
-			</div>
-		</header>
-		
-		<div id="main" role="main">
-			{% block content %}
-			{% endblock %}
-		</div>
-		
-		<footer id="footer">
-			<div class="container">
-				{% include "localtv/_site_footer.html" %}
-			</div>
-		</footer>
-		
-	</div>{# /#container #}
-	
-	{% if "MSIE 6" in request.META.HTTP_USER_AGENT or "MSIE 7" in request.META.HTTP_USER_AGENT %}
-		{% if not "chromeframe" in request.META.HTTP_USER_AGENT %}
-			<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
-			<script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
-		{% endif %}
-	{% endif %}
-	
-</body>
-
-</html>
+{% block styles %}
+	{{ block.super }}
+    {% if site_settings.css %}
+        <style type="text/css">
+            {{ site_settings.css|safe }}
+        </style>
+    {% endif %}
+    {% if site_settings.background %}
+        <style type="text/css">
+            body {
+                background: url("{{ site_settings.background.url }}") !important;
+            }
+        </style>
+    {% endif %}
+{% endblock %}

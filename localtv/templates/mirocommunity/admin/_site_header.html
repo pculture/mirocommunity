@@ -1,0 +1,20 @@
+{% load url from future %}
+{% load i18n daguerre uploadtemplate %}
+
+<div class="navbar navbar-static-top">
+  <div class="navbar-inner">
+    <div class="container">
+      {% adjust site_settings.logo.name adjustment="fit" height=28 as logo %}
+      {% if logo %}
+          <a href="/"><img src="{{ logo }}" width={{ logo.width }} height={{ logo.height }} /></a>
+      {% endif %}
+      <a class="brand" href="/">{{ site_settings.site.name }}</a>
+
+      <form class="navbar-search" action="{% url 'localtv_search' %}" method="get">
+        <input type="text" class="search-query" placeholder="{% trans 'Search' %}…">
+      </form>
+
+      {% include "mirocommunity/admin/_site_navigation.html" %}
+    </div>
+  </div>
+</div>

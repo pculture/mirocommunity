@@ -1,6 +1,6 @@
 from django.contrib.sites.models import Site
 
-from localtv.admin.forms import AddFeedForm
+from localtv.admin.legacy.forms import AddFeedForm
 from localtv.tests import BaseTestCase
 
 

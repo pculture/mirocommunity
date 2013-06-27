@@ -3,7 +3,7 @@ from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.forms.models import inlineformset_factory, BaseInlineFormSet
 
 from localtv.playlists import models
-from localtv.admin.forms import BulkFormSetMixin
+from localtv.admin.legacy.forms import BulkFormSetMixin
 
 class PlaylistForm(forms.ModelForm):
     class Meta:

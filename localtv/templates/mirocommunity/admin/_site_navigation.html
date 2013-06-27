@@ -1,0 +1,50 @@
+{% load url from future %}
+
+{% load i18n %}
+
+<ul class="nav pull-right">
+  {% url 'localtv_about' as url %}
+  {% trans 'About' as text %}
+  {% include 'mirocommunity/admin/_nav_item.html' with url=url text=text only %}
+
+  {% if site_settings.display_submit_button %}
+    {% url 'localtv_submit_video' as url %}
+    {% trans 'Submit' as text %}
+    {% include 'mirocommunity/admin/_nav_item.html' with url=url text=text only %}
+  {% endif %}
+  {% if browse_modules %}
+    <li class="dropdown">
+      <a href="#" class='dropdown-toggle' data-toggle='dropdown'>{% trans "Browse" %} <b class="caret"></b></a>
+      <div class="dropdown-menu">
+        {% for module in browse_modules %}
+          {% include module %}
+        {% endfor %}
+      </div>
+    </li>
+  {% else %}
+    <li class="nav-item">
+      {% url 'localtv_list_new' as url %}
+      {% trans 'All Videos' as text %}
+      {% include 'mirocommunity/admin/_nav_item.html' with url=url text=text only %}
+    </li>
+  {% endif %}
+  {% if request.user.is_authenticated %}
+    {% url 'localtv_user_profile' as url %}
+    {% trans 'Your Profile' as title %}
+    {% include 'mirocommunity/admin/_nav_item.html' with url=url title=title text=request.user.get_full_name|default:request.user.username icon='icon-user' only %}
+
+    {% if user_is_admin %}
+      {% url 'localtv_admin_index' as url %}
+      {% trans 'Admin' as title %}
+      {% include 'mirocommunity/admin/_nav_item.html' with icon='icon-cogs' url=url title=title only %}
+    {% endif %}
+
+    {% url 'auth_logout' as url %}
+    {% trans 'Logout' as title %}
+    {% include 'mirocommunity/admin/_nav_item.html' with icon='icon-signout' url=url|add:"?next="|add:request.META.PATH_INFO title=title only %}
+  {% else %}{# if not request.user.is_authenticated #}
+    {% url 'auth_login' as url %}
+    {% trans 'Login' as text %}
+    {% include 'mirocommunity/admin/_nav_item.html' with url=url|add:"?next="|add:request.META.PATH_INFO text=text only %}
+  {% endif %}
+</ul>

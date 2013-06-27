@@ -1,0 +1,22 @@
+{% load url from future %}
+
+{% load i18n %}
+
+{% if site_settings.footer_html %}
+    <div class="local-footer">
+        {% autoescape off %}{{ site_settings.footer_html }}{% endautoescape %}
+    </div>
+{% endif %}
+<div class="miro-footer">
+    <p>{% blocktrans with site_name=site_settings.site.name %}{{ site_name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a>.{% endblocktrans %}</p>
+</div>
+<nav class="footer-nav">
+    <ul>
+        <li class="footer-nav-item">
+            <a href="{% url 'localtv_index' %}">{% trans 'Home' %}</a>
+        </li>
+        <li class="footer-nav-item">
+            <a href="{% url 'localtv_goodies_widget' %}">{% trans 'Goodies' %}</a>
+        </li>
+    </ul>
+</nav>

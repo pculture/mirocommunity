@@ -1,0 +1,32 @@
+html, body {
+  height: 100%;
+}
+
+body{
+    position: relative;
+}
+
+header {
+    margin-bottom: $baseLineHeight;
+}
+
+footer {
+    background-color: $grayDarker;
+    padding-top: $baseLineHeight * 2;
+    padding-bottom: $baseLineHeight * 2;
+
+    color: $grayLight;
+    position: relative;
+    margin-top: -150px; /* negative value of footer height */
+    height: 150px - $baseLineHeight * 2;
+    clear: both;
+}
+
+#top {
+  min-height: 100%;
+}
+
+#main {
+  overflow:auto;
+  padding-bottom:150px; /* this needs to be bigger than footer height*/
+}

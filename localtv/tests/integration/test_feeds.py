@@ -8,7 +8,7 @@ import json
 import feedparser
 
 from localtv.models import Video, Feed, SiteSettings
-from localtv.admin import feeds
+from localtv.admin.legacy import feeds
 from localtv.playlists.models import Playlist
 from localtv.tests import BaseTestCase
 

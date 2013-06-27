@@ -7,7 +7,7 @@ from tagging.forms import TagField
 
 from localtv import models
 
-from localtv.admin.forms import EditVideoForm, BulkChecklistField
+from localtv.admin.legacy.forms import EditVideoForm, BulkChecklistField
 from localtv.utils import edit_string_for_tags
 
 Comment = comments.get_model()

@@ -1,0 +1,98 @@
+{% load staticfiles i18n daguerre %}
+{% load url from future %}
+
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    {% block meta %}
+        <meta name="description" content="{% if site_settings.about_html|striptags %}{{ site_settings.about_html|striptags }}{% else %}A Video Community for {{ site_settings.site.name }}{% endif %}">
+        {% if site_settings.logo %}<link rel="image_src" href="{{ site_settings.logo.url }}" />{% endif %}
+    {% endblock meta %}
+
+    <title>{% block title %}Admin – {{ site_settings.site.name }}{% endblock title %}</title>
+    
+    {% block styles %}
+        <link rel="stylesheet" type="text/css" href="{% static 'mirocommunity/css/screen.css' %}" media="screen" />
+    {% endblock %}
+
+    {% block scripts %}
+        <script type="text/javascript">
+            (function () {
+                // if a querystring is present in the hash, redirect
+                // This is due to History.js's strange behavior.
+                if (window.location.hash.slice(0, 2) == '#?') {
+                    window.location = window.location.hash.slice(1)
+                }
+
+                window.STATIC_URL = "{{ STATIC_URL }}";
+            }());
+        </script>
+    {% endblock %}
+</head>
+<body class="{% block body_classes %}miro_community{% endblock %}">
+    
+    {% url 'localtv_index' as localtv_index %}
+
+    <div id="top">
+        <header id="header">
+            {% block header %}
+                {% include "mirocommunity/admin/_site_header.html" %}
+            {% endblock %}
+        </header>
+        
+        <div id="main" role="main">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    
+    <footer id="footer">
+        <div class="container">
+            {% include "mirocommunity/admin/_site_footer.html" %}
+        </div>
+    </footer>
+    
+    {% block scripts-foot %}
+        {% if "MSIE 6" in request.META.HTTP_USER_AGENT or "MSIE 7" in request.META.HTTP_USER_AGENT %}
+            {% if not "chromeframe" in request.META.HTTP_USER_AGENT %}
+                <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+                <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+            {% endif %}
+        {% endif %}
+
+        <script src="{% static 'mirocommunity/js/jquery-1.10.1.min.js' %}"></script>
+        <script src="{% static 'mirocommunity/js/bootstrap-2.3.2.min.js' %}"></script>
+        <script src="{% static 'mirocommunity/js/jquery.history.js' %}"></script>
+        <script src="{% static 'mirocommunity/js/jquery.infinitescroll.js' %}"></script>
+        <script src="{% static 'mirocommunity/js/localtv.shrinkydink.js' %}"></script>
+        <script src="{% static 'mirocommunity/js/localtv.kickoff.js' %}"></script>
+
+        {% if GOOGLE_ANALYTICS_UA %}
+            <script type="text/javascript">
+                var _gaq = _gaq || [];
+                _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_UA }}']);
+                {% if GOOGLE_ANALYTICS_DOMAIN %}
+                    _gaq.push(['_setDomainName', '{{ GOOGLE_ANALYTICS_DOMAIN }}'])
+                {% endif %}
+                _gaq.push(['_trackPageview']);
+
+                (function() {
+                    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+                })();
+            </script>
+        {% endif %}
+    {% endblock %}
+    
+</body>
+
+</html>
