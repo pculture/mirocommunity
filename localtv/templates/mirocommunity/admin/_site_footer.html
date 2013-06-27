@@ -1,22 +1,20 @@
-{% load url from future %}
-
 {% load i18n %}
 
-{% if site_settings.footer_html %}
-    <div class="local-footer">
-        {% autoescape off %}{{ site_settings.footer_html }}{% endautoescape %}
-    </div>
-{% endif %}
-<div class="miro-footer">
-    <p>{% blocktrans with site_name=site_settings.site.name %}{{ site_name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a>.{% endblocktrans %}</p>
-</div>
-<nav class="footer-nav">
-    <ul>
-        <li class="footer-nav-item">
-            <a href="{% url 'localtv_index' %}">{% trans 'Home' %}</a>
-        </li>
-        <li class="footer-nav-item">
-            <a href="{% url 'localtv_goodies_widget' %}">{% trans 'Goodies' %}</a>
-        </li>
+{{ site_settings.footer_html|safe }}
+
+<p>{% blocktrans with site_name=site_settings.site.name %}{{ site_name }} is powered by <a href="http://www.mirocommunity.org">Miro Community</a>{% endblocktrans %}</p>
+
+<nav>
+    <ul class='inline'>
+        <li><a target="_blank" href="http://pculture.org/pcf/websites-privacy/">Privacy Policy</a></li>
+        <li><a target="_blank" href="http://mirocommunity.org/terms">Terms of Service</a></li>
+        {% if user_is_admin %}
+            <li><a target="_blank" href="http://support.mirocommunity.org/solution/categories/13505/folders/25351">FAQ</a></li>
+            <li><a target="_blank" href="http://support.mirocommunity.org/solution/categories/13505">User Manual</a></li>
+            <li><a target="_blank" href="http://status.mirocommunity.org/">Status Blog</a></li>
+        {% endif %}
     </ul>
 </nav>
+{% if user_is_admin %}
+    <p>Need help setting up your site or getting a certain feature working? Ask us, we'd love to help.  Email the support team: <a href="mailto:support@mirocommunity.org">support@mirocommunity.org</a></p>
+{% endif %}
