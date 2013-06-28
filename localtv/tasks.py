@@ -369,7 +369,7 @@ def haystack_update(app_label, model_name, pks, remove=True):
 
     """
     model_class = get_model(app_label, model_name)
-    using = connection_router.for_write()
+    using = connection_router.for_write()[0]
     backend = connections[using].get_backend()
     index = connections[using].get_unified_index().get_index(model_class)
 
@@ -390,7 +390,7 @@ def haystack_remove(app_label, model_name, pks):
     Removes the haystack records for any instances with the given pks.
 
     """
-    using = connection_router.for_write()
+    using = connection_router.for_write()[0]
     backend = connections[using].get_backend()
 
     def callback():
@@ -410,7 +410,7 @@ def haystack_batch_update(app_label, model_name, pks=None, start=None,
 
     """
     model_class = get_model(app_label, model_name)
-    using = connection_router.for_write()
+    using = connection_router.for_write()[0]
     index = connections[using].get_unified_index().get_index(model_class)
 
     pk_qs = index.index_queryset()

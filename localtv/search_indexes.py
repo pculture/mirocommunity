@@ -133,14 +133,14 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     def get_model(self):
         return Video
 
-    def index_queryset(self):
+    def index_queryset(self, using=None):
         """
         Custom queryset to only search active videos and to annotate them
         with the watch_count.
 
         """
         model = self.get_model()
-        return model._default_manager.filter(status=model.ACTIVE)
+        return model._default_manager.using(using).filter(status=model.ACTIVE)
 
     def read_queryset(self):
         """
