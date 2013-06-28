@@ -4,7 +4,7 @@
 <div class="navbar navbar-static-top">
   <div class="navbar-inner">
     <div class="container">
-      {% adjust site_settings.logo.name adjustment="fit" height=28 as logo %}
+      {% adjust site_settings.logo.name "fit" height=28 as logo %}
       {% if logo %}
           <a href="/"><img src="{{ logo }}" width={{ logo.width }} height={{ logo.height }} /></a>
       {% endif %}
