@@ -1,4 +1,4 @@
-{% extends "localtv/__layouts/75_25.html" %}
+{% extends "localtv/__base.html" %}
 
 {% load uploadtemplate cache i18n daguerre %}
 {% load url from future %}
@@ -7,76 +7,97 @@
 
 {% block body_classes %}{{ block.super }} home-page{% endblock %}
 
-{% block precontent %}
-	{% if featured_videos %}
-		<div class="precontent">
-			<div class="precontent-content">
-				<div class="container carousel-wrapper">
-					<div class="row carousel">
-						<div class="carousel-shim">
-							<img src="{% static "localtv/front/images/shim_640_360.png" %}" />
-						</div>
-						{% with featured_videos|slice:"10" as video_list %}
-							{% for video in video_list %}
-								{% include "localtv/_video_large_preview.html" %}
-							{% endfor %}
-						{% endwith %}
-					</div>{# /.row #}
-				</div>{# /.container #}
-			</div>{# /.precontent-content #}
-		</div>{# /.precontent #}
-	{% endif %}
-	{% if site_settings.sidebar_html %}
-		<div class="container">
-			<div class="site-blurb">
-				{% autoescape off %}
-					{{ site_settings.sidebar_html }}
-				{% endautoescape %}
-			</div>
-		</div>
-	{% endif %}
+{% block main-outer %}
+  {% if featured_videos %}
+    <div class='carousel-outer'>
+      <div class='container'>
+        <div id="carousel" class="carousel slide">
+          {% with videos=featured_videos|slice:":10" width=800 height=500 %}
+            <ol class="carousel-indicators">
+              {% for video in videos %}
+                <li{% if forloop.first %} class="active"{% endif %} data-target="#carousel" data-slide-to="{{ forloop.counter0 }}"</li>
+              {% endfor %}
+            </ol>
+
+            <!-- Carousel items -->
+            <div class="carousel-inner">
+              {% for video in videos %}
+                <div class="item{% if forloop.first %} active{% endif %}">
+                  {# We're gonna do some logic to get the right thumbnail size here. It's gonna be messy. #}
+                  
+                  {# Start by cropping the image. #}
+                  {% adjust video.thumbnail.name 'crop' width=width height=height as image %}
+                  {# If both dimensions are larger than the space, switch to fill. #}
+                  {% if image.width == width and image.height == height %}
+                    {% adjust video.thumbnail.name 'fill' width=width height=height as image %}
+                  {# If one dimension is larger than the space, switch to fit. #}
+                  {% elif image.width == width or image.height == height  %}
+                    {% adjust video.thumbnail.name 'fit' width=width height=height as image %}
+                  {% endif %}
+                  <a href="{{ video.get_absolute_url }}">
+                      <img src="{{ image }}" />
+                  </a>
+                  <div class="carousel-caption">
+                    <h4><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h4>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Carousel nav -->
+            <a class="carousel-control left" href="#carousel" data-slide="prev">&lsaquo;</a>
+            <a class="carousel-control right" href="#carousel" data-slide="next">&rsaquo;</a>
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  <div class='container'>
+    {% block main %}
+    {% endblock %}
+  </div>
 {% endblock %}
 
-{% block main %}
-	<div class="pod new">
-		{% url 'localtv_feeds_new' as new_rss%}
-		<header class="pod-header">
-			<h1><a href="{% url 'localtv_list_new' %}">{% trans "New" %}</a></h1>
-			<ul class="pod-actions">
-				<li><a href="{{ new_rss }}" class="rss" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a></li>
-				<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe" title="{% trans "Subscribe with Miro" %}"><i class="icon-16 icon-16-miro">{% trans "Subscribe with Miro" %}</i></a></li>
-			</ul>
-		</header>{# /.pod-header #}
-		<div class="pod-content">
-			{% include "localtv/_grid/video_list.html" with video_list=new_videos|slice:":12" columns=3 %}
-		</div>{# /.pod-content #}
-		<div class="pod-footer">
-			<ul class="pod-footer-actions">
-				<li><a class="button-wide continue" href="{% url 'localtv_list_new' %}">{% trans "All New Videos" %}</a></li>
-			</ul>
-		</div>
-	</div>{# /.pod #}
+{% block main2 %}
+  <div class="pod new">
+    {% url 'localtv_feeds_new' as new_rss%}
+    <header class="pod-header">
+      <h1><a href="{% url 'localtv_list_new' %}">{% trans "New" %}</a></h1>
+      <ul class="pod-actions">
+        <li><a href="{{ new_rss }}" class="rss" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a></li>
+        <li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ new_rss|urlencode }}" class="miro-subscribe" title="{% trans "Subscribe with Miro" %}"><i class="icon-16 icon-16-miro">{% trans "Subscribe with Miro" %}</i></a></li>
+      </ul>
+    </header>{# /.pod-header #}
+    <div class="pod-content">
+      {% include "localtv/_grid/video_list.html" with video_list=new_videos|slice:":12" columns=3 %}
+    </div>{# /.pod-content #}
+    <div class="pod-footer">
+      <ul class="pod-footer-actions">
+        <li><a class="button-wide continue" href="{% url 'localtv_list_new' %}">{% trans "All New Videos" %}</a></li>
+      </ul>
+    </div>
+  </div>{# /.pod #}
 {% endblock %}
 
 {% block side %}
-	<div class="right-sidebar">
-		<div class="pod popular">
-			{% url 'localtv_feeds_popular' as popular_rss %}
-			<header class="pod-header">
-				<h1><a href="{% url 'localtv_list_popular' %}">{% trans "Popular" %}</a></h1>
-				<ul class="pod-actions">
-					<li><a href="{{ popular_rss }}" class="rss" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a></li>
-					<li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ popular_rss|urlencode }}" class="miro-subscribe" title="{% trans "Subscribe with Miro" %}"><i class="icon-16 icon-16-miro">{% trans "Subscribe with Miro" %}</i></a></li>
-				</ul>
-			</header>{# /.pod-header #}
-			<div class="pod-content">
-				{% include "localtv/_grid/video_list.html" with video_list=popular_videos|slice:":4" columns=1 %}
-			</div>{# /.pod-content #}
-			<div class="pod-footer">
-				<ul class="pod-footer-actions">
-					<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
-				</ul>
-			</div>
-		</div>{# /.pod #}
-	</div>
+  <div class="right-sidebar">
+    <div class="pod popular">
+      {% url 'localtv_feeds_popular' as popular_rss %}
+      <header class="pod-header">
+        <h1><a href="{% url 'localtv_list_popular' %}">{% trans "Popular" %}</a></h1>
+        <ul class="pod-actions">
+          <li><a href="{{ popular_rss }}" class="rss" title="{% trans "RSS" %}"><i class="icon-16 icon-16-rss">{% trans "RSS" %}</i></a></li>
+          <li><a href="http://subscribe.getmiro.com/?url1=http%3A//{{ site_settings.site.domain|urlencode }}{{ popular_rss|urlencode }}" class="miro-subscribe" title="{% trans "Subscribe with Miro" %}"><i class="icon-16 icon-16-miro">{% trans "Subscribe with Miro" %}</i></a></li>
+        </ul>
+      </header>{# /.pod-header #}
+      <div class="pod-content">
+        {% include "localtv/_grid/video_list.html" with video_list=popular_videos|slice:":4" columns=1 %}
+      </div>{# /.pod-content #}
+      <div class="pod-footer">
+        <ul class="pod-footer-actions">
+          <li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
+        </ul>
+      </div>
+    </div>{# /.pod #}
+  </div>
 {% endblock %}

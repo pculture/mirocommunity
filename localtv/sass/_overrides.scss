@@ -23,6 +23,48 @@ footer {
     text-align: center;
 }
 
+.carousel {
+    width: 800px;
+    height: 500px;
+    margin: 0 auto;
+    border: 1px solid $gray;
+    @include box-shadow(0 0 10px $black);
+}
+
+.carousel-outer {
+    background: url(../images/classy_fabric.png);
+    padding: 20px;
+}
+
+.carousel-inner .item {
+    width: 800px;
+    height: 500px;
+    background-color: #000;
+
+    > a {
+        display: block;
+        text-align: center;
+        height: 500px;
+        line-height: 500px;
+
+        img {
+            display: inline-block;
+        }
+    }
+}
+
+.carousel-control {
+    // control height is 46px.
+    top: (500px / 2) - 23px;
+    opacity: 0;
+    @include transition(opacity 0.4s ease-in-out);
+}
+
+.carousel:hover .carousel-control {
+    opacity: 1;
+    @include transition(opacity 0.4s ease-in-out);
+}
+
 // Some cleanup to bootstrap dropdowns to allow for forms/labels inside a dropdown.
 
 .dropdown-menu > li {
