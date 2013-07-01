@@ -9,51 +9,54 @@
 
 {% block main-outer %}
   {% if featured_videos %}
-    <div class='carousel-outer'>
+    <div class='featured-field'>
       <div class='container'>
-        <div id="carousel" class="carousel slide">
-          {% with videos=featured_videos|slice:":10" width=800 height=500 %}
-            <ol class="carousel-indicators">
-              {% for video in videos %}
-                <li{% if forloop.first %} class="active"{% endif %} data-target="#carousel" data-slide-to="{{ forloop.counter0 }}"</li>
-              {% endfor %}
-            </ol>
+        <div class='featured-inner'>
+          <div id="carousel" class="carousel slide">
+            {% with videos=featured_videos|slice:":10" width=800 height=500 %}
+              <ol class="carousel-indicators">
+                {% for video in videos %}
+                  <li{% if forloop.first %} class="active"{% endif %} data-target="#carousel" data-slide-to="{{ forloop.counter0 }}"</li>
+                {% endfor %}
+              </ol>
 
-            <!-- Carousel items -->
-            <div class="carousel-inner">
-              {% for video in videos %}
-                <div class="item{% if forloop.first %} active{% endif %}">
-                  {# We're gonna do some logic to get the right thumbnail size here. It's gonna be messy. #}
-                  
-                  {# Start by cropping the image. #}
-                  {% adjust video.thumbnail.name 'crop' width=width height=height as image %}
-                  {# If both dimensions are larger than the space, switch to fill. #}
-                  {% if image.width == width and image.height == height %}
-                    {% adjust video.thumbnail.name 'fill' width=width height=height as image %}
-                  {# If one dimension is larger than the space, switch to fit. #}
-                  {% elif image.width == width or image.height == height  %}
-                    {% adjust video.thumbnail.name 'fit' width=width height=height as image %}
-                  {% endif %}
-                  <a href="{{ video.get_absolute_url }}">
-                      <img src="{{ image }}" />
-                  </a>
-                  <div class="carousel-caption">
-                    <h4><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h4>
+              <!-- Carousel items -->
+              <div class="carousel-inner">
+                {% for video in videos %}
+                  <div class="item{% if forloop.first %} active{% endif %}">
+                    {# We're gonna do some logic to get the right thumbnail size here. It's gonna be messy. #}
+                    
+                    {# Start by cropping the image. #}
+                    {% adjust video.thumbnail.name 'crop' width=width height=height as image %}
+                    {# If both dimensions are larger than the space, switch to fill. #}
+                    {% if image.width == width and image.height == height %}
+                      {% adjust video.thumbnail.name 'fill' width=width height=height as image %}
+                    {# If one dimension is larger than the space, switch to fit. #}
+                    {% elif image.width == width or image.height == height  %}
+                      {% adjust video.thumbnail.name 'fit' width=width height=height as image %}
+                    {% endif %}
+                    <a href="{{ video.get_absolute_url }}">
+                        <img src="{{ image }}" />
+                    </a>
+                    <div class="carousel-caption">
+                      <h4><a href="{{ video.get_absolute_url }}">{{ video.name }}</a></h4>
+                    </div>
                   </div>
-                </div>
-              {% endfor %}
-            </div>
+                {% endfor %}
+              </div>
 
-            <!-- Carousel nav -->
-            <a class="carousel-control left" href="#carousel" data-slide="prev">&lsaquo;</a>
-            <a class="carousel-control right" href="#carousel" data-slide="next">&rsaquo;</a>
-          {% endwith %}
+              <!-- Carousel nav -->
+              <a class="carousel-control left" href="#carousel" data-slide="prev">&lsaquo;</a>
+              <a class="carousel-control right" href="#carousel" data-slide="next">&rsaquo;</a>
+            {% endwith %}
+          </div>
         </div>
       </div>
     </div>
   {% endif %}
   <div class='container'>
     {% block main %}
+      <h3>{% trans "New" %} <small class='pull-right'><ul class='nav nav-pills'><li><a href="{% url 'localtv_list_new' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_new' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></small></h3>
     {% endblock %}
   </div>
 {% endblock %}

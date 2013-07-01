@@ -23,46 +23,68 @@ footer {
     text-align: center;
 }
 
-.carousel {
-    width: 800px;
-    height: 500px;
-    margin: 0 auto;
-    border: 1px solid $gray;
-    @include box-shadow(0 0 10px $black);
-}
-
-.carousel-outer {
+.featured-field {
     background: url(../images/classy_fabric.png);
     padding: 20px;
 }
 
-.carousel-inner .item {
+.featured-inner {
+    margin: 0 auto;
+    border: 1px solid $gray;
+    @include box-shadow(0 0 10px $black);
     width: 800px;
-    height: 500px;
+        
+    @media (max-width: 979px) {
+        width: 100%;
+    }
+}
+
+.carousel {
+    margin: 0;
+}
+
+.carousel-inner .item {
     background-color: #000;
 
     > a {
         display: block;
-        text-align: center;
-        height: 500px;
-        line-height: 500px;
+        position: relative;
+        overflow: hidden;
+
+        &:after{
+            content: '';
+            display: block;
+            padding-bottom: 100% * 5 / 8;
+        }
 
         img {
-            display: inline-block;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
         }
     }
 }
 
 .carousel-control {
-    // control height is 46px.
-    top: (500px / 2) - 23px;
+    top: 0;
+    bottom: 0;
+    margin-top: auto;
+    margin-bottom: auto;
     opacity: 0;
     @include transition(opacity 0.4s ease-in-out);
 }
 
 .carousel:hover .carousel-control {
-    opacity: 1;
+    opacity: .75;
     @include transition(opacity 0.4s ease-in-out);
+
+    &:hover {
+        opacity: 1;
+        @include transition(opacity 0.4s ease-in-out);
+    }
 }
 
 // Some cleanup to bootstrap dropdowns to allow for forms/labels inside a dropdown.
