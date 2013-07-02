@@ -100,6 +100,14 @@ footer {
     }
 }
 
+// Tweak styles for navs inside headers.
+h3 .nav{
+    margin-bottom: 0;
+    font-size: .75em;
+    vertical-align: text-top;
+    display: inline-block;
+}
+
 #top {
     min-height: 100%;
 }

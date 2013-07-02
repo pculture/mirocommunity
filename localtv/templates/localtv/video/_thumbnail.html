@@ -1,0 +1,17 @@
+{% load staticfiles %}<a href="{{ video.get_absolute_url }}" class='thumbnail' data-content="
+    {% filter force_escape %}
+        {% if video.description %}
+            <div>
+                {{ video.description|truncatewords_html:30|safe }}
+            </div>
+        {% endif %}
+        {% with video as instance %}
+            <p><small class='muted'>{% include 'localtv/_when_published.html' %} {% include 'localtv/inline_edit/video_authors.html' %}</small></p>
+        {% endwith %}
+    {% endfilter %}
+" data-toggle="popover" data-trigger="hover" data-html="true" data-title="{{ video.name }}"><img src="{% if image %}{{ image }}{% else %}{% static 'localtv/front/images/nounproject_2650_television_white.png' %}{% endif %}" /></a>
+
+<h5>
+    {{ video.name }}{% if sorter %}<br />
+    <small>{{ sorter }}</small>{% endif %}
+</h5>

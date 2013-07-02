@@ -87,16 +87,18 @@ class NormalizedVideoList(object):
                 qs = qs.prefetch_related(*self.prefetch_related)
                 video_dict = qs.in_bulk(pks)
                 videos = []
-                for pk in pks:
-                    if pk not in video_dict:
+                for r in results:
+                    if r.pk not in video_dict:
                         try:
-                            pk = int(pk)
+                            pk = int(r.pk)
                         except ValueError:
                             pass
                     try:
-                        videos.append(video_dict[pk])
+                        video = video_dict[pk]
                     except KeyError:
                         continue
+                    video.watch_count = r.watch_count or 0
+                    videos.append(video_dict[pk])
                 return videos
             if results is not None:
                 return results.object
