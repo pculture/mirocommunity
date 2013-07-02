@@ -1,0 +1,13 @@
+{% extends "localtv/video/__list.html" %}
+
+{% load i18n filters %}{% load url from future %}
+
+{% block title %}{{ block.super }} - {% trans "New Videos" %}{% endblock %}
+
+{% block page_title %}{% trans "New Videos" %}{% endblock %}
+
+{% block rss_url %}{% url 'localtv_feeds_new' %}{% endblock %}
+
+{% block video %}
+  <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.when|simpletimesince|add:" ago" %}</li>
+{% endblock %}

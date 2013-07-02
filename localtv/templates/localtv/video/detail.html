@@ -1,0 +1,174 @@
+{% extends "localtv/__base.html" %}
+
+{% load i18n comments filters uploadtemplate editable_widget cache video_list email_share_tags daguerre compress %}
+{% load url from future %}
+
+{% block meta %}
+  {% with title=current_video.name %}
+    <meta name="title" content="{{ title }}">
+    <meta property="og:title" content="{{ title }}">
+  {% endwith %}
+  {% with default_description="Video from "|add:site_settings.site.name %}
+    {% with description=current_video.description|striptags|default:default_description %}
+      <meta name="description" content="{{ description }}" />
+      <meta property="og:description" content="{{ description }}">
+    {% endwith %}
+  {% endwith %}
+
+  {% if current_video.file_url %}
+    <meta property="og:video:url" content="{{ current_video.file_url }}">
+    {% if current_video.file_url_mimetype %}
+      <meta property="og:video:type" content="{{ current_video.file_url_mimetype }}">
+    {% endif %}
+  {% endif %}
+
+  <meta property="og:site_name" content="{{ site_settings.site.name }}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:type" content="video.other">
+
+  {# not DRY, but we can't store this. #}
+  {% if current_video.thumbnail %}
+    <meta property="og:image" content="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name 'fit' width=600 %}">
+    <link rel="image_src" href="http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name 'fit' width=600 %}" />
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% if current_video.contestvideo_set %}
+    <script src="{% static 'localtv/js/localtv.contests.js' %}"></script>
+  {% endif %}
+{% endblock %}
+
+{% block styles %}
+  {{ block.super }}
+  {% if current_video.contestvideo_set %}
+    <link rel="stylesheet" type="text/css" href="{% static 'localtv/stylesheets/localtv.contests.screen.css' %}" media="screen" />
+  {% endif %}
+{% endblock %}
+
+{% block body_classes %}{{ block.super }} video-detail{% endblock %}
+
+{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
+
+{% block precontent %}
+  <section class="video-full precontent">
+    <header class="video-detail-header precontent-header">
+      <div class="container">
+        <h1 class="title">
+          {% if current_video.name %}
+            {{ current_video.name }}
+          {% else %}
+            {% trans "(no title)" %}
+          {% endif %}
+        </h1>
+        <h2 class="colophon">
+          {% with current_video as instance %}
+            {% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}
+          {% endwith %}
+        </h2>
+      </div>
+    </header>
+    <div class="precontent-content">
+      <div class="container video-player">
+        <div class="video-embedded-widget">
+          {% include "localtv/_video_embed.html" %}
+        </div>
+      </div>{# /.container #}
+    </div>{# /.precontent-content #}
+  </section>{# /.video-stage #}
+{% endblock %}
+
+{% block main-outer %}
+  <div class='featured-field'>
+    <div class='container'>
+      <div class='featured-inner'>
+        {% include "localtv/_video_embed.html" %}
+      </div>
+    </div>
+  </div>
+  <div class="social-media-share">
+    <ul class="social-link-list">
+      <li class="facebook-social">
+        <div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
+      </li>
+      <li class="twitter-social">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
+      </li>
+      <li class="gplus-social">
+        <g:plusone size="medium"></g:plusone>
+      </li>
+      <li class="pinterest-social">
+        <a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name "fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+      </li>
+      <li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
+      {% if current_video.file_url %}
+        <li class="file-social"><a class="button" href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="padded">
+    <section class="video-details">
+      {{ current_video.description|safe }}
+      <div class="extra-details">
+        {% if current_video.categories.count > 0 %}
+          <div class="video-full-categories compact">
+            {% with current_video as instance %}
+              {% include "localtv/inline_edit/video_categories.html" %}
+            {% endwith %}
+          </div>{# /.video-full-categories #}
+        {% endif %}
+        {% if current_video.tags %}
+          <div class="video-full-tags compact">
+            {% with current_video as instance %}
+              {% include "localtv/inline_edit/video_tags.html" %}
+            {% endwith %}
+          </div>{# /.video-full-tags #}
+        {% endif %}
+        {% if user_is_admin %}
+          {% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
+          {% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
+          {% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
+          {% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
+          {% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
+        {% endif %}
+      </div>
+    </section>{# /.video-details #}
+  </div>
+  <div class="padded">
+    <div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
+  </div>
+{% endblock %}
+
+{% block side %}
+  <div class="right-sidebar">
+    {% for module in sidebar_modules %}
+      {% include module %}
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block bottom %}
+  {# Facebook #}
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1{% if FACEBOOK_APP_ID %}&appId={{ FACEBOOK_APP_ID }}{% endif %}";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+  {# Twitter #}
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+  {# Google+ #}
+  <script type="text/javascript">
+    (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+  </script>
+  {# Pinterest #}
+  <script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
+{% endblock %}

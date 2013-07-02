@@ -23,6 +23,9 @@ class CompatibleListingView(SortFilterView):
     #: Period of time within which the video was approved.
     approved_since = None
 
+    #: Old template name. Will be preferred to the new template name.
+    old_template_name = None
+
     def get_paginate_by(self, queryset):
         paginate_by = self.request.GET.get('count')
         if paginate_by:
@@ -64,6 +67,12 @@ class CompatibleListingView(SortFilterView):
         context['query'] = form['q'].value()
         context['video_list'] = context['videos']
         return context
+
+    def get_template_names(self):
+        template_names = super(CompatibleListingView, self).get_template_names()
+        if self.old_template_name:
+            template_names = [self.old_template_name] + template_names
+        return template_names
 
 
 class SiteListView(ListView):

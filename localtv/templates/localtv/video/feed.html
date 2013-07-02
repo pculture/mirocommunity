@@ -1,4 +1,4 @@
-{% extends "localtv/__video_list.html" %}
+{% extends "localtv/video/__list.html" %}
 
 {% load i18n %}
 
@@ -6,8 +6,11 @@
 
 {% block title %}{{ block.super }} - {% blocktrans with name=feed.name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
 
-{% block body_classes %}{{ block.super }} feed-videos{% endblock %}
-
 {% block page_title %}{% blocktrans with name=feed.name %}Videos From {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block rss_url %}{% url 'localtv_feeds_feed' feed.id %}{% endblock %}
+
+{% block video %}
+  <li class='span3'>{% include 'localtv/video/_thumbnail.html' %}</li>
+{% endblock %}
+

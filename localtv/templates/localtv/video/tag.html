@@ -9,3 +9,8 @@
 {% block page_title %}{% blocktrans with tag=tag %}Videos Tagged With &ldquo;{{ tag }}&rdquo;{% endblocktrans %}{% endblock %}
 
 {% block rss_url %}{% url localtv_feeds_tag tag %}{% endblock %}
+
+{% block video %}
+  <li class='span3'>{% include 'localtv/video/_thumbnail.html' %}</li>
+{% endblock %}
+

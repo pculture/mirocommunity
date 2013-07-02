@@ -56,7 +56,7 @@
   {% endif %}
   <div class='container'>
     {% block main %}
-      <h3>{% trans "New" %} <ul class='nav nav-pills'><li><a href="{% url 'localtv_list_new' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_new' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
+      <h3>{% trans "New" %} <ul class='inline'><li><a href="{% url 'localtv_list_new' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_new' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
 
       {% adjust_bulk new_videos|slice:":4" "thumbnail" 'fill' width=300 height=216 as adjusted %}
       <ul class='thumbnails'>
@@ -65,7 +65,7 @@
       {% endfor %}
       </ul>
 
-      <h3>{% trans "Popular" %} <ul class='nav nav-pills'><li><a href="{% url 'localtv_list_popular' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_popular' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
+      <h3>{% trans "Popular" %} <ul class='inline'><li><a href="{% url 'localtv_list_popular' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_popular' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
 
       {% adjust_bulk popular_videos|slice:":4" "thumbnail" 'fill' width=300 height=216 as adjusted %}
       <ul class='thumbnails'>

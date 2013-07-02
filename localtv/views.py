@@ -56,7 +56,6 @@ def about(request):
 class VideoView(DetailView):
     pk_url_kwarg = 'video_id'
     context_object_name = 'current_video'
-    template_name = 'localtv/view_video.html'
     model = Video
 
     # Modules to display in the right sidebar on the video page.
@@ -82,6 +81,9 @@ class VideoView(DetailView):
 
     def get_sidebar_modules(self):
         return self.sidebar_modules
+
+    def get_template_names(self):
+        return ['localtv/view_video.html', 'localtv/video/detail.html']
 
     def get_context_data(self, **kwargs):
         context = super(VideoView, self).get_context_data(**kwargs)

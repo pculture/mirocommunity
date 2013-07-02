@@ -1,0 +1,36 @@
+{% extends "localtv/__base.html" %}
+
+{% load i18n pagetabs daguerre %}
+
+{# video-list-page is a trigger for infinite scroll #}
+{% block body_classes %}{{ block.super }} video-list-page{% endblock %}
+
+{% block main %}
+  <h1>
+    {% block page_title %}Video List{% endblock %}
+    {% block rss_link %}<ul class='inline'><li><a href="{% block rss_url %}{% endblock %}" title="{% trans 'RSS' %}"><i class="icon-rss"></i></a></li></ul>{% endblock %}
+  </h1>
+
+  {% if page_obj.has_other_pages %}
+    <div class="pagination upper">
+      {% pagetabs page_obj %}
+    </div>
+  {% endif %}
+
+  {% if video_list %}
+    <ul class='thumbnails'>
+      {% adjust_bulk video_list "thumbnail" 'fill' width=300 height=216 as adjusted %}
+      {% for video, image in adjusted %}
+        {% block video %}{% endblock %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No videos found.</p>
+  {% endif %}
+
+  {% if page_obj.has_other_pages %}
+    <div class="pagination lower">
+      {% pagetabs page_obj %}
+    </div>
+  {% endif %}
+{% endblock %}
