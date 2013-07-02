@@ -1,15 +1,12 @@
 {% load i18n %}{% load url from future %}
-<section class="browse-box-section">
-	<h1><a href="{% url 'localtv_index' %}">{% trans 'Videos' %}</a></h1>
-	<ul>
-		<li>
-			<a href="{% url 'localtv_list_featured' %}">{% trans 'Featured' %}</a>
-		</li>
-		<li>
-			<a href="{% url 'localtv_list_new' %}">{% trans 'New Videos' %}</a>
-		</li>
-		<li>
-			<a href="{% url 'localtv_list_popular' %}">{% trans 'Popular' %}</a>
-		</li>
-	</ul>
-</section>
+{% url 'localtv_index' as url %}
+<li class="nav-header{% if url == request.path %} active{% endif %}"><a href="{{ url }}">{% trans 'Videos' %}</a></li>
+
+{% url 'localtv_list_featured' as url %}
+<li{% if url == request.path %} class="active"{% endif %}><a href="{{ url }}">{% trans 'Featured' %}</a></li>
+
+{% url 'localtv_list_new' as url %}
+<li{% if url == request.path %} class="active"{% endif %}><a href="{{ url }}">{% trans 'New Videos' %}</a></li>
+
+{% url 'localtv_list_popular' as url %}
+<li{% if url == request.path %} class="active"{% endif %}><a href="{{ url }}">{% trans 'Popular' %}</a></li>
