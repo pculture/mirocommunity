@@ -12,6 +12,6 @@
 " data-toggle="popover" data-trigger="hover" data-html="true" data-title="{{ video.name }}"><img src="{% if image %}{{ image }}{% else %}{% static 'localtv/front/images/nounproject_2650_television_white.png' %}{% endif %}" /></a>
 
 <h5>
-    {{ video.name }}{% if sorter %}<br />
+    <a href="{{ video.get_absolute_url }}">{{ video.name }}</a>{% if sorter %}<br />
     <small>{{ sorter }}</small>{% endif %}
 </h5>
