@@ -156,6 +156,23 @@ span.unisubs-tabTextchoose, span.unisubs-tabText, span.unisubs-tabTextfinish{
     }
 }
 
+// Shrinkydink
+.shrinkydink-handle{
+    @extend small;
+    @extend .muted;
+    display: block;
+    border-bottom: 1px solid;
+    text-align: center;
+    height: $baseLineHeight / 2;
+    margin-bottom: $baseLineHeight * 1.5;
+}
+
+.shrinkydink-handle-inner{
+    display: inline-block;
+    background: #FFF;
+    padding: 0 5px;
+}
+
 // Tweak styles for navs inside headers.
 h1, h2, h3, h4, h5, h6{
     .inline{

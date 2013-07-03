@@ -50,35 +50,7 @@
   {% endif %}
 {% endblock %}
 
-{% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
-
-{% block precontent %}
-  <section class="video-full precontent">
-    <header class="video-detail-header precontent-header">
-      <div class="container">
-        <h1 class="title">
-          {% if current_video.name %}
-            {{ current_video.name }}
-          {% else %}
-            {% trans "(no title)" %}
-          {% endif %}
-        </h1>
-        <h2 class="colophon">
-          {% with current_video as instance %}
-            {% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}
-          {% endwith %}
-        </h2>
-      </div>
-    </header>
-    <div class="precontent-content">
-      <div class="container video-player">
-        <div class="video-embedded-widget">
-          {% include "localtv/video/_embed.html" %}
-        </div>
-      </div>{# /.container #}
-    </div>{# /.precontent-content #}
-  </section>{# /.video-stage #}
-{% endblock %}
+{% block title %}{% if current_video.name %}{{ current_video.name }}{% else %}{% trans "(no title)" %}{% endif %} - {{ block.super }}{% endblock %}
 
 {% block main-outer %}
   <div class='featured-field'>
@@ -118,47 +90,60 @@
       </div>
     </div>
   </div>
-  <div class="social-media-share">
-  </div>
 
-  <div class="padded">
-    <section class="video-details">
-      {{ current_video.description|safe }}
-      <div class="extra-details">
-        {% if current_video.categories.count > 0 %}
-          <div class="video-full-categories compact">
-            {% with current_video as instance %}
-              {% include "localtv/inline_edit/video_categories.html" %}
-            {% endwith %}
-          </div>{# /.video-full-categories #}
-        {% endif %}
-        {% if current_video.tags %}
-          <div class="video-full-tags compact">
-            {% with current_video as instance %}
-              {% include "localtv/inline_edit/video_tags.html" %}
-            {% endwith %}
-          </div>{# /.video-full-tags #}
-        {% endif %}
-        {% if user_is_admin %}
-          {% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
-          {% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
-          {% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
-          {% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
-          {% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
-        {% endif %}
+  <div class='container'>
+    {% block main %}
+      <div class='row'>
+        <div class='span8'>
+          <h2>
+            {% if current_video.name %}
+              {{ current_video.name }}
+            {% else %}
+              {% trans "(no title)" %}
+            {% endif %}
+            <small>
+              {% with current_video as instance %}
+                {% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}
+              {% endwith %}
+            </small>
+          </h2>
+          <section class="video-details">
+            {{ current_video.description|safe }}
+            <div class="extra-details">
+              {% if current_video.categories.count > 0 %}
+                <div class="video-full-categories compact">
+                  {% with current_video as instance %}
+                    {% include "localtv/inline_edit/video_categories.html" %}
+                  {% endwith %}
+                </div>{# /.video-full-categories #}
+              {% endif %}
+              {% if current_video.tags %}
+                <div class="video-full-tags compact">
+                  {% with current_video as instance %}
+                    {% include "localtv/inline_edit/video_tags.html" %}
+                  {% endwith %}
+                </div>{# /.video-full-tags #}
+              {% endif %}
+              {% if user_is_admin %}
+                {% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
+                {% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
+                {% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
+                {% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
+                {% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
+              {% endif %}
+            </div>
+          </section>{# /.video-details #}
+          <div>
+            <div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-width="360px" data-num-posts="4"></div>
+          </div>
+        </div>
+        <div class='span4'>
+          {% for module in sidebar_modules %}
+            {% include module %}
+          {% endfor %}
+        </div>
       </div>
-    </section>{# /.video-details #}
-  </div>
-  <div class="padded">
-    <div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-num-posts="2"></div>
-  </div>
-{% endblock %}
-
-{% block side %}
-  <div class="right-sidebar">
-    {% for module in sidebar_modules %}
-      {% include module %}
-    {% endfor %}
+    {% endblock %}
   </div>
 {% endblock %}
 

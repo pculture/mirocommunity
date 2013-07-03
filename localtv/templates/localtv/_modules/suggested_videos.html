@@ -3,20 +3,15 @@ Expects that popular videos are in the current context; renders a small
 module displaying them.
 {% endcomment %}
 
-{% load i18n %}
+{% load i18n daguerre %}
 {% load url from future %}
 
-<section class="pod video-suggested-videos">
-	<header class="pod-header">
-		<h1>{% trans "More Videos" %}</h1>
-	</header>
-	<div class="pod-content">
-		{# TODO: calculate a suggested videos list #}
-		{% include "localtv/_grid/video_list.html" with columns=1 video_list=popular_videos|slice:":4" %}
-	</div>
-	<div class="pod-footer">
-		<ul class="pod-footer-actions">
-			<li><a class="button-wide continue" href="{% url 'localtv_list_popular' %}">{% trans "All Popular Videos" %}</a></li>
-		</ul>
-	</div>
-</section>{# /.pod.video-suggested-videos #}
+<h3>{% trans "Popular" %} <ul class='inline'><li><a href="{% url 'localtv_list_popular' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_popular' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
+
+<ul class='thumbnails'>
+  {# TODO: calculate a suggested videos list #}
+  {% adjust_bulk popular_videos|slice:":4" "thumbnail" "fill" width=300 height=216 as adjusted %}
+  {% for video, image in adjusted %}
+    <li class='span4'>{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</li>
+  {% endfor %}
+</ul>
