@@ -1,8 +1,0 @@
-{% extends "localtv/submit_video/scraped.html" %}
-
-{% block form_action %}{% url localtv_contests_submit_scraped_video pk=contest.pk slug=contest.slug %}{% endblock %}
-
-{% block inner_form %}
-{{ block.super }}
-{% include "contests/submit_video/_rules.html" %}
-{% endblock %}

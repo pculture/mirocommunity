@@ -169,7 +169,6 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
     'django.contrib.markup',
-    'localtv.contrib.contests',
     'localtv',
     'localtv.admin',
     'localtv.comments',

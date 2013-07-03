@@ -36,20 +36,6 @@
   {% endif %}
 {% endblock %}
 
-{% block scripts %}
-  {{ block.super }}
-  {% if current_video.contestvideo_set %}
-    <script src="{% static 'localtv/js/localtv.contests.js' %}"></script>
-  {% endif %}
-{% endblock %}
-
-{% block styles %}
-  {{ block.super }}
-  {% if current_video.contestvideo_set %}
-    <link rel="stylesheet" type="text/css" href="{% static 'localtv/stylesheets/localtv.contests.screen.css' %}" media="screen" />
-  {% endif %}
-{% endblock %}
-
 {% block title %}{% if current_video.name %}{{ current_video.name }}{% else %}{% trans "(no title)" %}{% endif %} - {{ block.super }}{% endblock %}
 
 {% block main-outer %}
