@@ -3,6 +3,9 @@
 {% load i18n comments filters uploadtemplate editable_widget cache video_list email_share_tags daguerre compress %}
 {% load url from future %}
 
+{# used by js to determine whether we're on a detail page #}
+{% block body_classes %}{{ block.super }} video-detail{% endblock %}
+
 {% block meta %}
   {% with title=current_video.name %}
     <meta name="title" content="{{ title }}">
@@ -47,8 +50,6 @@
   {% endif %}
 {% endblock %}
 
-{% block body_classes %}{{ block.super }} video-detail{% endblock %}
-
 {% block title %}{{ current_video.name }} - {{ block.super }}{% endblock %}
 
 {% block precontent %}
@@ -72,7 +73,7 @@
     <div class="precontent-content">
       <div class="container video-player">
         <div class="video-embedded-widget">
-          {% include "localtv/_video_embed.html" %}
+          {% include "localtv/video/_embed.html" %}
         </div>
       </div>{# /.container #}
     </div>{# /.precontent-content #}
@@ -83,29 +84,41 @@
   <div class='featured-field'>
     <div class='container'>
       <div class='featured-inner'>
-        {% include "localtv/_video_embed.html" %}
+        {% include "localtv/video/_embed.html" %}
+      </div>
+      <div class='featured-inner'>
+        <div class="navbar navbar-inverse">
+          <div class="navbar-inner">
+            <ul class="nav">
+              <li>
+                <div class="fb-like social-count" data-href="{{ request.build_absolute_uri }}" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false" data-colorscheme="dark"></div>
+              </li>
+              <li>
+                <div class='social-count'>
+                  <a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
+                </div>
+              </li>
+              <li>
+                <div class='social-count'>
+                  <g:plusone size="medium"></g:plusone>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name "fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+                </div>
+              </li>
+              <li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" title="{% trans 'Email' %}"><i class='icon-envelope'></i></a></li>
+              {% if current_video.file_url %}
+                <li class="file-social"><a href="{{ current_video.file_url }}" title='{% trans "Download Video File" %}'><i class='icon-download-alt'></i></a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   <div class="social-media-share">
-    <ul class="social-link-list">
-      <li class="facebook-social">
-        <div class="fb-like" data-send="false" data-layout="button_count" data-width="70" data-show-faces="false"></div>
-      </li>
-      <li class="twitter-social">
-        <a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
-      </li>
-      <li class="gplus-social">
-        <g:plusone size="medium"></g:plusone>
-      </li>
-      <li class="pinterest-social">
-        <a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name "fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
-      </li>
-      <li class="email-social"><a class="button" href="{% get_email_share_url_for current_video %}" rel="#overlay" class="email">{% trans "Email" %}</a></li>
-      {% if current_video.file_url %}
-        <li class="file-social"><a class="button" href="{{ current_video.file_url }}" class="download">{% trans "Download Video File" %}</a></li>
-      {% endif %}
-    </ul>
   </div>
 
   <div class="padded">
@@ -149,7 +162,8 @@
   </div>
 {% endblock %}
 
-{% block bottom %}
+{% block scripts-foot %}
+  {{ block.super }}
   {# Facebook #}
   <div id="fb-root"></div>
   <script>(function(d, s, id) {

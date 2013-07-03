@@ -33,8 +33,12 @@
                 }
 
                 window.STATIC_URL = "{{ STATIC_URL }}";
+
+                // Disable amara widget style loading.
+                window.MiroCSSLoading = true;
             }());
         </script>
+        <script src="{% static 'mirocommunity/js/jquery-1.10.1.min.js' %}"></script>
     {% endblock %}
 </head>
 <body class="{% block body_classes %}miro_community{% endblock %}">
@@ -71,7 +75,6 @@
             {% endif %}
         {% endif %}
 
-        <script src="{% static 'mirocommunity/js/jquery-1.10.1.min.js' %}"></script>
         <script src="{% static 'mirocommunity/js/bootstrap-2.3.2.min.js' %}"></script>
         <script src="{% static 'djam/js/bootstrap.file-input.js' %}" type="text/javascript" charset="utf-8"></script>
         <script src="{% static 'djam/js/chosen.jquery.js' %}" type="text/javascript" charset="utf-8"></script>

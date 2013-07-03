@@ -1,0 +1,3327 @@
+.cleanslate hr {
+    border:0 !important;
+    border-top:1px solid #ccc !important;
+    display:block !important;
+    height:1px !important;
+    margin:1em 0 !important;
+}
+
+.cleanslate, .cleanslate h1, .cleanslate h2, .cleanslate h3, .cleanslate h4, .cleanslate h5, .cleanslate h6, .cleanslate p, .cleanslate td, .cleanslate dl, .cleanslate tr, .cleanslate dt, .cleanslate ol, .cleanslate form, .cleanslate select, .cleanslate option, .cleanslate pre, .cleanslate div, .cleanslate table, .cleanslate th, .cleanslate tbody, .cleanslate tfoot, .cleanslate caption, .cleanslate thead, .cleanslate ul, .cleanslate address, .cleanslate blockquote, .cleanslate dd, .cleanslate fieldset, .cleanslate li, .cleanslate ul li, .cleanslate iframe, .cleanslate strong, .cleanslate legend, .cleanslate em, .cleanslate s, .cleanslate cite, .cleanslate span, .cleanslate input, .cleanslate sup, .cleanslate label, .cleanslate dfn, .cleanslate big, .cleanslate q, .cleanslate font, .cleanslate samp, .cleanslate acronym, .cleanslate small, .cleanslate img, .cleanslate strike, .cleanslate code, .cleanslate sub, .cleanslate ins, .cleanslate textarea, .cleanslate var, .cleanslate a, .cleanslate abbr, .cleanslate applet, .cleanslate del, .cleanslate kbd, .cleanslate tt, .cleanslate b, .cleanslate i, .cleanslate hr, .cleanslate article, .cleanslate aside, .cleanslate dialog, .cleanslate figure, .cleanslate footer, .cleanslate header, .cleanslate hgroup, .cleanslate menu, .cleanslate nav, .cleanslate section, .cleanslate time, .cleanslate mark, .cleanslate audio, .cleanslate video, .cleanslate ul li {
+    -moz-border-radius:0 !important;
+    -moz-box-shadow:none !important;
+    -webkit-border-radius:0 !important;
+    -webkit-box-shadow:none !important;
+    background:none !important;
+    background-attachment:scroll !important;
+    background-color:transparent !important;
+    background-image:none !important;
+    background-position:0 0 !important;
+    background-repeat:repeat !important;
+    border-color:black !important;
+    border-radius:0 !important;
+    border-style:none !important;
+    border-width:medium !important;
+    bottom:auto !important;
+    box-shadow:none !important;
+    clear:none !important;
+    clip:auto !important;
+    color:inherit !important;
+    content:normal !important;
+    counter-increment:none !important;
+    counter-reset:none !important;
+    cursor:auto !important;
+    direction:inherit !important;
+    display:inline !important;
+    float:none !important;
+    font-family:inherit !important;
+    font-size:inherit !important;
+    font-style:inherit !important;
+    font-variant:normal !important;
+    font-weight:inherit !important;
+    height:auto !important;
+    left:auto !important;
+    letter-spacing:normal !important;
+    line-height:inherit !important;
+    list-style:disc outside none !important;
+    margin:0 !important;
+    max-height:none !important;
+    max-width:none !important;
+    min-height:0 !important;
+    min-width:0 !important;
+    opacity:1;
+    outline:invert none medium !important;
+    overflow:visible !important;
+    padding:0 !important;
+    position:static !important;
+    quotes:"" "" !important;
+    right:auto !important;
+    table-layout:auto !important;
+    text-align:inherit !important;
+    text-decoration:inherit !important;
+    text-indent:0 !important;
+    text-shadow:0 0 0 !important;
+    text-transform:none !important;
+    top:auto !important;
+    unicode-bidi:normal !important;
+    vertical-align:baseline !important;
+    visibility:visible !important;
+    white-space:normal !important;
+    width:auto !important;
+    word-spacing:normal !important;
+    z-index:auto !important;
+}
+
+.cleanslate input[type=hidden] {
+    display:none !important;
+}
+
+.cleanslate abbr[title], .cleanslate acronym[title], .cleanslate dfn[title] {
+    border-bottom-style:dotted !important;
+    border-bottom-width:1px !important;
+    cursor:help !important;
+}
+
+.cleanslate blockquote, .cleanslate q {
+    quotes:none !important;
+}
+
+.cleanslate blockquote:before, .cleanslate blockquote:after, .cleanslate q:before, .cleanslate q:after, .cleanslate li:before, .cleanslate li:after {
+    content:"" !important;
+    content:none !important;
+}
+
+.cleanslate *[dir=rtl] {
+    direction:rtl !important;
+}
+
+.cleanslate button, .cleanslate input[type=submit] {
+    text-align:center !important;
+}
+
+.cleanslate strong {
+    font-weight:bold !important;
+}
+
+.cleanslate select, .cleanslate textarea, .cleanslate input {
+    border:1px solid #ccc !important;
+}
+
+.cleanslate input, .cleanslate select {
+    vertical-align:middle !important;
+}
+
+.cleanslate table {
+    border-collapse:collapse !important;
+    border-spacing:0 !important;
+}
+
+.cleanslate mark {
+    background-color:#ff9 !important;
+    color:black !important;
+    font-style:italic !important;
+    font-weight:bold !important;
+}
+
+.cleanslate kbd, .cleanslate samp, .cleanslate code {
+    font-family:monospace !important;
+}
+
+.cleanslate ins {
+    background-color:#ff9 !important;
+    color:black !important;
+}
+
+.cleanslate del {
+    text-decoration:line-through !important;
+}
+
+.cleanslate, .cleanslate th, .cleanslate table, .cleanslate h3, .cleanslate h5, .cleanslate p, .cleanslate h1, .cleanslate td, .cleanslate dl, .cleanslate tr, .cleanslate dt, .cleanslate h6, .cleanslate ol, .cleanslate form, .cleanslate select, .cleanslate option, .cleanslate pre, .cleanslate div, .cleanslate tbody, .cleanslate h2, .cleanslate tfoot, .cleanslate caption, .cleanslate thead, .cleanslate h4, .cleanslate ul, .cleanslate address, .cleanslate blockquote, .cleanslate dd, .cleanslate fieldset, .cleanslate li, .cleanslate textarea, .cleanslate hr, .cleanslate article, .cleanslate aside, .cleanslate dialog, .cleanslate figure, .cleanslate footer, .cleanslate header, .cleanslate hgroup, .cleanslate menu, .cleanslate nav, .cleanslate section {
+    display:block !important;
+}
+
+.cleanslate em {
+    font-style:italic !important;
+}
+
+.cleanslate a, .cleanslate a *, .cleanslate input[type=submit], .cleanslate input[type=radio], .cleanslate input[type=checkbox], .cleanslate select {
+    cursor:pointer !important;
+}
+
+.cleanslate a:hover {
+    text-decoration:underline !important;
+}
+
+.cleanslate {
+    color:black !important;
+    direction:ltr !important;
+    font-family:serif !important;
+    font-size:medium !important;
+    font-style:normal !important;
+    font-weight:normal !important;
+    line-height:1 !important;
+    text-align:left !important;
+    text-decoration:none !important;
+}
+
+.unisubs-widgetContainer {
+    height:100% !important;
+    position:relative !important;
+    width:100% !important;
+}
+
+span.unisubs-widget {
+    color:#000 !important;
+    display:block !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    line-height:16px !important;
+    position:relative !important;
+    text-align:left !important;
+    top:0 !important;
+}
+
+.unisubs-modal-widget, .unisubs-modal-widget:active, .unisubs-modal-widget:hover{
+    outline:none !important;
+}
+
+.unisubs-modal-widget .unisubs-left .unisubs-videoDiv {
+    height:300px !important;
+    width:400px !important;
+}
+
+.unisubs-modal-widget .unisubs-left .unisubs-videoDiv video, .unisubs-modal-widget .unisubs-left .unisubs-videoDiv object, .unisubs-modal-widget .unisubs-left .unisubs-videoDiv embed, .unisubs-modal-widget .unisubs-videoDiv embed {
+    display:block !important;
+    height:300px !important;
+    width:400px !important;
+}
+
+.unisubs-modal-widget {
+    -moz-box-shadow:0 3px 10px rgba(0, 0, 0, .9) !important;
+    -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, .01) !important;
+    background:#fff !important;
+    border:1px solid #000 !important;
+    border-top:0 !important;
+    color:#000 !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    line-height:16px !important;
+    padding:px !important;
+    position:absolute !important;
+    top:0 !important;
+    width:842px !important;
+    z-index:2147483631 !important;
+}
+
+.unisubs-modal-widget-content {
+    background:#000 !important;
+    border:1px solid #000 !important;
+    border-right:none !important;
+    border-top:none !important;
+    min-height:500px !important;
+    overflow:hidden !important;
+    position:relative !important;
+}
+
+.unisubs-modal-widget-content h1 {
+    color:#fff !important;
+    padding:25px !important;
+    text-align:center !important;
+}
+
+.unisubs-moreHelp {
+    margin:80px auto 0 !important;
+    width:400px !important;
+}
+
+.unisubs-moreHelp p {
+    color:#fff !important;
+    text-align:center !important;
+}
+
+.unisubs-moreHelp p a {
+    color:#fff !important;
+    text-align:center !important;
+}
+
+.unisubs-showTimeline {
+    -moz-border-radius:10px !important;
+    -webkit-border-radius:10px !important;
+    background:#fff !important;
+    border:1px solid #333 !important;
+    font-weight:bold !important;
+    left:-10px !important;
+    line-height:1em !important;
+    padding:4px 6px !important;
+    position:absolute !important;
+    text-decoration:none !important;
+    top:-70px !important;
+    z-index:5667666666666 !important;
+}
+
+.unisubs-BANG {
+    text-shadow:0 0 25px red, 0px 0 35px red, 0px 0 35px red, 0px 2px 0 red, -1px 3px 0 red, -2px 2px 0 red, -2px 1px 0 red, -2px 0 0 red, 2px 2px 0 red, 1px 2px 0 red, 0px -2px 0 red, 2px -2px 0 red, -2px -1px 0 red !important;
+}
+
+.unisubs-modal-login-title-close, .unisubs-modal-widget-title-close, .unisubs-modal-lang-title-close, .unisubs-forkdialog-title-close {
+    background:url("../images/sprite.png") 0 -256px no-repeat !important;
+    cursor:pointer !important;
+    cursor:hand !important;
+    height:0 !important;
+    overflow:hidden !important;
+    padding-top:30px !important;
+    position:absolute !important;
+    right:-31px !important;
+    top:9px !important;
+    width:30px !important;
+    z-index:4567890 !important;
+}
+
+.unisubs-langDrop {
+    background:#999 !important;
+    border-bottom:1px solid #333 !important;
+    border-top:1px solid #333 !important;
+    padding:15px 0 !important;
+    text-align:left !important;
+}
+
+.unisubs-langDrop select {
+    background:#fff !important;
+    border:1px solid !important;
+    font-size:15px !important;
+    line-height:2em !important;
+}
+
+.unisubs-left {
+    float:left !important;
+    width:400px !important;
+}
+
+.unisubs-modal-widget-transcribe .unisubs-right {
+    background:url("../images/widget_right_bg.gif") 0 0 repeat-y !important;
+    border:0 !important;
+    color:#fff !important;
+    float:left !important;
+    height:721px !important;
+    padding:0 0 !important;
+    width:440px !important;
+}
+
+.unisubs-modal-widget-sync .unisubs-right, .unisubs-modal-widget-review .unisubs-right {
+    height:751px !important;
+}
+
+.unisubs-modal-widget-translate .unisubs-right {
+    background:url("../images/widget_right_bg.gif") 0 0 repeat-y !important;
+    border:0 !important;
+    color:#fff !important;
+    float:left !important;
+    height:717px !important;
+    padding:0 0 !important;
+    width:440px !important;
+}
+
+.unisubs-modal-widget-translate .unisubs-right .unisubs-done {
+    margin-top:67px !important;
+}
+
+.unisubs-modal-widget-translate .unisubs-right {
+    background:url("../images/widget_right_bg.gif") 0 0 repeat-y !important;
+    border:0 !important;
+    color:#fff !important;
+    float:left !important;
+    height:717px !important;
+    padding:0 0 !important;
+    width:440px !important;
+}
+
+.unisubs-modal-widget-finished .unisubs-right {
+    background:url("../images/widget_right_bg.gif") 0 0 repeat-y !important;
+    border:0 !important;
+    color:#fff !important;
+    float:left !important;
+    height:404px !important;
+    padding:30px 0 !important;
+    width:440px !important;
+}
+
+.unisubs-modal-widget-edittranslation .unisubs-right {
+    height:611px !important;
+}
+
+.unisubs-modal-widget-finished .unisubs-right .unisubs-share {
+    margin-left:26px !important;
+    width:350px !important;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .unisubs-modal-widget-transcribe .unisubs-right {
+    height:713px !important;
+}
+
+}.unisubs-modal-widget-finished .unisubs-right .unisubs-share h2, .unisubs-modal-widget-finished .unisubs-right .unisubs-share h3 {
+    color:#333 !important;
+    margin-bottom:10px !important;
+    width:340px !important;
+}
+
+.unisubs-modal-widget-finished .unisubs-right .unisubs-share p {
+    color:#333 !important;
+    margin:0 0 10px !important;
+    padding:0 !important;
+    text-shadow:none !important;
+    width:340px !important;
+}
+
+.unisubs-right {
+    background:url("../images/widget_right_bg.gif") 0 0 repeat-y !important;
+    border:0 !important;
+    color:#fff !important;
+    float:left !important;
+    height:745px !important;
+    padding:0 0 !important;
+    text-shadow:0 0 0 !important;
+    width:440px !important;
+}
+
+.unisubs-right h2 {
+    color:#333 !important;
+    float:left !important;
+    font-size:15px !important;
+    margin:0 0 0 !important;
+}
+
+.unisubs-right div ul {
+    margin:0 0 0 30px;
+}
+
+.unisubs-right div a {
+    color:#fff !important;
+}
+
+.unisubs-right p {
+    font-size:13px !important;
+    line-height:1.6em !important;
+    margin:0 21px 10px !important;
+    text-shadow:#000 1px 1px 0 !important;
+}
+
+.unisubs-help-heading {
+    background:#eee url("../images/gradient_light.png") 0 20px repeat-x !important;
+    height:32px !important;
+    margin:0 -1px 20px 0 !important;
+    padding-left:20px !important;
+    padding-top:16px !important;
+}
+
+.unisubs-approve-notes-label {
+    display:block;
+    margin:0 21px 10px;
+}
+
+.unisubs-approve-notes {
+    border:0;
+    font:normal 14px Helvetica;
+    margin:0 21px 10px;
+    padding:10px;
+    width:86%;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
+}
+
+.unisubs-review-notes-label {
+    display:block;
+    margin:0 21px 10px;
+}
+
+.unisubs-review-notes {
+    border:0;
+    font:normal 14px Helvetica;
+    margin:0 21px 10px;
+    padding:10px;
+    width:86%;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
+}
+
+.unisubs-help-heading ul {
+    float:right !important;
+    margin:-4px 5px 0 0 !important;
+    padding:0 !important;
+}
+
+.unisubs-help-heading ul span {
+    color:#999 !important;
+    float:left !important;
+    margin-right:20px !important;
+    padding-top:4px !important;
+}
+
+.unisubs-help-heading ul li {
+    float:left !important;
+    list-style:none !important;
+    margin-right:10px !important;
+}
+
+.unisubs-help-heading ul li a.unisubs-activestep {
+    background:#fff !important;
+    border:1px solid #ddd !important;
+    color:#333 !important;
+    text-decoration:none !important;
+}
+
+.unisubs-help-heading ul li a {
+    cursor:default;
+    -moz-border-radius:3px !important;
+    -webkit-border-radius:3px !important;
+    background:#eee url("../images/gradient_light.png") 8px -113px repeat-x !important;
+    border:1px solid #eee !important;
+    color:#aaa !important;
+    float:left !important;
+    font-size:11px !important;
+    padding:3px 8px 2px 8px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-modal-widget-content.finished {
+    height:670px !important;
+}
+
+.unisubs-modal-widget-content.finished .unisubs-videoDiv {
+    margin:0 !important;
+}
+
+.unisubs-modal-widget-content.finished .unisubs-right {
+    float:right !important;
+    padding:0 30px 0 0 !important;
+    width:360px !important;
+}
+
+.unisubs-modal-widget-content.finished .unisubs-right {
+    float:right !important;
+    padding:0 30px 0 0 !important;
+    width:360px !important;
+}
+
+.unisubs-help {
+    color:#fff !important;
+    margin:10px 0 !important;
+}
+
+.unisubs-steps {
+    bottom:46px !important;
+    clear:both !important;
+    height:122px !important;
+    margin-left:2px !important;
+    text-shadow:0 0 0 !important;
+    width:420px !important;
+}
+
+.unisubs-steps .unisubs-done {
+    clear:both !important;
+    display:block !important;
+    float:none !important;
+    text-align:center !important;
+    width:auto !important;
+}
+
+.unisubs-saveandexit, .unisubs-saveandopeninneweditor {
+    clear:both;
+    font-size:15px;
+    padding:0 24px;
+    text-align:center;
+}
+
+.unisubs-saveandopeninneweditor {
+    margin-top:1.5em;
+    font-weight:bold;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .unisubs-steps {
+    bottom:63px !important;
+}
+
+}.unisubs-restart, a.unisubs-download-subs {
+    -moz-border-radius:4px !important;
+    -webkit-border-radius:4px !important;
+    background:#333;
+    border:1px solid #333 !important;
+    border-bottom:1px solid #444 !important;
+    border-top:1px solid #666 !important;
+    color:#777 !important;
+    float:right !important;
+    font-size:11px !important;
+    line-height:2em !important;
+    margin:10px 0 20px 0 !important;
+    padding:4px 20px 2px !important;
+    padding-left:33px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-restart:hover {
+    background:#666 url("../images/sprite.png") 8px -145px no-repeat !important;
+    border:1px solid #777 !important;
+    border-bottom:1px solid #777 !important;
+    border-top:1px solid #999 !important;
+    color:#fff !important;
+}
+
+.unisubs-restart {
+    background:#333 url("../images/sprite.png") 8px -146px no-repeat !important;
+}
+
+.unisubs-extra {
+    -moz-border-radius:4px !important;
+    -webkit-border-radius:4px !important;
+    background:#454545 !important;
+    border:1px solid #4f4f4f !important;
+    margin:20px !important;
+    padding:15px 20px 10px !important;
+    position:relative !important;
+}
+
+.unisubs-extra .unisubs-spanarrow {
+    background:url("../images/pointing.png") 0 0 no-repeat !important;
+    bottom:-12px !important;
+    display:block !important;
+    height:12px !important;
+    position:absolute !important;
+    width:17px !important;
+}
+
+.unisubs-extra h3 {
+    color:#fff !important;
+    font-size:15px !important;
+    font-weight:bold !important;
+    line-height:1.4em !important;
+    margin:0 0 5px !important;
+    text-shadow:0 1px 1px #000 !important;
+}
+
+.unisubs-extra ul {
+    color:#fff !important;
+    font-size:12px !important;
+    font-weight:bold !important;
+    line-height:1.4em !important;
+    margin:0 0 5px !important;
+    padding:0 0 0 15px !important;
+    text-shadow:0 1px 1px #000 !important;
+}
+
+.unisubs-extra a {
+    color:#fff !important;
+    font-size:12px !important;
+    font-weight:bold !important;
+    line-height:1.4em !important;
+    margin:0 0 5px !important;
+    padding:0 !important;
+    text-shadow:0 1px 1px #000 !important;
+}
+
+.unisubs-extra p {
+    color:#fff !important;
+    font-size:12px !important;
+    font-weight:bold !important;
+    line-height:1.4em !important;
+    margin:0 0 5px !important;
+    padding:0 !important;
+    text-shadow:0 1px 1px #000 !important;
+}
+
+.unisubs-extra.unisubs-extra-left .unisubs-spanarrow {
+    background:url("../images/pointing.png") 0 -13px no-repeat !important;
+    display:block !important;
+    height:16px !important;
+    left:-8px !important;
+    position:absolute !important;
+    top:14px !important;
+    width:17px !important;
+}
+
+.unisubs-backTo {
+    -moz-border-radius:4px !important;
+    -webkit-border-radius:4px !important;
+    background:#333 url("../images/sprite.png") 10px -206px no-repeat !important;
+    border:1px solid #333 !important;
+    border-bottom:1px solid #444 !important;
+    border-top:1px solid #666 !important;
+    color:#777 !important;
+    float:left !important;
+    font-size:11px !important;
+    line-height:2em !important;
+    margin:10px 0 30px 20px !important;
+    padding:4px 20px 2px !important;
+    padding-left:29px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-backTo:hover {
+    background:#666 url("../images/sprite.png") 10px -206px no-repeat !important;
+    border:1px solid #777 !important;
+    border-bottom:1px solid #777 !important;
+    border-top:1px solid #999 !important;
+    color:#fff !important;
+}
+
+.unisubs-loggedIn {
+    color:#fff !important;
+    text-align:center !important;
+}
+
+.unisubs-done, .unisubs-done-save {
+    -moz-border-radius:5px !important;
+    -webkit-border-radius:5px !important;
+    background:#fff url("../images/gradient.png") right -2px repeat-x !important;
+    border:1px solid #ddd !important;
+    border-bottom:1px solid #999 !important;
+    border-top:1px solid #fff !important;
+    color:#333 !important;
+    float:left !important;
+    font-size:16px !important;
+    margin:15px 0 20px 25px !important;
+    padding:15px 0 !important;
+    position:relative !important;
+    text-align:center !important;
+    text-decoration:none !important;
+    text-shadow:#ddd 1px 1px 0 !important;
+    width:185px !important;
+}
+
+.unisubs-done:active {
+    background:#fff url("../images/gradient.png") right -82px repeat-x !important;
+    border-color:#000 !important;
+}
+
+.unisubs-done:hover {
+    background:#fff url("../images/gradient.png") right 132px repeat-x !important;
+    text-shadow:none !important;
+}
+
+.unisubs-done span {
+    background:url("../images/sprite.png") right -234px no-repeat !important;
+    color:#333 !important;
+    padding-right:40px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-done img {
+    border:0 !important;
+    left:30px !important;
+    position:absolute !important;
+}
+
+.unisubs-done-save {
+    margin:15px 0 0 20px !important;
+}
+
+.unisubs-silver-button {
+    -moz-border-radius:5px !important;
+    -webkit-border-radius:5px !important;
+    background:#fff url("../images/gradient.png") right -2px repeat-x !important;
+    border:1px solid #ddd !important;
+    border-bottom:1px solid #999 !important;
+    border-top:1px solid #fff !important;
+    color:#333 !important;
+    float:left !important;
+    font-size:12px !important;
+    padding:7px 20px 6px !important;
+    position:relative !important;
+    text-align:center !important;
+    text-decoration:none !important;
+    text-shadow:#ddd 1px 1px 0 !important;
+}
+
+.unisubs-red {
+    color:red !important;
+}
+
+.unisubs-green {
+    color:green !important;
+}
+
+.unisubs-status {
+    left:20px !important;
+    position:absolute !important;
+    top:-60px !important;
+}
+
+.unisubs-status a {
+    margin-right:20px !important;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .unisubs-done span {
+    background:url("../images/sprite.png") right -234px no-repeat !important;
+}
+
+}.unisubs-done.left span {
+    background:url("../images/sprite.png") left -214px no-repeat !important;
+    padding-left:19px !important;
+}
+
+.unisubs-translateField {
+    height:24px !important;
+    margin-top:3px !important;
+    padding:3px !important;
+    width:350px !important;
+}
+
+textarea.unisubs-descriptionField {
+    height:140px !important;
+}
+
+.unisubs-whats {
+    color:#999 !important;
+    display:block !important;
+    font-size:11px !important;
+    margin-left:40px !important;
+}
+
+.unisubs-needLogin {
+    background:url("../images/sprite.png") 10px -119px no-repeat !important;
+    color:#fff !important;
+    font-size:15px !important;
+    left:34px;
+    line-height:2em !important;
+    padding-left:35px !important;
+    position:absolute !important;
+    text-align:center !important;
+    top:-40px !important;
+}
+
+.unisubs-needLogin a {
+    color:#fff !important;
+}
+
+.unisubs-speedmode {
+    clear:both !important;
+    margin-left:20px !important;
+    text-shadow:0 0 0 !important;
+}
+
+.unisubs-speedmode select {
+    float:left !important;
+    margin-top:20px !important;
+}
+
+.unisubs-speedmode h4 {
+    float:left !important;
+    margin:21px 20px 0 0 !important;
+}
+
+.unisubs-play {
+    background:url("../images/new_buttons.png") 0 -73px no-repeat !important;
+    color:#000 !important;
+    float:left !important;
+    font-size:11px !important;
+    font-weight:bold !important;
+    height:40px !important;
+    line-height:1.3em !important;
+    margin-left:20px !important;
+    padding-left:60px !important;
+    padding-top:20px !important;
+    text-shadow:1px 1px 0 #68b553 !important;
+    width:128px !important;
+}
+
+.unisubs-play:active, .unisubs-play-down {
+    background:url("../images/new_buttons.png") 0 -356px no-repeat !important;
+    text-shadow:none !important;
+}
+
+.unisubs-play:hover {
+    background:url("../images/new_buttons.png") 0 -214px no-repeat !important;
+    text-shadow:1px 1px 0 #a7d29c !important;
+}
+
+.unisubs-play-beginner {
+    padding-bottom:2px !important;
+    padding-top:12px !important;
+}
+
+.unisubs-play-beginner span.unisubs-tab {
+    padding-top:10px !important;
+}
+
+.unisubs-begin {
+    background:url("../images/new_buttons.png") 0 -0px no-repeat !important;
+    color:#000 !important;
+    float:left !important;
+    font-size:12px !important;
+    font-weight:bold !important;
+    height:35px !important;
+    line-height:1.3em !important;
+    margin-bottom:15px !important;
+    margin-left:20px !important;
+    margin-top:5px !important;
+    padding-left:60px !important;
+    padding-top:18px !important;
+    text-shadow:1px 1px 0 #b662ad !important;
+    width:408px !important;
+}
+
+.unisubs-begin .unisubs-spacebar, .unisubs-play .unisubs-spacebar {
+    background:url("../images/spacebar.png") 0 0 no-repeat !important;
+    color:#333 !important;
+    display:block !important;
+    float:left !important;
+    font-size:20px !important;
+    font-size:11px !important;
+    height:22px !important;
+    line-height:1em !important;
+    margin:0 10px 10px 0 !important;
+    padding:14px 0 4px 0 !important;
+    text-align:center !important;
+    text-shadow:1px 1px 1px #fff !important;
+    width:110px !important;
+}
+
+.unisubs-play .unisubs-tab, .unisubs-begin .unisubs-down {
+    color:#333 !important;
+    display:block !important;
+    float:right !important;
+    font-size:20px !important;
+    font-size:10px !important;
+    height:22px !important;
+    line-height:1em !important;
+    margin:0 0 0 !important;
+    padding:2px 0 0 10px !important;
+    text-shadow:1px 1px 1px #fff !important;
+    width:36px !important;
+}
+
+.unisubs-begin:active, .unisubs-begin-down {
+    background:url("../images/new_buttons.png") 0 -283px no-repeat !important;
+    text-shadow:none !important;
+}
+
+.unisubs-begin:hover {
+    background:url("../images/new_buttons.png") 0 -141px no-repeat !important;
+    text-shadow:1px 1px 0 #e48fd8 !important;
+}
+
+.unisubs-play:hover, .unisubs-skip:hover, .unisubs-begin:hover {
+    cursor:pointer !important;
+}
+
+.unisubs-skip {
+    background:url("../images/new_buttons.png") right -73px no-repeat !important;
+    color:#000 !important;
+    float:left !important;
+    font-size:11px !important;
+    font-weight:bold !important;
+    height:41px !important;
+    line-height:1.3em !important;
+    margin-left:24px !important;
+    padding-left:60px !important;
+    padding-top:12px !important;
+    text-shadow:1px 1px 0 #6db8ca !important;
+    width:128px !important;
+}
+
+.unisubs-skip .unisubs-control {
+    color:#333 !important;
+    display:block !important;
+    float:right !important;
+    font-size:20px !important;
+    font-size:10px !important;
+    height:22px !important;
+    line-height:.7em !important;
+    margin:0 0 0 !important;
+    padding:4px 22px 0 10px !important;
+    text-align:center !important;
+    text-shadow:1px 1px 1px #fff !important;
+    width:17px !important;
+}
+
+.unisubs-skip:active, .unisubs-skip-down {
+    background:url("../images/new_buttons.png") right -356px no-repeat !important;
+    text-shadow:none !important;
+}
+
+.unisubs-skip:hover {
+    background:url("../images/new_buttons.png") right -214px no-repeat !important;
+    text-shadow:1px 1px 0 #86bfcc !important;
+}
+
+.unisubs-green-button {
+    -moz-border-radius:3px !important;
+    -webkit-border-radius:3px !important;
+    border-radius:3px !important;
+    float:left !important;
+    font-weight:bold !important;
+    text-decoration:none !important;
+    text-transform:uppercase !important;
+}
+
+.unisubs-green-button:hover {
+    -moz-box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #daea62 !important;
+    -webkit-box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #daea62 !important;
+    background:-webkit-gradient(linear, left top, left bottom, from(#d8f136), to(#9c0)) !important;
+    background:-moz-linear-gradient(top, #d8f136, #9c0) !important;
+    box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #daea62 !important;
+    color:#485a0c !important;
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#d8f136', endColorstr='#99cc00') !important;
+    nowhitespace:afterproperty;
+    nowhitespace:afterproperty;
+    nowhitespace:afterproperty;
+    text-shadow:0 1px 0 #ebff6b !important;
+}
+
+.unisubs-green-button.unisubs-big {
+    font-size:14px !important;
+    padding:8px 16px !important;
+}
+
+.unisubs-green-button {
+    -moz-box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #d1dd6f !important;
+    -webkit-box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #d1dd6f !important;
+    background:-webkit-gradient(linear, left top, left bottom, from(#b2c800), to(#85ac00)) !important;
+    background:-moz-linear-gradient(top, #b2c800, #85ac00) !important;
+    border:1px solid #728e00 !important;
+    border-bottom:1px solid #546e00 !important;
+    border-top:1px solid #95ac00 !important;
+    box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #d1dd6f !important;
+    color:#485a0c !important;
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#b2c800', endColorstr='#85ac00') !important;
+    nowhitespace:afterproperty;
+    nowhitespace:afterproperty;
+    nowhitespace:afterproperty;
+    text-shadow:0 1px 0 #aed011 !important;
+}
+
+.unisubs-auto {
+    float:left !important;
+    line-height:1.7em !important;
+    margin:0 30px 0 40px !important;
+}
+
+.unisubs-auto .unisubs-enable {
+    background:url("../images/sprite.png") 0 -183px no-repeat !important;
+    float:left !important;
+    line-height:1.7em !important;
+    margin:20px 0 0 0 !important;
+    padding-left:40px !important;
+}
+
+.unisubs-auto a {
+    color:#fff !important;
+}
+
+.unisubs-hide {
+    background:url("../images/sprite.png") 0 -214px no-repeat !important;
+    color:#555 !important;
+    float:right !important;
+    padding-left:15px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-clear {
+    clear:both !important;
+    height:0 !important;
+}
+
+.unisubs-watch {
+    background:url("../images/sprite.png") 0 -328px no-repeat !important;
+    color:#fff !important;
+    display:block !important;
+    margin:20px 0 !important;
+    padding-left:30px !important;
+}
+
+.unisubs-video-decorated {
+    display:block !important;
+    margin-bottom:30px !important;
+}
+
+.unisubs-widget span.unisubs-videoplayer {
+    background-color:black;
+    height:360px;
+    width:480px;
+}
+
+span.unisubs-videoplayer {
+    display:block !important;
+}
+
+span.unisubs-videoplayer object, span.unisubs-videoplayer embed {
+    min-height:1px !important;
+    min-width:1px !important;
+}
+
+.unisubs-captioningArea {
+    background:#fff url("../images/big_grad.png") 0 bottom repeat-x !important;
+    position:relative !important;
+}
+
+.unisubs-modal-widget .unisubs-videoDiv video, .unisubs-modal-widget .unisubs-videoDiv video *, .unisubs-modal-widget .unisubs-videoDiv object, .unisubs-modal-widget .unisubs-videoDiv embed {
+    margin:0;
+    display:block !important;
+    width:440px !important;
+}
+
+.unisubs-widget video {
+    display:block !important;
+}
+
+ul.unisubs-titlesList {
+    height:336px !important;
+    margin:0 !important;
+    overflow:auto !important;
+    padding:0 !important;
+    position:relative !important;
+}
+
+ul.isRTL textarea.unisubs-translateField {
+    direction:rtl;
+}
+
+ul.unisubs-titlesList li.active {
+    background:#caf3ff !important;
+}
+
+ul.unisubs-titlesList li {
+    border-bottom:1px solid #ccc !important;
+    font-weight:bold !important;
+    list-style:none !important;
+    margin:0 !important;
+    min-height:23px !important;
+    padding:5px 10px !important;
+    position:relative !important;
+}
+
+ul.unisubs-titlesList li input.unisubs-translateInput {
+    border-bottom:1px solid #eee !important;
+    border-left:1px solid #ddd !important;
+    border-right:1px solid #ddd !important;
+    border-top:1px solid #999 !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    line-height:1.4em !important;
+    margin:7px 0 0 0 !important;
+    padding:5px !important;
+    width:95% !important;
+}
+
+ul.unisubs-titlesList li textarea {
+    border-bottom:1px solid #eee !important;
+    border-left:1px solid #ddd !important;
+    border-right:1px solid #ddd !important;
+    border-top:1px solid #999 !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    line-height:1.4em !important;
+    padding:5px !important;
+    width:350px !important;
+}
+
+ul.unisubs-titlesList li:hover {
+    cursor:default !important;
+}
+
+ul.unisubs-titlesList li:hover .unisubs-timestamp {
+    border:1px solid #ddd !important;
+    padding-right:9px !important;
+    padding-top:0 !important;
+}
+
+.unisubs-sub-delete, .unisubs-sub-insert, .unisubs-sub-paragraph {
+    cursor:pointer !important;
+    cursor:hand !important;
+    position:absolute !important;
+    top:0 !important;
+}
+
+div.skip-guidelines {
+    text-align:center;
+}
+
+div.skip-guidelines span {
+    margin-right:8px !important;
+}
+
+.unisubs-sub-paragraph {
+    background:url("../images/paragraph-marker.png") 0 0 no-repeat !important;
+    height:28px !important;
+    left:8px !important;
+    top:-5px !important;
+    width:30px !important;
+}
+
+.unisubs-sub-paragraph.selected {
+    background:url("../images/paragraph-marker.png") 0 -57px no-repeat !important;
+}
+
+.unisubs-sub-insert:active {
+    background:url("../images/add-title.png") 0 0 no-repeat !important;
+}
+
+.unisubs-sub-delete:active {
+    background:url("../images/remove-title.png") 0 -41px no-repeat !important;
+}
+
+.unisubs-sub-insert:hover {
+    background:url("../images/add-title.png") 0 -29px no-repeat !important;
+}
+
+.unisubs-sub-delete:hover {
+    background:url("../images/remove-title.png") 0 -21px no-repeat !important;
+}
+
+.unisubs-sub-delete {
+    background:url("../images/remove-title.png") 0 0 no-repeat !important;
+    height:18px !important;
+    right:3px !important;
+    top:3px !important;
+    width:18px !important;
+}
+
+.unisubs-sub-insert {
+    background:url("../images/add-title.png") 0 0 no-repeat !important;
+    height:28px !important;
+    left:180px !important;
+    top:-5px !important;
+    width:30px !important;
+}
+
+li.unisubs-append-sub-button {
+    height:150px !important;
+}
+
+.unisubs-modal-widget-transcribe .unisubs-append-sub-link {
+    display:none !important;
+}
+
+ul.unisubs-titlesList.taller {
+    height:210px !important;
+}
+
+ul.unisubs-titlesList.sync {
+    border-bottom:1px solid #ccc !important;
+    height:200px !important;
+    margin:0 !important;
+    overflow:auto !important;
+    padding:0 !important;
+}
+
+.unisubs-widget a:active, .unisubs-widget a:focus, .unisubs-widget a:hover {
+    outline:none !important;
+}
+
+.unisubs-widget li.selected {
+    background:#0090cb !important;
+}
+
+.unisubs-modal-dialog-bg {
+    background-color:#666 !important;
+    left:0 !important;
+    position:absolute !important;
+    top:0 !important;
+}
+
+.unisubs-modal-widget-bg {
+    background:#000 !important;
+    left:0 !important;
+    position:absolute !important;
+    top:0 !important;
+    z-index:2147483630 !important;
+}
+
+.unisubs-forkdialog-bg {
+    background:#FFF !important;
+    left:0 !important;
+    position:absolute !important;
+    top:0 !important;
+    z-index:2147483631 !important;
+}
+
+.unisubs-modal-lang-bg, .unisubs-modal-completed-bg {
+    background:#FFF !important;
+    left:0 !important;
+    position:absolute !important;
+    top:0 !important;
+    z-index:2147483631 !important;
+}
+
+.unisubs-modal-dialog {
+    background-color:#bcf !important;
+    border:1px solid #000 !important;
+    color:#000 !important;
+    font-family:arial, sans-serif !important;
+    outline:none !important;
+    padding:5px !important;
+    position:absolute !important;
+    width:475px !important;
+}
+
+.unisubs-modal-dialog-title {
+    background-color:#ebeff9 !important;
+    color:#000 !important;
+    cursor:pointer !important;
+    cursor:hand !important;
+    font-size:16px !important;
+    font-weight:bold !important;
+    padding:10px 15px !important;
+    position:relative !important;
+    vertical-align:middle !important;
+}
+
+.unisubs-modal-dialog a, .unisubs-modal-dialog a:link, .unisubs-modal-dialog a:visited {
+    color:#06c !important;
+    cursor:pointer !important;
+}
+
+.unisubs-modal-dialog-title-close {
+    background:url("../images/dialog_close_box.gif") no-repeat center !important;
+    cursor:default !important;
+    height:16px !important;
+    position:absolute !important;
+    right:15px !important;
+    top:10px !important;
+    width:15px !important;
+}
+
+.unisubs-modal-dialog-content {
+    background-color:#fff !important;
+    font-size:86% !important;
+    padding:15px !important;
+}
+
+.unisubs-modal-dialog-buttons {
+    background-color:#fff !important;
+    padding:0 15px 15px !important;
+}
+
+.goog-buttonset-default {
+    font-weight:bold !important;
+}
+
+.unisubs-label-input-label {
+    color:#666 !important;
+}
+
+.unisubs-activecaption-input-label {
+    background-color:#fbb !important;
+}
+
+span.unisubs-captionSpan {
+    -moz-border-radius:5px !important;
+    -webkit-border-radius:5px !important;
+    background:url("../images/caption_bg.png") !important;
+    color:white !important;
+    display:block !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:14px !important;
+    font-weight:normal !important;
+    letter-spacing:.06em !important;
+    line-height:1.4em !important;
+    padding:10px 3px !important;
+    position:absolute !important;
+    text-align:center !important;
+    text-shadow:0 2px 1px #000, -1px 3px 1px #000, -2px 2px 1px #000, -2px 1px 1px #000, -2px 0 1px #000, 2px 2px 1px #000, 1px 2px 1px #000, 0px -2px 1px #000, 2px -2px 1px #000, -2px -1px 1px #000, -1px -3px 1px #000, -3px -2px 1px #000 !important;
+}
+
+iframe.unisubs-captionSpanBg {
+    border:none !important;
+    position:absolute !important;
+}
+
+ul.unisubs-titlesList.finished {
+    border-bottom:1px solid #ccc !important;
+    height:206px !important;
+    margin:0 !important;
+    overflow:auto !important;
+    padding:0 !important;
+}
+
+ul.unisubs-titlesList.unisubs-beginTab {
+    background:url("../images/begin_tab.jpg") 0 -74px no-repeat !important;
+    border-bottom:none !important;
+    margin-bottom:0 !important;
+    overflow:hidden !important;
+    text-shadow:#333 1px 1px 1px !important;
+}
+
+ul.unisubs-titlesList.unisubs-beginTab .unisubs-beginTabLi {
+    color:#fff !important;
+    font-size:20px !important;
+    height:102px !important;
+    line-height:1.5em !important;
+    padding:110px 0 !important;
+    text-align:center !important;
+}
+
+.unisubs-titlesList .unisubs-timestamp-time-fixed {
+    font-weight:normal !important;
+    color:#888 !important;
+    padding:0 0 3px 10px !important;
+    font-size:10px !important;
+    float:right !important;
+}
+
+.unisubs-timestamp {
+    .top:-4px !important;
+    color:#aaa !important;
+    font-size:10px !important;
+    font-weight:normal !important;
+    height:17px !important;
+    line-height:18px !important;
+    margin:0 !important;
+    padding:1px 10px 0 5px !important;
+    position:absolute !important;
+    right:50px !important;
+    top:-1px !important;
+    width:75px !important;
+}
+
+.unisubs-timestamp.none {
+    color:#aaa !important;
+}
+
+.unisubs-timestamp-time {
+    float:right !important;
+}
+
+.unisubs-changeTime {
+    height:22px !important;
+    left:-1px !important;
+    margin:0 !important;
+    position:absolute !important;
+    top:0 !important;
+    width:31px !important;
+}
+
+.unisubs-changeTime a.unisubs-down {
+    background:url("../images/time_arrows.png") left -1px no-repeat !important;
+    float:left !important;
+    height:0 !important;
+    overflow:hidden !important;
+}
+
+.unisubs-changeTime a.unisubs-down:active {
+    background:url("../images/time_arrows.png") left -39px no-repeat !important;
+}
+
+.unisubs-changeTime a.unisubs-down:hover {
+    background:url("../images/time_arrows.png") left -20px no-repeat !important;
+}
+
+.unisubs-changeTime a.unisubs-up {
+    background:url("../images/time_arrows.png") right -1px no-repeat !important;
+    border-left:1px solid #aaa !important;
+    float:right !important;
+    height:0 !important;
+    overflow:hidden !important;
+}
+
+.unisubs-changeTime a.unisubs-up:active {
+    background:url("../images/time_arrows.png") right -39px no-repeat !important;
+}
+
+.unisubs-changeTime a.unisubs-up:hover {
+    background:url("../images/time_arrows.png") right -20px no-repeat !important;
+}
+
+.unisubs-changeTime a {
+    display:none !important;
+    float:right !important;
+    height:0 !important;
+    overflow:hidden !important;
+    padding-top:18px !important;
+    width:15px !important;
+}
+
+.unisubs-titlesList li:hover .unisubs-changeTime a {
+    display:block !important;
+}
+
+.unisubs-title {
+    padding:0;
+    cursor:pointer !important;
+    display:block !important;
+    line-height:1.4em !important;
+}
+
+.is-rtl {
+    direction:rtl;
+    text-align:right;
+}
+
+.unisubs-title span.meta, .unisubs-description span.meta {
+    color:#c0c0c0;
+    display:block;
+    text-transform:uppercase;
+    width:100% !important;
+}
+
+li span.unisubs-title textarea {
+    -moz-border-radius:5px !important;
+    -webkit-border-radius:5px !important;
+    background:#fcfcfc url("../images/gradient_light.png") 0 -135px repeat-x !important;
+    padding:3px !important;
+    width:312px !important;
+}
+
+.unisubs-nextStep {
+    background:#fcfcfc url("../images/gradient.png") 0 14px repeat-x !important;
+    float:left !important;
+    padding:10px 0 !important;
+    text-align:right !important;
+    width:100% !important;
+}
+
+.unisubs-nextStep a.unisubs-logoutLink {
+    background:none !important;
+    border:0 !important;
+    color:#aaa !important;
+    float:left !important;
+    margin:0 0 0 10px !important;
+    text-decoration:underline !important;
+}
+
+.unisubs-nextStep a.unisubs-logoutLink:active {
+    background:none !important;
+    border:0 !important;
+    color:#666 !important;
+}
+
+.unisubs-nextStep a.unisubs-logoutLink:hover {
+    background:none !important;
+    border:0 !important;
+    color:#666 !important;
+}
+
+.unisubs-nextStep strong {
+    background:url("../images/right_arrow.png") right 3px no-repeat !important;
+    padding-right:17px !important;
+}
+
+.unisubs-nextStep span {
+    padding-right:15px !important;
+}
+
+.unisubs-nextStep a {
+    -moz-border-radius:5px !important;
+    -webkit-border-radius:5px !important;
+    background:url("next.gif") 0 -4px repeat-x !important;
+    border:1px solid #666 !important;
+    color:#fff !important;
+    float:right !important;
+    line-height:2em !important;
+    margin-right:10px !important;
+    padding:1px 10px 0 !important;
+    text-decoration:none !important;
+}
+
+.unisubs-nextStep a:hover {
+    border:1px solid #333 !important;
+}
+
+.unisubs-nav {
+    clear:both !important;
+    height:2.5em !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.unisubs-nav li.active a {
+    background:#efefef url("../images/gradient.png") 0 -39px repeat-x !important;
+    border-top:1px solid #ededed !important;
+}
+
+.unisubs-nav li {
+    float:left !important;
+    list-style:none !important;
+    margin:0 !important;
+    min-width:33% !important;
+    padding:0 !important;
+}
+
+.unisubs-nav a {
+    background:#efefef url("../images/gradient.png") 0 -9px repeat-x !important;
+    border-top:1px solid #ddd !important;
+    color:#333 !important;
+    display:block !important;
+    float:left !important;
+    font-weight:bold !important;
+    line-height:2.5em !important;
+    margin:0 !important;
+    padding:0 !important;
+    text-align:center !important;
+    text-decoration:none !important;
+    width:100% !important;
+}
+
+.unisubs-nav a:hover {
+    background:#efefef url("../images/gradient.png") 0 -39px repeat-x !important;
+    border-top:1px solid #ededed !important;
+}
+
+.unisubs-navTranscribe a {
+    -moz-border-radius-bottomleft:5px !important;
+    -webkit-border-bottom-left-radius:5px !important;
+}
+
+.unisubs-navSync a {
+    border-left:1px solid #ccc !important;
+}
+
+.unisubs-navReview {
+    width:34% !important;
+}
+
+.unisubs-navReview a {
+    -moz-border-radius-bottomright:5px !important;
+    -webkit-border-bottom-right-radius:5px !important;
+}
+
+.unisubs-navSync a {
+    border-right:1px solid #ccc !important;
+    width:99% !important;
+}
+
+.unisubs-transcribeControls {
+    background:#ddd !important;
+    border-bottom:1px solid #999 !important;
+    border-top:1px solid #eee !important;
+}
+
+.unisubs-transcribeControls textarea.trans {
+    font-size:13px !important;
+    margin:10px !important;
+    padding:5px !important;
+    width:91% !important;
+    min-height:31px !important;
+}
+
+.unisubs-widget li.unisubs-transcribeHelp {
+    background:#eee !important;
+    border-bottom:1px solid #ddd !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.unisubs-widget li.unisubs-transcribeHelp .unisubs-helpInner {
+    -moz-border-radius:5px !important;
+    -webkit-border-radius:5px !important;
+    background:url("../images/blue_grad.gif") 0 0 repeat-x !important;
+    border:1px solid #333 !important;
+    border-bottom:1px solid #fff !important;
+    border-left:1px solid #1d8bb0 !important;
+    border-right:1px solid #1d8bb0 !important;
+    margin:10px !important;
+    padding:0 !important;
+}
+
+.unisubs-widget li.unisubs-transcribeHelp:hover {
+    background:#eee !important;
+}
+
+li.unisubs-transcribeHelp p {
+    color:#fff !important;
+    font-size:11px !important;
+    font-weight:bold !important;
+    margin:0 0 0 0 !important;
+    padding:0 25px 5px 15px !important;
+    text-shadow:#6374ab 1px 1px 1px !important;
+}
+
+li.unisubs-transcribeHelp p.unisubs-topP {
+    padding-top:10px !important;
+}
+
+.unisubs-transcribeHelp ol {
+    background:none !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.unisubs-transcribeHelp .unisubs-keys {
+    -moz-border-radius-bottomleft:5px !important;
+    -moz-border-radius-topleft:5px !important;
+    -webkit-border-bottom-left-radius:5px !important;
+    -webkit-border-top-left-radius:5px !important;
+    background:url("../images/keys.png") 0 0 repeat-x !important;
+    background:url("../images/blue_grad.gif") 0 0 repeat-x !important;
+    border:1px solid #333 !important;
+    border-bottom:0 !important;
+    height:127px !important;
+    margin-left:-223px !important;
+    margin-top:-10px !important;
+    padding:15px 5px !important;
+    position:fixed !important;
+    width:100% !important;
+    width:200px !important;
+}
+
+.unisubs-transcribeHelp .unisubs-keys span.unisubs-back {
+    background:url("../images/keys_buttons.png") 10px -97px no-repeat !important;
+    float:left !important;
+    font-size:10px !important;
+    font-weight:bold !important;
+    padding:5px 5px 5px 50px !important;
+}
+
+.unisubs-transcribeHelp .unisubs-keys span.unisubs-tab {
+    background:url("../images/keys_buttons.png") 10px -48px no-repeat !important;
+    float:left !important;
+    font-size:10px !important;
+    font-weight:bold !important;
+    padding:5px 5px 5px 50px !important;
+}
+
+.unisubs-transcribeHelp .unisubs-keys span {
+    color:#fff !important;
+    float:left !important;
+    font-size:10px !important;
+    font-weight:bold !important;
+    margin-bottom:5px !important;
+    padding:5px 5px 5px 15px !important;
+    text-shadow:#6374ab 1px 1px 1px !important;
+}
+
+.unisubs-transcribeHelp .unisubs-keys h3 {
+    color:#fff !important;
+    margin:0 0 10px !important;
+    padding:0 0 0 10px !important;
+}
+
+.unisubs-transcribeHelp .unisubs-keys a {
+    bottom:10px !important;
+    color:#fff !important;
+    margin:0 !important;
+    padding:0 0 0 10px !important;
+    position:absolute !important;
+    right:10px !important;
+}
+
+li.unisubs-transcribeHelp span.unisubs-space_bar {
+    background:url("../images/keys_buttons.png") 10px 1px no-repeat !important;
+    padding:6px 0 5px 100px !important;
+}
+
+li.unisubs-transcribeHelp ol li {
+    background:none !important;
+    border:none !important;
+    font-size:13px !important;
+    font-weight:bold !important;
+    line-height:1.4em !important;
+    margin:0 !important;
+    padding:3px !important;
+}
+
+.unisubs-tips p {
+    font-size:11px !important;
+    margin:0 !important;
+    padding:0 0 4px !important;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .unisubs-navSync {
+    border-left:1px solid #ccc !important;
+    border-right:1px solid #ccc !important;
+}
+
+.unisubs-navSync a {
+    border-left:none !important;
+    width:100% !important;
+}
+
+.unisubs-navReview a {
+    border-left:none !important;
+}
+
+}.unisubs-langmenu {
+    -moz-border-radius-bottomleft:5px !important;
+    -moz-border-radius-bottomright:5px !important;
+    -webkit-border-bottom-left-radius:5px !important;
+    -webkit-border-bottom-rught-radius:5px !important;
+    background-color:#fff !important;
+    border-color:#ccc #666666 #666 #CCCCCC !important;
+    border-style:solid !important;
+    border-top:none !important;
+    border-width:1px !important;
+    cursor:default !important;
+    margin:0 !important;
+    outline-color:-moz-use-text-color !important;
+    outline-style:none !important;
+    outline-width:medium !important;
+    padding:px 0 !important;
+    position:absolute !important;
+    z-index:2147483631 !important;
+}
+
+.unisubs-langmenuitem {
+    font-size:11px !important;
+    margin:0 !important;
+    padding:4px 7px !important;
+}
+
+.unisubs-langmenuitem-highlight {
+    background-color:#333 !important;
+    color:white !important;
+    cursor:pointer !important;
+}
+
+.unisubs-langmenuitem-highlight .unisubs-langmenuitem-content {
+    color:white !important;
+}
+
+.unisubs-langmenusep {
+    border-top:1px solid #666 !important;
+    margin:0 0 !important;
+    padding:0 !important;
+}
+
+.unisubs-embed {
+    position:relative !important;
+}
+
+.unisubs-embed input {
+    font-size:11px !important;
+    height:11px !important;
+    overflow:hidden !important;
+    padding:5px !important;
+    width:205px !important;
+}
+
+embed#clippy {
+    left:230px !important;
+    position:absolute !important;
+    top:5px !important;
+}
+
+.unisubs-share {
+    -moz-border-radius:4px !important;
+    -webkit-border-radius:4px !important;
+    background:#e1eff4 !important;
+    padding:20px 20px 30px !important;
+    position:relative !important;
+}
+
+.unisubs-share h3 {
+    margin:15px 0 5px 0 !important;
+}
+
+.unisubs-share ul {
+    margin:0 0 0 0 !important;
+    padding:0 !important;
+}
+
+.unisubs-share ul li {
+    list-style:none !important;
+    margin-bottom:5px;
+}
+
+.unisubs-share ul li a {
+    color:#333 !important;
+    font-weight:bold !important;
+    line-height:1.8em !important;
+    list-style:none !important;
+    margin-bottom:5px;
+    display:block !important;
+    padding:0 !important;
+}
+
+.unisubs-share h2 {
+    margin:0 !important;
+}
+
+.unisubs-permalink {
+    color:#777 !important;
+}
+
+.unisubs-blueTriangle {
+    left:-8px !important;
+    position:absolute !important;
+    top:18px !important;
+}
+
+.unisubs-twitter-share {
+    background:url("../images/share_icons.png") 0 -37px no-repeat !important;
+    padding:0 0 0 28px !important;
+    text-decoration:underline !important;
+}
+
+.unisubs-facebook {
+    background:url("../images/share_icons.png") 0 0 no-repeat !important;
+    padding:0 0 0 28px !important;
+    text-decoration:underline !important;
+}
+
+.unisubs-friends {
+    background:url("../images/share_icons.png") 0 -73px no-repeat !important;
+    padding:0 0 0 28px !important;
+    text-decoration:underline !important;
+}
+
+.unisubs-facebook-like {
+    margin:-5px 0 -5px 0 !important;
+}
+
+.unisubs-translating {
+    -moz-border-radius:4px !important;
+    -webkit-border-radius:4px !important;
+    background:#444 url("../images/big_grad.png") right bottom repeat-x !important;
+    border-bottom:1px solid #555 !important;
+    border-left:1px solid #555 !important;
+    border-right:1px solid #555 !important;
+    border-top:1px solid #444 !important;
+    clear:both !important;
+    color:#fff !important;
+    height:110px !important;
+    margin:30px !important;
+    padding:5px !important;
+    padding:30px !important;
+    width:720px !important;
+}
+
+.unisubs-translating .unisubs-buttons {
+    float:right !important;
+    width:240px !important;
+}
+
+.unisubs-translating .unisubs-buttons .unisubs-done {
+    margin:0 0 20px !important;
+    width:230px !important;
+}
+
+.unisubs-translating .unisubs-done {
+    margin:0 0 35px !important;
+}
+
+.unisubs-translating p {
+    float:left !important;
+    font-size:13px !important;
+    line-height:1.6em !important;
+    margin:3px 0 20px !important;
+    width:460px !important;
+}
+
+.unisubs-autopause {
+    font-size:16px !important;
+    line-height:16px !important;
+    margin:10px 0 0 95px !important;
+}
+
+.goog-checkbox {
+    border:1px solid #1c5180 !important;
+    cursor:pointer !important;
+    display:-moz-inline-box !important;
+    display:inline-block !important;
+    font-size:1px !important;
+    height:11px !important;
+    margin:0 4px 0 1px !important;
+    nowhitespace:afterproperty;
+    vertical-align:text-bottom !important;
+    width:11px !important;
+}
+
+.goog-checkbox-checked {
+    background:#fff url('../images/check-sprite.gif') no-repeat 2px center !important;
+}
+
+.goog-checkbox-undetermined {
+    background:#bbb url('../images/check-sprite.gif') no-repeat 2px center !important;
+}
+
+.goog-checkbox-unchecked {
+    background:#fff !important;
+}
+
+.goog-checkbox-disabled {
+    background-position:-7px !important;
+    border:1px solid lightgray !important;
+    cursor:default !important;
+}
+
+.unisubs-videoHelp video {
+    height:300px !important;
+    margin:30px 0 0 125px !important;
+    width:600px !important;
+}
+
+.unisubs-langmenu {
+    width:110px !important;
+}
+
+.unisubs-langmenuitem-content, .unisubs-langmenuitem-content a {
+    color:#333 !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    text-decoration:none !important;
+}
+
+.unisubs-videoControls {
+    background:#000 url("../images/gradient.png") 0 -20px repeat-x !important;
+    border-bottom:1px solid #000 !important;
+    height:30px !important;
+    width:100% !important;
+    width:400px !important;
+}
+
+.unisubs-timespan {
+    color:#fff !important;
+    float:left !important;
+    font-size:11px !important;
+    font-weight:bold !important;
+    padding:7px 0 0 !important;
+}
+
+.unisubs-timespan .unisubs-timeElapsed {
+    float:left !important;
+    font-size:11px !important;
+    padding-right:1px !important;
+}
+
+.unisubs-playPause {
+    float:left !important;
+    margin-right:8px !important;
+    padding:9px 10px 8px 11px !important;
+}
+
+.unisubs-playPause:hover {
+    background:url("../images/gradient.png") 0 0 repeat-x !important;
+    cursor:pointer !important;
+}
+
+.unisubs-playPause span {
+    float:left !important;
+    overflow:hidden !important;
+    padding-top:13px !important;
+    width:10px !important;
+}
+
+.unisubs-playPause.play span {
+    background:url("../images/play_pause.png") 0 0 no-repeat !important;
+}
+
+.unisubs-playPause.pause span {
+    background:url("../images/play_pause.png") 0 -32px no-repeat !important;
+}
+
+.unisubs-volume {
+    float:right !important;
+    height:30px !important;
+    position:relative !important;
+    width:31px !important;
+}
+
+.unisubs-volume .unisubs-volume-container {
+    -moz-border-radius-topleft:3px !important;
+    -moz-border-radius-topright:3px !important;
+    -webkit-border-top-left-radius:3px !important;
+    -webkit-border-top-right-radius:3px !important;
+    background:#ededed url("../images/gradient.png") left 30px repeat-x !important;
+    bottom:29px !important;
+    height:0;
+    overflow:hidden !important;
+    position:absolute !important;
+    width:31px !important;
+    z-index:10 !important;
+}
+
+.unisubs-volume:hover {
+    background:url("../images/gradient.png") 0 0 repeat-x !important;
+    cursor:pointer !important;
+}
+
+.unisubs-volume span {
+    background:url("../images/play_pause.png") 9px -55px no-repeat !important;
+    float:right !important;
+    height:30px !important;
+    width:31px !important;
+}
+
+.unisubs-volume-slider {
+    -moz-border-radius:10px !important;
+    -moz-outline:none !important;
+    -webkit-border-radius:0 !important;
+    background:#333 !important;
+    border:1px solid !important;
+    height:75px !important;
+    left:10px !important;
+    outline:none !important;
+    position:absolute !important;
+    top:12px !important;
+    width:10px !important;
+}
+
+.unisubs-volume-scrobbler {
+    -moz-border-radius:10px !important;
+    -moz-outline:none !important;
+    -webkit-border-radius:10px !important;
+    background:#fff url("../images/gradient.png") 0 1px repeat-x !important;
+    border:1px solid red !important;
+    border:1px solid !important;
+    border-bottom:1px solid #333 !important;
+    border-left:1px solid #333 !important;
+    border-right:1px solid #333 !important;
+    border-top:1px solid #666 !important;
+    height:0 !important;
+    left:-3px !important;
+    outline:none !important;
+    padding:7px !important;
+    position:absolute !important;
+    top:0 !important;
+    width:0 !important;
+}
+
+.unisubs-scrobbler {
+    -moz-border-radius:10px !important;
+    -moz-outline:none !important;
+    -webkit-border-radius:10px !important;
+    background:#fff url("../images/gradient.png") 0 -6px repeat-x !important;
+    border:1px solid !important;
+    border-bottom:1px solid #000 !important;
+    border-left:1px solid #222 !important;
+    border-right:1px solid #222 !important;
+    border-top:1px solid #333 !important;
+    display:none !important;
+    height:20px !important;
+    left:-10px !important;
+    margin:0 0 0 0 !important;
+    outline:none !important;
+    position:absolute !important;
+    top:0 !important;
+    width:4px !important;
+}
+
+.unisubs-scrobbler:hover {
+    background:#fff url("../images/gradient.png") 0 31px repeat-x !important;
+    border-bottom:1px solid #000 !important;
+    border-left:1px solid #333 !important;
+    border-right:1px solid #333 !important;
+    border-top:1px solid #666 !important;
+}
+
+.unisubs-scrobbler span {
+    background:url("../images/scrob.png") 0 0 repeat-x !important;
+    display:none !important;
+    height:20px !important;
+    left:-8px !important;
+    position:absolute !important;
+    top:-8px !important;
+    width:20px !important;
+}
+
+.unisubs-progress-slider {
+    -moz-outline:none !important;
+    height:10px !important;
+    outline:none !important;
+    position:absolute !important;
+    width:250px !important;
+}
+
+.unisubs-progress {
+    -moz-border-radius:10px !important;
+    -moz-outline:none !important;
+    -webkit-border-radius:10px !important;
+    background:#fff url("../images/gradient.png") 0 -109px repeat-x !important;
+    border:1px solid #444 !important;
+    border-bottom:1px solid #555 !important;
+    border-top:1px solid #252525 !important;
+    float:left !important;
+    height:10px !important;
+    margin:9px !important;
+    outline:none !important;
+    position:relative !important;
+    width:250px !important;
+}
+
+.unisubs-progress .unisubs-buffered-container {
+    -moz-outline:none !important;
+    float:left !important;
+    height:10px !important;
+    outline:none !important;
+    position:relative !important;
+    width:250px !important;
+}
+
+.unisubs-progress .unisubs-buffered {
+    -moz-border-radius:5px !important;
+    -moz-outline:none !important;
+    -webkit-border-radius:5px !important;
+    background:#222 url("../images/gradient.png") 0 40px !important;
+    height:10px !important;
+    outline:none !important;
+    position:absolute !important;
+}
+
+.unisubs-progress .unisubs-played {
+    -moz-border-radius-bottomleft:10px !important;
+    -moz-border-radius-topleft:10px !important;
+    -moz-outline:none !important;
+    -webkit-border-radius-bottom-left:10px !important;
+    -webkit-border-radius-top-left:10px !important;
+    background:#a6dd13 url("../images/gradient.png") 0 0 repeat-x !important;
+    height:11px !important;
+    left:-1px !important;
+    outline:none !important;
+    position:absolute !important;
+    width:0 !important;
+}
+
+.unisubs-timeline {
+    background:#000 url("../images/gradient.png") 0 -47px repeat-x !important;
+    border-bottom:1px solid #000 !important;
+    height:80px !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    padding:0 0 3px !important;
+    position:relative !important;
+    width:400px !important;
+}
+
+.unisubs-timeline ul.unisubs-timeline-titles li.selected a {
+    color:#fff !important;
+}
+
+.unisubs-timeline ul.unisubs-timeline-titles li a {
+    color:#333 !important;
+    cursor:default !important;
+    display:block !important;
+    padding:15px 20px 10px 20px !important;
+    position:relative !important;
+    text-decoration:none !important;
+}
+
+.unisubs-timeline ul.unisubs-timeline-time {
+    left:0 !important;
+    width:975px !important;
+}
+
+.unisubs-timeline ul.unisubs-timeline-time li {
+    background:url("../images/ticks.gif") 15px 8px no-repeat !important;
+    color:#fff !important;
+    cursor:pointer;
+    display:block !important;
+    float:left !important;
+    font-size:10px !important;
+    list-style:none !important;
+    margin:0 !important;
+    padding:3px 0 3px 0 !important;
+    width:65px !important;
+}
+
+.unisubs-timeline ul.unisubs-timeline-time li span {
+    display:block !important;
+    text-align:center !important;
+    width:15px !important;
+}
+
+.unisubs-timeline .unisubs-subpanel div {
+    background-color:#fdd !important;
+    height:2px !important;
+    position:absolute !important;
+    top:3px !important;
+}
+
+.unisubs-timeline .marker {
+    background:url("../images/marker.png") 0 0 no-repeat !important;
+    height:100px !important;
+    left:50% !important;
+    position:absolute !important;
+    top:0 !important;
+    width:13px !important;
+}
+
+.unisubs-timeline .top {
+    background:#000 !important;
+    height:22px !important;
+}
+
+.unisubs-timeline ul {
+    line-height:16px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.unisubs-timeline-inner, .unisubs-timeline-timerow, .unisubs-timeline-time, .unisubs-timeline-subs, .unisubs-timeline-sub {
+    position:absolute !important;
+}
+
+.unisubs-timeline-sub span.unisubs-rightGrabber {
+    margin:-7px -3px 0 0 !important;
+    right:0 !important;
+}
+
+.unisubs-timeline-sub span.unisubs-leftGrabber {
+    left:0 !important;
+    margin:-7px 0 0 -3px !important;
+}
+
+.unisubs-timeline-sub .unisubs-grabber-over {
+    background:#fefefe !important;
+    display:block !important;
+}
+
+.unisubs-timeline-sub span.unisubs-grabber {
+    cursor:-moz-grab !important;
+}
+
+.unisubs-timeline-sub span.unisubs-grabber:active {
+    cursor:-moz-grabbing !important;
+}
+
+.unisubs-timeline-sub .unisubs-subtext {
+    margin:17px 10px 0 10px !important;
+    overflow:hidden !important;
+    white-space:nowrap !important;
+}
+
+.unisubs-timeline-sub .unisubs-grabber {
+    -moz-border-radius:3px !important;
+    -moz-box-shadow:0 1px 2px rgba(0, 0, 0, .01) !important;
+    -webkit-border-radius:3px !important;
+    -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, .01) !important;
+    background:#fefefe !important;
+    border:1px solid #fff !important;
+    display:none;
+    height:30px !important;
+    position:absolute !important;
+    top:13px !important;
+    width:13px !important;
+}
+
+.unisubs-timeline-sub .unisubs-grabber strong {
+    background:url("../images/arrows.gif") 2px 0 no-repeat !important;
+    display:block !important;
+    height:17px !important;
+    position:absolute !important;
+    top:12px !important;
+    width:13px !important;
+}
+
+.unisubs-timeline-inner {
+    top:0 !important;
+}
+
+.unisubs-timeline-subs {
+    height:30px !important;
+    top:22px !important;
+}
+
+.unisubs-timeline-sub {
+    -moz-border-radius:3px !important;
+    -moz-box-shadow:0 1px 3px rgba(0, 0, 0, .01) !important;
+    -webkit-border-radius:3px !important;
+    -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, .01) !important;
+    background:#fefefe url("../images/gradient.png") 0 21px repeat-x !important;
+    cursor:default !important;
+    height:46px !important;
+    top:7px !important;
+    border-radius:3px !important;
+    box-shadow:0 1px 3px rgba(0, 0, 0, .01) !important;
+}
+
+.unisubs-timeline-sub-unsynced {
+    background:#777 !important;
+    color:#aaa !important;
+}
+
+.unisubs-timeline-sub-selected {
+    background:#46d8ff url("../images/gradient.png") 0 0 repeat-x !important;
+}
+
+.unisubs-titlesList-sub-selected {
+    background:#46d8ff url("../images/gradient.png") 0 0 repeat-x !important;
+    border-bottom:1px solid #333 !important;
+}
+
+.unisubs-timeline-sub-rightbump {
+    -moz-border-radius-bottomright:0 !important;
+    -moz-border-radius-topright:0 !important;
+    -webkit-border-radius-bottom-right:0 !important;
+    -webkit-border-radius-top-right:0 !important;
+}
+
+.unisubs-timeline-sub-leftbump {
+    -moz-border-radius-bottomleft:0 !important;
+    -moz-border-radius-topleft:0 !important;
+    -moz-box-shadow:1px 1px 3px rgba(0, 0, 0, .01) !important;
+    -webkit-border-radius-bottom-left:0 !important;
+    -webkit-border-radius-top-left:0 !important;
+    -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, .01) !important;
+}
+
+.unisubs-modal-login, .unisubs-modal-lang, .unisubs-forkdialog, .unisubs-modal-completed {
+    -moz-border-radius:5px !important;
+    -moz-box-shadow:0 5px 50px rgba(0, 0, 0, .01) !important;
+    -webkit-border-radius:5px !important;
+    -webkit-box-shadow:0 3px 5px rgba(0, 0, 0, .01) !important;
+    border:3px solid !important;
+    font-family:Arial, hhelvetica, sans-serif !important;
+    outline:none !important;
+    position:absolute !important;
+    z-index:2147483633 !important;
+}
+
+.unisubs-modal-lang .unisubs-request-div .warning {
+    color:#c03 !important;
+    font-weight:bold;
+}
+
+.unisubs-modal-lang .unisubs-green-button, .unisubs-forkdialog .unisubs-green-button, .unisubs-modal-completed .unisubs-green-button {
+    float:right !important;
+    margin-right:20px !important;
+}
+
+.unisubs-modal-login .unisubs-facebook {
+    background:url("../images/social_login.png") -102px 0 no-repeat !important;
+    height:0 !important;
+    margin-left:10px !important;
+    margin-top:4px !important;
+    overflow:hidden !important;
+    padding:34px 0 0 0 !important;
+    width:96px !important;
+}
+
+.unisubs-modal-login .unisubs-twitter {
+    background:url("../images/social_login.png") 0 0 no-repeat !important;
+    height:0 !important;
+    margin-top:4px !important;
+    overflow:hidden !important;
+    padding-top:34px !important;
+    width:96px !important;
+}
+
+.unisubs-modal-login .unisubs-google {
+    background:url("../images/social_login.png") -204px 0 no-repeat !important;
+    height:0 !important;
+    margin-left:10px !important;
+    margin-top:4px !important;
+    overflow:hidden !important;
+    padding-top:34px !important;
+    width:96px !important;
+}
+
+.unisubs-modal-login .unisubs-openid {
+    background:url("../images/social_login.png") -306px 0 no-repeat !important;
+    height:0 !important;
+    margin-left:10px !important;
+    margin-top:4px !important;
+    overflow:hidden !important;
+    padding-top:34px !important;
+    width:96px !important;
+}
+
+.unisubs-modal-lang p.warning {
+    max-width:300px;
+}
+
+.unisubs-modal-lang h3, .unisubs-forkdialog h3, .unisubs-modal-completed h3 {
+    -moz-border-radius-topleft:5px !important;
+    -moz-border-radius-topright:5px !important;
+    background:url("../images/gradient.png") repeat-x scroll 0 0 #fff !important;
+    border-bottom:1 px solid #FFF !important;
+    color:#777 !important;
+    font-size:14px !important;
+    margin:0 !important;
+    padding:15px !important;
+    padding-bottom:20px !important;
+    text-shadow:1px 1px 1px #FFF !important;
+}
+
+.unisubs-modal-lang p, .unisubs-forkdialog p, .unisubs-modal-completed p {
+    color:#666 !important;
+    font-size:15px !important;
+    line-height:15px !important;
+    margin:0 !important;
+    min-width:300px !important;
+    padding:12px !important;
+}
+
+.unisubs-forkdialog li {
+    color:#666 !important;
+    font-size:15px !important;
+    line-height:15px !important;
+    padding:6px 12px 6px 0 !important;
+}
+
+.unisubs-modal-lang div p.notice {
+    color:#999 !important;
+    font-size:12px !important;
+    padding-top:0 !important;
+    margin-top:-7px !important;
+}
+
+.unisubs-modal-lang p div, .unisubs-modal-completed p div {
+    margin-bottom:8px !important;
+}
+
+.unisubs-forkdialog {
+    width:400px !important;
+}
+
+.unisubs-modal-login {
+    background:#fff url("../images/uni-logo.png") center 165px no-repeat !important;
+    height:200px !important;
+    padding:15px 0 !important;
+    width:725px !important;
+}
+
+.unisubs-modal-login-bg {
+    left:0 !important;
+    position:absolute !important;
+    top:0 !important;
+    z-index:2147483632 !important;
+}
+
+.unisubs-modal-lang-content {
+    max-width:400px;
+}
+
+.unisubs-modal-lang, .unisubs-forkdialog, .unisubs-modal-completed {
+    background-color:#fff !important;
+}
+
+.unisubs-modal-login-content h4 {
+    font-size:16px !important;
+    text-align:center !important;
+}
+
+.unisubs-modal-login-content .unisubs-small {
+    clear:both !important;
+    padding-top:20px !important;
+}
+
+.unisubs-modal-login-content p {
+    clear:both !important;
+    font-size:12px !important;
+    font-style:italic !important;
+    text-align:center !important;
+}
+
+.unisubs-modal-login-content a {
+    color:#333 !important;
+    float:left !important;
+    font-weight:bold !important;
+    text-decoration:none !important;
+}
+
+.unisubs-modal-login-content a span {
+    display:block !important;
+    float:left !important;
+    padding:10px 17px !important;
+}
+
+.unisubs-modal-login-content a.unisubs-log {
+    -moz-border-radius:5px !important;
+    -moz-box-shadow:0 1px 0 rgba(0, 0, 0, .01) !important;
+    -webkit-border-radius:5px !important;
+    -webkit-box-shadow:0 3px 3px rgba(0, 0, 0, .01) !important;
+    background:#fff url("../images/gradient.png") right 1px repeat-x !important;
+    border-bottom:1px solid #888 !important;
+    border-left:1px solid #bbb !important;
+    border-right:1px solid #bbb !important;
+    border-top:1px solid #ddd !important;
+    margin:0 16px 0 30px !important;
+    text-shadow:#fff 1px 1px 1px !important;
+}
+
+a.unisubs-twitter span {
+    background:url("../images/social_login.png") -120px 0 no-repeat !important;
+    padding-left:35px !important;
+}
+
+.unisubs-modal-login-content a.unisubs-log:hover {
+    -moz-box-shadow:0 0 0 rgba(0, 0, 0, .01) !important;
+    background:#fff url("../images/gradient.png") right -101px repeat-x !important;
+    border-bottom:1px solid #ddd !important;
+    border-left:1px solid #888 !important;
+    border-right:1px solid #888 !important;
+    border-top:1px solid #666 !important;
+}
+
+a.unisubs-openid span {
+    margin-right:0 !important;
+}
+
+.big_spinner {
+    display:block !important;
+    margin:20px auto 0 !important;
+    width:113px !important;
+}
+
+.unisubs-warning {
+    background-color:white !important;
+    border:5px solid red !important;
+    font-size:1.2em !important;
+    font-weight:bold !important;
+    line-height:150% !important;
+    max-width:350px !important;
+    padding:15px !important;
+    position:absolute !important;
+    z-index:2147483639 !important;
+}
+
+.unisubs-warning .unisubs-label {
+    margin-bottom:15px !important;
+}
+
+.unisubs-warning .unisubs-link {
+    margin-right:10px !important;
+}
+
+.unisubs-howtopanel, .unisubs-guidelinespanel {
+    background-color:black !important;
+    color:white !important;
+    height:800px !important;
+    left:0 !important;
+    padding:15px !important;
+    position:absolute !important;
+    top:0 !important;
+    width:842px !important;
+    z-index:1 !important;
+}
+
+.unisubs-howtopanel div {
+    text-align:center !important;
+}
+
+.unisubs-guidelinespanel .unisubs-done, .unisubs-howtopanel .unisubs-done {
+    display:block !important;
+    float:none !important;
+    margin:10px auto !important;
+    width:180px !important;
+}
+
+.unisubs-guidelinespanel, .unisubs-guidelinespanel h2, .unisubs-howtopanel, .unisubs-howtopanel h2, .unisubs-howtopanel .unisubs-videoDiv {
+    text-shadow:0 0 0 !important;
+}
+
+.unisubs-guidelinespanel h2 {
+    text-align:center;
+}
+
+.unisubs-guidelinespanel div {
+    color:#c0c0c0;
+    font:normal 14px/18px Helvetica;
+    margin:25px auto;
+    width:600px;
+}
+
+.unisubs-guidelinespanel div a {
+    color:#c0c0c0;
+    text-decoration:underline;
+}
+
+.unisubs-howto-videocontainer {
+    margin:36px auto 20px !important;
+    position:relative !important;
+}
+
+.unisubs-howto-image {
+    cursor:pointer !important;
+    cursor:hand !important;
+    left:0 !important;
+    position:absolute !important;
+    top:0 !important;
+}
+
+a.unisubs-smallButton {
+    background:url(../images/small_buttons.png) right 0 no-repeat !important;
+    float:left !important;
+    font-size:12px !important;
+    font-weight:bold !important;
+    padding-right:18px !important;
+    text-decoration:none !important;
+}
+
+a.unisubs-smallButton:active {
+    background:url(../images/small_buttons.png) right -68px no-repeat !important;
+}
+
+a.unisubs-smallButton:active span {
+    background:url(../images/small_buttons.png) left -68px no-repeat !important;
+}
+
+a.unisubs-smallButton:hover {
+    background:url(../images/small_buttons.png) right -34px no-repeat !important;
+}
+
+a.unisubs-smallButton:hover span {
+    background:url(../images/small_buttons.png) left -34px no-repeat !important;
+    text-shadow:0 1px 1px #beec32 !important;
+}
+
+a.unisubs-smallButton span {
+    background:url(../images/small_buttons.png) left 0 no-repeat !important;
+    color:#485c14 !important;
+    float:left !important;
+    padding:8px 0 8px 20px !important;
+    text-shadow:0 1px 1px #abce1d !important;
+    text-transform:uppercase !important;
+}
+
+.unisubs-googleLogin {
+    background:url(../images/social_login.png) -222px 0 no-repeat !important;
+    display:block !important;
+    float:left !important;
+    height:0 !important;
+    overflow:hidden !important;
+    padding-top:33px !important;
+    width:113px !important;
+}
+
+.unisubs-translationResources h3.unisubs-resources {
+    color:#fff !important;
+}
+
+.unisubs-translationResources ul.unisubs-resourceList {
+    color:#fff !important;
+    list-style:disc !important;
+}
+
+.unisubs-translationResources a {
+    text-decoration:none !important;
+}
+
+.unisubs-translationResources a:visited {
+    color:#fff !important;
+}
+
+.unisubs-twitter-share {
+    background:url("../images/share_icons.png") 0 -37px no-repeat !important;
+}
+
+div.unisubs-videoTab-container {
+    height:32px !important;
+}
+
+.unisubs-loginStatus {
+    display:none !important;
+    float:left !important;
+    list-style:none !important;
+    margin:0 !important;
+    padding:5px 8px !important;
+}
+
+.unisubs-loginStatus.notLogged {
+    display:none !important;
+}
+
+div.unisubs-videoTab-static {
+    width:100% !important;
+}
+
+div.unisubs-videoTab-anchoring {
+    position:absolute !important;
+    z-index:2147483622 !important;
+}
+
+.unisubs-videoTab a {
+    background:#333 url("../images/gradient_light.png") 0 0 repeat-x !important;
+    color:#fff !important;
+    display:block !important;
+    float:left !important;
+    font-size:13px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-videoTab a:hover {
+    background:#333 !important;
+}
+
+.unisubs-videoTab a.unisubs-subtitleMeLink {
+    min-width:200px !important;
+}
+
+.unisubs-videoTab a.unisubs-subtitleMeLink .unisubs-tabText {
+    margin-right:10px !important;
+}
+
+.unisubs-videoTab a.unisubs-subtitleMeLink img {
+    background:none !important;
+    border:none !important;
+    float:left !important;
+    height:17px;
+    width:17px !important;
+    margin:7px 7px 0 7px !important;
+    padding:0 !important;
+}
+
+.unisubs-widgetBar {
+    background:#ccc url("../images/gradient_light.png") 0 0 repeat-x !important;
+    color:#000 !important;
+    float:left !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    line-height:16px !important;
+    margin:0 !important;
+    min-width:480px !important;
+}
+
+.unisubs-widgetBar .unisubs-languageTrigger, .unisubs-widgetBar .unisubs-finishTranslation {
+    background:#333 url("../images/gradient_light.png") 0 0 repeat-x !important;
+    color:#fff !important;
+    float:left !important;
+    font-size:13px !important;
+    text-decoration:none !important;
+    width:50% !important;
+}
+
+.unisubs-videoTab a.unisubs-subtitleMeLink {
+    background:#333 url("../images/gradient_light.png") 0 0 repeat-x !important;
+    color:#fff !important;
+    float:left !important;
+    font-size:13px !important;
+    text-decoration:none !important;
+    text-shadow:0 0 0 !important;
+    width:30% !important;
+}
+
+span.unisubs-tabTextchoose {
+    margin-right:10px !important;
+    min-width:160px !important;
+}
+
+span.unisubs-tabTextchoose, span.unisubs-tabText, span.unisubs-tabTextfinish {
+    background:url("../images/white_arrows.png") right -12px no-repeat !important;
+    display:block !important;
+    font-family:Helvetica Arial, sans-serif !important;
+    padding:8px 12px 8px 5px !important;
+}
+
+span.unisubs-tabTextShare {
+    border-left:1px solid #666 !important;
+    display:block !important;
+    font-family:Helvetica Arial, sans-serif !important;
+    padding:8px 12px 8px 9px !important;
+}
+
+span.unisubs-tabTextfinish {
+    background-position:right 10px !important;
+    border-left:1px solid #666 !important;
+    margin-right:10px !important;
+    padding-left:14px !important;
+    padding-right:25px !important;
+}
+
+.unisubs-languageTrigger:hover, .unisubs-finishTranslation:hover {
+    background:#666 url("../images/gradient_light.png") 0 0 repeat-x !important;
+}
+
+div.unisubs-dropdown {
+    -moz-box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #d1dd6f !important;
+    -webkit-box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #d1dd6f !important;
+    background:#000 !important;
+    border:1px solid #000 !important;
+    border-top:0 !important;
+    box-shadow:0 1px 0 #a7c3c9, inset 0 1px 0 #d1dd6f !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+    font-size:12px !important;
+    min-width:500px !important;
+    position:absolute !important;
+    width:480px !important;
+    z-index:500 !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul {
+    background:#fff !important;
+    float:left !important;
+    height:315px !important;
+    margin:0 !important;
+    overflow-y:auto !important;
+    padding:0 !important;
+    width:290px !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li.request {
+    padding:18px !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li {
+    background:0;
+    border-bottom:1px solid #ddd !important;
+    display:list-item !important;
+    line-height:16px !important;
+    list-style:none !important;
+    margin:0 !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li span.unisubs-languageStatus {
+    color:#999 !important;
+    font-size:11px !important;
+    line-height:1em !important;
+    padding-left:5px !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li a.requestsubs {
+    color:inherit !important;
+    display:inline !important;
+    font-size:inherit !important;
+    margin:0 !important;
+    padding:0 !important;
+    text-decoration:underline !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li a.requestsubs:hover {
+    text-decoration:underline !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li:hover {
+    background:url("../images/gradient_light.png") 0 1px repeat-x !important;
+    border-bottom:1px solid #aaa !important;
+    list-style:none !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li a {
+    color:#333 !important;
+    display:block !important;
+    font-size:14px !important;
+    margin:0 !important;
+    padding:10px 0 8px 10px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-dropdown .unisubs-languageList ul li a:hover {
+    text-decoration:none !important;
+}
+
+.unisubs-dropdown .unisubs-languageList li.unisubs-activeLanguage {
+    background:url("../images/gradient_light.png") 0 1px repeat-x !important;
+    border-bottom:1px solid #aaa !important;
+    list-style:none !important;
+}
+
+.unisubs-dropdown .unisubs-languageList li.unisubs-activeLanguage a {
+    background:url("../images/dropdown_icons.png") 250px -231px no-repeat !important;
+    font-weight:bold !important;
+    text-decoration:none !important;
+}
+
+.unisubs-dropdown ul li {
+    background:0;
+}
+
+.unisubs-asterisk {
+    color:red !important;
+    padding-left:3px !important;
+}
+
+.unisubs-dropdown .unisubs-actions {
+    margin-left:290px !important;
+}
+
+.unisubs-dropdown .unisubs-actions h4 {
+    background:#333 !important;
+    color:#999 !important;
+    font-size:11px !important;
+    font-weight:normal !important;
+    letter-spacing:.04em !important;
+    margin:0 !important;
+    padding:5px 4px 5px 20px !important;
+    text-shadow:0 0 0 !important;
+}
+
+.unisubs-dropdown .unisubs-actions h5 {
+    background:url("../images/tiny_logo.png") 18px 8px no-repeat !important;
+    color:#fff !important;
+    height:0 !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    padding-top:35px !important;
+}
+
+.unisubs-dropdown .unisubs-actions ul {
+    margin:0 !important;
+    padding:5px 0 5px !important;
+}
+
+.unisubs-dropdown .unisubs-actions ul li {
+    display:list-item !important;
+    line-height:14px !important;
+    list-style:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    text-shadow:0 0 0 !important;
+}
+
+.unisubs-dropdown .unisubs-actions ul a {
+    border:none !important;
+    color:#fff !important;
+    display:block !important;
+    padding:5px 4px 5px 40px !important;
+    text-decoration:none !important;
+    text-shadow:0 0 0 !important;
+}
+
+.unisubs-dropdown .unisubs-actions .unisubs-moderated p {
+    color:#aaa !important;
+    margin:10px 20px !important;
+}
+
+.unisubs-dropdown .unisubs-actions .unisubs-moderated p a {
+    display:inline !important;
+    padding:0 !important;
+}
+
+.unisubs-dropdown .unisubs-addTranslation {
+    background:url("../images/dropdown_icons.png") 19px 7px no-repeat !important;
+    color:#a9c712 !important;
+}
+
+.unisubs-dropdown .unisubs-addTranslation a {
+    color:#a9c712 !important;
+}
+
+.unisubs-dropdown .unisubs-improveSubtitles {
+    background:url("../images/dropdown_icons.png") 19px -29px no-repeat !important;
+    color:#42bce9 !important;
+}
+
+.unisubs-dropdown .unisubs-improveSubtitles a {
+    color:#42bce9 !important;
+}
+
+.unisubs-dropdown .unisubs-requestSubtitles {
+    color:#42bce9 !important;
+    display:none !important;
+}
+
+.unisubs-dropdown .unisubs-improveSubtitles {
+    background:url("../images/dropdown_icons.png") 19px -29px no-repeat !important;
+    color:#42bce9 !important;
+}
+
+.unisubs-dropdown .unisubs-subtitleHomepage {
+    background:url("../images/dropdown_icons.png") 19px -64px no-repeat !important;
+}
+
+.unisubs-dropdown .unisubs-downloadSubtitles {
+    background:url("../images/dropdown_icons.png") 19px -100px no-repeat !important;
+}
+
+.unisubs-dropdown .unisubs-createAccount {
+    background:url("../images/dropdown_icons.png") 19px -137px no-repeat !important;
+}
+
+.unisubs-dropdown .unisubs-languagePreferences {
+    background:url("../images/dropdown_icons.png") 19px -174px no-repeat !important;
+}
+
+.unisubs-hintTranslate {
+    clear:both !important;
+    color:#999 !important;
+    font-size:11px !important;
+    padding:3px 3px 3px 6px !important;
+}
+
+.unisubs-modal-widget-content.unisubs-modal-widget-finished .unisubs-right {
+    background:none !important;
+}
+
+.unisubs-otherClose {
+    color:#fff !important;
+    float:left !important;
+    font-size:20px !important;
+    line-height:1.3em !important;
+    margin-left:28px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-otherClose span {
+    -moz-border-radius:5px !important;
+    background:url("../images/sprite.png") -2px -258px no-repeat !important;
+    color:#fff !important;
+    float:left !important;
+    font-size:20px !important;
+    height:0 !important;
+    margin-right:10px !important;
+    padding-top:24px !important;
+    text-decoration:none !important;
+    width:24px !important;
+}
+
+.unisubs-goBack {
+    color:#fff !important;
+    float:right !important;
+    font-size:20px !important;
+    line-height:1.3em !important;
+    margin-right:28px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-extension {
+    background-color:#fff !important;
+    border:1px solid #aaa !important;
+    bottom:10px !important;
+    padding:10px !important;
+    position:fixed !important;
+    right:10px !important;
+    z-index:100 !important;
+}
+
+.unisubs-extension-enabled {
+    background-color:#9f9 !important;
+}
+
+.unisubs-standalone_spinner {
+    -moz-border-radius:10px !important;
+    -webkit-border-radius:10px !important;
+    background:#000 url(../images/modal_spinner.gif) center no-repeat !important;
+    border:1px solid !important;
+    border-radius:10px !important;
+    height:110px !important;
+    width:110px !important;
+}
+
+.unisubs-loading-indicator {
+    color:#999 !important;
+    display:none !important;
+}
+
+#video_follow {
+    margin:7px 0 0 0;
+}
+
+.unisubs-request-div {
+    width:400px;
+}
+
+.unisubs-request-div select {
+    margin:10px 10px;
+}
+
+.unisubs-request-addlang {
+    font-size:small;
+    margin:0 10px 20px;
+}
+
+#unisubs-request-track {
+    clear:both;
+    margin:10px;
+}
+
+label[for="unisubs-request-track"] {
+    margin:3px 0 0;
+}
+
+#unisubs-request-description {
+    height:60px;
+    margin:10px 10px;
+    width:370px;
+}
+
+div.unisubs-substreamer {
+    font-family:Helvetica, Arial, sans-serif;
+}
+
+div.unisubs-substreamer div.unisubs-substreamer-controls {
+    background:-moz-linear-gradient(top, hsla(0, 0%, 96%, 1), hsla(0, 0%, 92%, 1) 40%, hsla(0, 0%, 92%, 1)) !important;
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0, hsla(0, 0%, 96%, 1)), color-stop(.4, hsla(0, 0%, 92%, 1)), color-stop(1, hsla(0, 0%, 92%, 1))) !important;
+    background-color:#ebebeb !important;
+    border:1px solid #ddd !important;
+    border-bottom:none !important;
+    font-size:12px !important;
+    height:28px !important;
+    margin-top:-5px !important;
+    padding:5px 0 !important;
+    position:relative !important;
+}
+
+.unisubs-substreamer-controls ul {
+    display:inline !important;
+    list-style:none !important;
+    padding:0 !important;
+}
+
+.unisubs-substreamer-controls ul a#unisubs-logo {
+    border-right:1px solid #ddd !important;
+    margin:-5px 0 -5px 0 !important;
+    padding:11px 12px 8px 12px !important;
+}
+
+.unisubs-substreamer-controls ul a#unisubs-logo:hover {
+    background:hsla(0, 0%, 90%, 1);
+}
+
+.unisubs-substreamer-controls ul a#edit-link {
+    border-left:1px solid #ddd !important;
+    color:#aaa !important;
+    margin:-5px 0 -5px 5px !important;
+    padding:14px 10px 10px 12px !important;
+}
+
+.unisubs-substreamer-controls ul a {
+    float:left !important;
+}
+
+.unisubs-substreamer-controls a {
+    color:#666 !important;
+    display:block !important;
+    padding:7px 5px !important;
+    text-decoration:none !important;
+}
+
+.unisubs-substreamer-controls a.resync {
+    -moz-border-radius:3px !important;
+    -webkit-border-radius:3px !important;
+    background:#454545 url('../images/tiny_icons_light.png') no-repeat 6px center !important;
+    border:1px solid #363636 !important;
+    border-radius:3px !important;
+    box-shadow:0 0 3px #444;
+    color:#dedede !important;
+    cursor:pointer !important;
+    display:block !important;
+    padding:5px 8px 5px 24px !important;
+    position:absolute !important;
+    right:25px !important;
+    top:50px !important;
+}
+
+.unisubs-substreamer-controls .unisubs-search-container {
+    display:block !important;
+    position:absolute !important;
+    right:0 !important;
+    top:5px !important;
+    width:225px !important;
+}
+
+.unisubs-substreamer-controls .unisubs-search-container a {
+    color:#999 !important;
+    display:inline !important;
+    font-size:13px !important;
+    height:27px !important;
+    line-height:27px !important;
+    margin:0 !important;
+    padding:5px !important;
+}
+
+.unisubs-substreamer-controls .unisubs-search-container a:hover {
+    color:#555 !important;
+    text-shadow:0 0 2px #ccea54 !important;
+}
+
+.unisubs-substreamer-controls .unisubs-search-input {
+    -moz-border-radius:3px !important;
+    -webkit-border-radius:3px !important;
+    background:#fff !important;
+    border:1px solid #ddd !important;
+    border-radius:3px !important;
+    display:block !important;
+    float:left !important;
+    height:27px !important;
+    line-height:27px !important;
+    margin-right:5px !important;
+    position:relative !important;
+    width:178px !important;
+}
+
+.unisubs-substreamer-controls .unisubs-search-input .resultcount {
+    color:#999;
+    position:absolute !important;
+    right:5px !important;
+    top:0 !important;
+}
+
+.unisubs-substreamer-controls .unisubs-search-input:hover {
+    border-color:#999 !important;
+}
+
+div.unisubs-substreamer-controls input {
+    border:1px solid transparent !important;
+    color:#888 !important;
+    padding:3px !important;
+}
+
+div.unisubs-substreamer-controls input:focus {
+    outline:none !important;
+}
+
+div.unisubs-transcript {
+    background-color:#fff !important;
+    border:1px solid #ddd !important;
+    clear:both !important;
+    color:#232323 !important;
+    font-size:13px !important;
+    height:225px !important;
+    line-height:225% !important;
+    overflow:auto !important;
+    padding:25px 50px !important;
+}
+
+div.unisubs-transcript .unisubs-sub-current {
+    background-color:#d9ebff !important;
+    border:1px solid #cfd9e5 !important;
+}
+
+div.unisubs-transcript .highlighted-search {
+    background-color:#ccea54 !important;
+    border:1px solid #acca34 !important;
+}
+
+div.unisubs-transcript .unisubs-search {
+    background-color:#dcfa64 !important;
+}
+
+div.unisubs-transcript .highlighted {
+    background-color:#eaf6ba !important;
+}
+
+div.unisubs-transcript span {
+    -moz-border-radius:4px !important;
+    -webkit-border-radius:4px !important;
+    border-radius:4px !important;
+    margin:-4px -2px !important;
+    padding:4px 4px !important;
+}
+
+.unisubs-right div a.widget-button {
+    color:black !important;
+    cursor:pointer;
+    width:113px !important;
+}
+
+.unisubs-needs-sync p {
+    color:#da605d !important;
+}
+
+.unisubs-needs-sync .unisubs-spanarrow {
+    left:171px !important;
+}
+
+textarea.copy-dialog {
+    height:100px;
+    margin:12px;
+    width:90%;
+}
+
+select.copy-dialog-select {
+    margin:12px;
+}
+
+ul.unisubs-titlesList span.unisubs-title {
+    padding-top:20px !important;
+}
+
+div.the-translate-panel ul.unisubs-titlesList span.unisubs-title {
+    padding-top:0 !important;
+}
+
+.unisubs-title-notime:after {
+    clear:both;
+    content:".";
+    display:block;
+    height:0;
+    visibility:hidden;
+}
+
+.unisubs-title-notime {
+    padding-left:0 !important;
+}
+
+.unisubs-title-notime span {
+    float:left;
+    width:320px;
+}
+
+.unisubs-timestamp-time-fixed {
+    width:50px !important;
+}
+
+/*unisubs.static_version="f0abb874"*/
