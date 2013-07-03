@@ -29,9 +29,12 @@ category_videos = CompatibleListingView.as_view(
 )
 urlpatterns += patterns(
     'localtv.listing.views',
-    url(r'^search/$', CompatibleListingView.as_view(
-                        template_name='localtv/video_listing_search.html',
-                    ), name='localtv_search'),
+    url(r'^search/$',
+        CompatibleListingView.as_view(
+            old_template_name='localtv/video_listing_search.html',
+            template_name='localtv/video/search.html',
+        ),
+        name='localtv_search'),
     url(r'^category/$', SiteListView.as_view(
                         template_name='localtv/categories.html',
                         queryset=Category.objects.filter(level=0),
