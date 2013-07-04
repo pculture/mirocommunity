@@ -34,9 +34,8 @@
     {% include 'djam/_nav_item.html' with url=url title=title text=request.user.get_full_name|default:request.user.username icon='icon-user' request=request only %}
 
     {% if user_is_admin %}
-      {% url 'mirocommunity_admin_videos' as url %}
       {% trans 'Admin' as title %}
-      {% include 'djam/_nav_item.html' with icon='icon-cogs' url=url title=title request=request only %}
+      {% include 'djam/_nav_item.html' with icon='icon-cogs' url=base_riff.get_default_url title=title request=request only %}
     {% endif %}
 
     {% url 'auth_logout' as url %}

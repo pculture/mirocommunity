@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from localtv.models import SiteSettings, Video, Category
+from localtv.admin.urls import admin_riff
 
 
 BROWSE_NAVIGATION_MODULES = [
@@ -32,8 +33,8 @@ def localtv(request):
 
     new_context.update({
         'site_settings': site_settings,
-        'categories':  Category.objects._mptt_filter(site=site_settings.site,
-                                                     parent__isnull=True),
+        'categories': Category.objects._mptt_filter(site=site_settings.site,
+                                                    parent__isnull=True),
 
         # Deprecated/backwards-compatibility.
         'settings': settings_context,
@@ -43,6 +44,7 @@ def localtv(request):
         'VIDEO_STATUS_UNAPPROVED': Video.UNAPPROVED,
         'VIDEO_STATUS_ACTIVE': Video.ACTIVE,
         'VIDEO_STATUS_REJECTED': Video.REJECTED,
+        'base_riff': admin_riff,
     })
 
     return new_context
