@@ -1,9 +1,7 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "localtv/__base.html" %}
 
-{% block title %}{{ block.super }} - 500 - Internal Server Error{% endblock %}
+{% block title %}500 – Internal Server Error – {{ block.super }}{% endblock %}
 
 {% block main %}
-	<div class="page-content padded">
-		<div class="message error">We're sorry, there was an error loading your page.  Our developers have been notified.</div>
-	</div>
+	<h2 class='text-error'>We're sorry, there was an error loading your page.  Our developers have been notified.</h2>
 {% endblock %}

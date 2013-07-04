@@ -1,9 +1,7 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "localtv/__base.html" %}
 
-{% block title %}{{ block.super }} - 404 - Page not Found{% endblock %}
+{% block title %}404 – Page not Found – {{ block.super }}{% endblock %}
 
 {% block main %}
-	<div class="page-content padded">
-		<div class="message error">We're sorry, we couldn't find that page.</div>
-	</div>
+	<h2 class='text-error'>We're sorry, we couldn't find that page.</h2>
 {% endblock %}

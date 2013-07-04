@@ -1,86 +1,37 @@
-{% extends "localtv/__layouts/25_75.html" %}
-{% load comments daguerre author_comment %}
+{% extends "localtv/video/__list.html" %}
+{% load daguerre filters pagetabs %}
+{% load url from future %}
 
-{% load filters pagetabs %}
+{% block title %}{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %} – {{ block.super }}{% endblock %}
 
-{% block title %}{{ block.super }} - {% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}{% endblock %}
+{% block pre-list %}
+  {% adjust author.get_profile.logo "fit" width=300 height=500 as profile_image %}
+  <div class='row'>
+    <ul class='thumbnails span3'>
+      <li{% if not profile_image %} class='span3'{% endif %}><a class='thumbnail{% if not profile_image %} thumbnail-icon{% endif %}' href='{{ author.get_absolute_url }}'>{% if profile_image %}<img class='img-polaroid' src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" />{% else %}<i class='icon-user'></i>{% endif %}</a></li>
+    </ul>
 
-{# video-list-page is an infinitescroll trigger #}
-{% block body_classes %}{{ block.super }} author-page video-list-page{% endblock %}
+    <div class='span9'>
+      <dl class="dl-horizontal">
+        {% if author.get_profile.location %}
+          <dt>Location</dt>
+          <dd>{{ author.get_profile.location }}</dd>
+        {% endif %}
+        {% if author.get_profile.website %}
+          <dt>Website</dt>
+          <dd><a href="{{ author.get_profile.website }}">{{ author.get_profile.website }}</a></dd>
+        {% endif %}
+      </dl>
 
-{% block top %}
-	<header class="page-header">
-		<h1 class="page-title">{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</h1>
-		<div class="page-actions">
-			<ul class="action-list">
-				<li><a class="rss" href="{% url localtv_feeds_author author.pk %}">RSS</a></li>
-			</ul>
-		</div>
-	</header>
+      <div>{{ author.get_profile.description|sanitize }}</div>
+    </div>
+  </div>
 {% endblock %}
 
-{% block side %}
-	<div class="padded">
-		{% if author.get_profile.logo %}
-			{% adjust author.get_profile.logo.name "fit" width=200 height=400 as profile_image %}
-			<a href="{{ author.get_profile.logo.url }}"><img src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" /></a>
-		{% endif %}
-		<ul class="author-detail-list">
-			{% if author.get_profile.location %}<li class="author-location">{{ author.get_profile.location }}</li>{% endif %}
-			{% if author.get_profile.website %}<li class="author-website"><a href="{{ author.get_profile.website }}">Website</a></li>{% endif %}
-		</ul>
-		<div>{{ author.get_profile.description|sanitize }}</div>
-	
-		{% get_author_comment_count for author as comment_count %}
-	
-		{% if comment_count %}
-			<div id="author_comments"><h2 class="comments-title">{{ comment_count }} Recent Comment{{ comment_count|pluralize }}</h2>{% endif %}
-			{% get_author_comments for author as comments %}
-				{% if comments %}
-				<ul id="author-comments">
-					{% for comment in comments %}
-						<li class="comment">
-							<div class="comment-poster">
-								<h4 id="c{{ comment.id }}">{% if comment.content_object %}<a href="{% url localtv_view_video comment.content_object.pk comment.content_object.slug %}">{{ comment.content_object.name }}</a>{% else %}{{ comment.user_name }}{% endif %}</h4>
-								<span>{{ comment.submit_date|date:"F j, Y," }}<br/> {{ comment.submit_date|date:"g:i a T" }}</span>
-								{% if user_is_admin %}
-									<div class="comment-moderation">
-										<form action="{% url comments-delete comment.id %}" method="post">{% csrf_token %}
-											<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-											<button type="submit">delete</button>
-										</form>
-										<form action="{% url comments-spam comment.id %}" method="post">{% csrf_token %}
-											<input type="hidden" name="next" value="{{ request.META.PATH_INFO }}">
-											<button type="submit">spam</button>
-										</form>
-									</div>
-								{% endif %}
-							</div>
-							<div class="comment-body">
-								{{ comment.comment|sanitize }}
-							</div>
-						</li>
-					{% endfor %}
-				</ul>
-			</div>
-		{% endif %}
-	</div>
-{% endblock %}
+{% block page_title %}{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}{% endblock %}
 
-{% block main %}
-	<div class="padded">
-		{% if page_obj.has_other_pages %}
-			<div class="pagination upper">
-				{% pagetabs page_obj %}
-			</div>
-		{% endif %}
-		
-		{% include "localtv/_grid/video_list.html" with columns=3 %}
+{% block rss_url %}{% url 'localtv_feeds_author' author.pk %}{% endblock %}
 
-		{% if page_obj.has_other_pages %}
-			<div class="pagination lower">
-				{% pagetabs page_obj %}
-			</div>
-		{% endif %}
-	</div>
+{% block video %}
+  <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.when|simpletimesince|add:" ago" %}</li>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% load staticfiles %}<a href="{{ video.get_absolute_url }}" class='thumbnail' data-content="
+{% load staticfiles %}<a href="{{ video.get_absolute_url }}" class='thumbnail{% if not image %} thumbnail-icon{% endif %}' data-content="
     {% filter force_escape %}
         {% if video.description %}
             <div>

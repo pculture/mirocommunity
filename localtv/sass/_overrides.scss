@@ -138,53 +138,47 @@ h1, h2, h3, h4, h5, h6{
 
 // Tweak styles for icons as thumbnails
 
-.video-list-page {
-    .thumbnail{
+.thumbnail-icon{
+    display: block;
+    position: relative;
+    overflow: hidden;
+    max-height: 216px;
+
+    &:after{
+        content: '';
         display: block;
-        position: relative;
-        overflow: hidden;
+        padding-bottom: 100% * 5 / 8;
+    }
 
-        &:after{
-            content: '';
-            display: block;
-            padding-bottom: 100% * 5 / 8;
+    > i {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+    }
+
+    > i {
+        @extend .muted;
+        text-align: center;
+        font-size: 100px;
+        height: 100px;
+        text-decoration: none;
+
+        @media (min-width: 1200px) {
+            font-size: 125px;
+            height: 125px;
         }
 
-        > i, > img {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            margin: auto;
+        @media (min-width: 768px) and (max-width: 979px) {
+            font-size: 75px;
+            height: 75px;
         }
 
-        > i {
-            @extend .muted;
-            text-align: center;
-            font-size: 100px;
-            height: 100px;
-            text-decoration: none;
-
-            @media (min-width: 1200px) {
-                font-size: 125px;
-                height: 125px;
-            }
-
-            @media (min-width: 768px) and (max-width: 979px) {
-                font-size: 75px;
-                height: 75px;
-            }
-
-            @media (min-width: 481px) and (max-width: 767px) {
-                font-size: 250px;
-                height: 250px;
-            }
-
-            @media (max-width: 480px) {
-                font-size: 150px;
-                height: 150px;
-            }
+        @media (max-width: 767px) {
+            font-size: 200px;
+            height: 200px;
         }
     }
 }

@@ -1,6 +1,6 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "localtv/__base.html" %}
 
-{% block title %}{{ block.super }} - {{ flatpage.title }}{% endblock %}
+{% block title %}{{ flatpage.title }} – {{ block.super }}{% endblock %}
 
 {% block main %}
 	<header class="page-header">
