@@ -7,9 +7,11 @@
 {% block pre-list %}
   {% adjust author.get_profile.logo "fit" width=300 height=500 as profile_image %}
   <div class='row'>
-    <ul class='thumbnails span3'>
-      <li{% if not profile_image %} class='span3'{% endif %}><a class='thumbnail{% if not profile_image %} thumbnail-icon{% endif %}' href='{{ author.get_absolute_url }}'>{% if profile_image %}<img class='img-polaroid' src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" />{% else %}<i class='icon-user'></i>{% endif %}</a></li>
-    </ul>
+    <div class='span3'>
+      <ul class='thumbnails'>
+        <li{% if not profile_image %} class='span3'{% endif %}><a class='thumbnail{% if not profile_image %} thumbnail-icon{% endif %}' href='{{ author.get_absolute_url }}'>{% if profile_image %}<img class='img-polaroid' src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" />{% else %}<i class='icon-user'></i>{% endif %}</a></li>
+      </ul>
+    </div>
 
     <div class='span9'>
       <dl class="dl-horizontal">
