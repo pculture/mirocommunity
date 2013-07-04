@@ -1,40 +1,37 @@
-{% extends "localtv/submit_video/__base.html" %}
+{% extends "localtv/__base.html" %}
 
 {% load url from future %}
-{% load i18n %}
+{% load i18n floppyforms %}
 
-{% block form_action %}{% url 'localtv_submit_video' %}{% endblock %}
-{% block form_method %}get{% endblock %}
+{% block title %}{% trans "Submit a Video" %} – {{ block.super }}{% endblock %}
 
-{% block inner_form %}
-	{% if was_duplicate %}
-		<div class="message error">
-			It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}... sorry! You can submit another video if you like.
-		</div>
-	{% endif %}
-
-	<div class="control-group{% if form.url.errors %} error{% endif %} x-large">
-		<label for="id_url">Enter the URL of your video</label>
-		<div class="controls">
-			{{ form.url }}
-			<div class="control-group-errors help-text">
-				{% if not was_duplicate %}{{ form.url.errors }}{% endif %}
-			</div>
-		</div>
-	</div>
-{% endblock %}
-
-{% block post_form %}
-	<h2>Helpful Hints for Submitting:</h2>
-	<ul>
-		<li>
-			The URL can be from YouTube, Vimeo, or blip.tv.
-			<span class="url">http://www.youtube.com/watch?v=wuGbLY-l930</span>
-		</li>
-		<li>If there is a video with &lt;embed&gt; code available, just enter the URL of the page containing the video and you will be prompted for &lt;embed&gt; code on the next screen.</li>
-		<li>
-			The URL can also be a video file itself.
-			<span class="url">http://www.ted.com/clips.mov</span>
-		</li>
-	</ul>
+{% block main %}
+  <div class='row'>
+    <div class='span6 offset3'>
+      <h2>{% trans "Submit a Video" %}</h2>
+      {% if was_duplicate %}
+        <div class="alert alert-error">
+          It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}... sorry! You can submit another video if you like.
+        </div>
+      {% else %}
+        {% for error in form.url.errors %}
+          <div class="alert alert-error">
+            {{ error }}
+          </div>
+      {% endfor %}
+      {% endif %}
+      <form action="{% url 'localtv_submit_video' %}" method='get'>
+        <div class='input-append'>
+          <input class='span5' type='url' name='url' placeholder='Enter video URL' />
+          <button class='btn btn-success'>{% trans "Submit" %}</button>
+        </div>
+      </form>
+      <h3>Tips</h3>
+      <ul>
+        <li>Miro Community automatically imports metadata for video URLs from a variety of video sites, including <a href='http://youtube.com'>YouTube</a>, <a href='http://vimeo.com'>Vimeo</a>, and <a href='http://blip.tv'>blip.tv</a>. Just submit the URL for the video page: <code>http://www.youtube.com/watch?v=wuGbLY-l930</code></li>
+        <li>If Miro Community doesn't know how to handle your video automatically, you can also manually enter <code>&lt;embed&gt;</code> code for the video during the submission process.</li>
+        <li>The URL can also be a video file: <code>http://www.ted.com/clips.mov</code></li>
+      </ul>
+    </div>
+  </div>
 {% endblock %}

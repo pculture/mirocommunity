@@ -2,22 +2,19 @@
 
 {% load uploadtemplate i18n %}
 
-{% block title %}{{ block.super }} - {% trans "Submit a Video" %}{% endblock %}
+{% block title %}{% trans "Submit a Video" %} – {{ block.super }}{% endblock %}
 
 {% block main %}
-	<header class="page-header">
-		<h1 class="page-title">{% trans "Submit a Video" %}</h1>
-	</header>
-	<div class="page-content padded">
-		{% block pre_form %}{% endblock %}
-		<form action="{% block form_action %}{% endblock %}" method="{% block form_method %}post{% endblock %}">
-			{% csrf_token %}
-			{% block inner_form %}
-			{% endblock %}
-			<footer class="form-actions">
-				<button>Submit</button>
-			</footer>
-		</form>
-		{% block post_form %}{% endblock %}
-	</div>
+  <h1>{% trans "Submit a Video" %}</h1>
+
+  {% block pre_form %}{% endblock %}
+  <form action="{% block form_action %}{% endblock %}" method="{% block form_method %}post{% endblock %}">
+    {% csrf_token %}
+    {% block inner_form %}
+    {% endblock %}
+    <footer class="form-actions">
+      <button>Submit</button>
+    </footer>
+  </form>
+  {% block post_form %}{% endblock %}
 {% endblock %}
