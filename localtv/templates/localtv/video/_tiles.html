@@ -1,0 +1,30 @@
+{# expects {{ video_list }}, {{ url }}, and (optionally) {{ icon }} #}
+{% load daguerre %}
+{% if video_list|length < 2 %}
+  {% adjust_bulk video_list 'thumbnail' 'fill' width=300 height=216 as adjusted %}
+  {% with image=adjusted.0.1 %}
+    {% if adjusted and image %}
+      <a class='thumbnail' href='{{ url }}'><img src="{{ image }}" width={{ image.width }} height={{ image.height }} /></a>
+    {% else %}
+      <a class='thumbnail thumbnail-icon' href="{{ url }}"><i class='{{ icon|default:"icon-asterisk" }}'></i></a>
+    {% endif %}
+  {% endwith %}
+{% elif video_list|length < 6 %}
+  {% adjust_bulk video_list|slice:":2" 'thumbnail' 'fill' width=150 height=216 as adjusted %}
+  <a class='thumbnail thumbnail-tiles thumbnail-tiles-2' href='{{ url }}'>{% spaceless %}
+    <ul>
+      {% for video, image in adjusted %}
+        <li><img src="{{ image }}" width={{ image.width }} height={{ image.height }} /></li>
+      {% endfor %}
+    </ul>
+  {% endspaceless %}</a>
+{% else %}
+  {% adjust_bulk video_list|slice:":6" 'thumbnail' 'fill' width=100 height=108 as adjusted %}
+  <a class='thumbnail thumbnail-tiles thumbnail-tiles-6' href='{{ url }}'>{% spaceless %}
+    <ul>
+      {% for video, image in adjusted %}
+        <li><img src="{{ image }}" width={{ image.width }} height={{ image.height }} /></li>
+      {% endfor %}
+    </ul>
+  {% endspaceless %}</a>
+{% endif %}

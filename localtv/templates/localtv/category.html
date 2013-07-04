@@ -1,72 +1,39 @@
-{% extends "localtv/__layouts/75_25.html" %}
-
-{% load i18n daguerre pagetabs %}
+{% extends "localtv/video/__list.html" %}
+{% load i18n daguerre pagetabs filters %}
 {% load url from future %}
 
-{% block title %}{{ block.super }} - {{ category.name }}{% endblock %}
+{% block title %}{{ category.name }} – {{ block.super }}{% endblock %}
 
-{# video-list-page is an infinitescroll trigger #}
-{% block body_classes %}{{ block.super }} category-detail-page video-list-page{% endblock %}
+{% block page_title %}{{ category.name }}{% endblock %}
 
-{% block top %}
-	<header class="page-header">
-		<h1 class="page-title">{{ category.name }}</h1>
-		<div class="page-actions">
-			<ul class="action-list">
-				<li><a class="rss" href="{% url 'localtv_feeds_category' category.slug %}">RSS</a></li>
-			</ul>
-		</div>
-	</header>
+{% block rss_url %}{% url 'localtv_feeds_category' category.slug %}{% endblock %}
+
+{% block pre-list %}
+  {% adjust category.logo "fit" width=300 height=500 as logo %}
+  <div class='row'>
+    <div class='span3'>
+      <ul class='thumbnails'>
+        <li{% if not logo %} class='span3'{% endif %}><a class='thumbnail{% if not logo %} thumbnail-icon{% endif %}' href='{{ author.get_absolute_url }}'>{% if logo %}<img src="{{ logo }}" height="{{ logo.height }}" width="{{ logo.width }}" />{% else %}<i class='icon-sitemap'></i>{% endif %}</a></li>
+      </ul>
+    </div>
+
+    <div class='span9'>
+      <div>{{ category.description|safe }}</div>
+      {% with child_set=category.child_set.all %}
+        {% if child_set %}
+          <ul class='nav nav-pills'>
+            <li><span class='nav-header-item'>{% trans "Subcategories" %}</span></li>
+            {% for subcat in child_set %}
+              <li><a href="{{ subcat.get_absolute_url }}">{{ subcat.name }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </div>
+  <hr />
 {% endblock %}
 
-{% block side %}
-	<div class="padded">
-		{% if category.logo %}<img class="scaled" src="{% adjust category.logo 'fit' width=700 %}">{% endif %}
-		{{ category.description|safe }}
-	</div>{# /.padded #}
-	{% with child_set=category.child_set.all %}
-		{% if child_set %}
-			<div class="pod">
-				<header class="pod-header">
-					<h1 class="pod-title">{% trans "Subcategories" %}</h1>
-				</header>
-				<div class="pod-content">
-					<ul class="category-list">
-						{% for subcat in child_set %}
-							<li>
-								<a title="{{ subcat.name }}" href="{{ subcat.get_absolute_url }}"><span>{{ subcat.name }}</span></a>
-								{% with subcat_child_set=subcat.child_set.all %}
-									{% if subcat_child_set %}
-										<ul>
-											{% for subsubcat in subcat_child_set %}
-												<li><a href="{{ subsubcat.get_absolute_url }}">{{ subsubcat.name }}</a></li>
-											{% endfor %}
-										</ul>
-									{% endif %}
-								{% endwith %}
-							</li>
-						{% endfor %}
-					</ul>
-				</div>{# /.pod-content #}
-			</div>{# /.pod #}
-		{% endif %}
-	{% endwith %}
-{% endblock %}
-
-{% block main %}
-	<div class="padded">
-		{% if page_obj.has_other_pages %}
-			<div class="pagination upper">
-				{% pagetabs page_obj %}
-			</div>
-		{% endif %}
-		
-		{% include "localtv/_grid/video_list.html" with columns=3 %}
-
-		{% if page_obj.has_other_pages %}
-			<div class="pagination lower">
-				{% pagetabs page_obj %}
-			</div>
-		{% endif %}
-	</div>
+{% block video %}
+  <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.when|simpletimesince|add:" ago" %}</li>
 {% endblock %}

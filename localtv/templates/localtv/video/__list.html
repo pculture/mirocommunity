@@ -15,7 +15,7 @@
   {% endblock %}
 
   {% if page_obj.has_other_pages %}
-    <div class="pagination upper">
+    <div class="pagination">
       {% pagetabs page_obj %}
     </div>
   {% endif %}
@@ -32,7 +32,7 @@
   {% endif %}
 
   {% if page_obj.has_other_pages %}
-    <div class="pagination lower">
+    <div class="pagination">
       {% pagetabs page_obj %}
     </div>
   {% endif %}

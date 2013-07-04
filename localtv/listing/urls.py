@@ -1,18 +1,12 @@
 import datetime
 
 from django.conf.urls.defaults import patterns, url
-from django.views.generic.base import TemplateView
 
 from localtv.listing.views import CompatibleListingView
 
 
 urlpatterns = patterns(
     'localtv.listing.views',
-    url(r'^$',
-        TemplateView.as_view(
-            template_name="localtv/browse.html",
-        ),
-        name='localtv_list_index'),
     url(r'^new/$',
         CompatibleListingView.as_view(
             old_template_name='localtv/video_listing_new.html',

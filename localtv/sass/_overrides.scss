@@ -136,6 +136,38 @@ h1, h2, h3, h4, h5, h6{
     }
 }
 
+// Support spans inside navs, plus special nav-header spans.
+.nav-tabs > li > span,
+.nav-pills > li > span {
+  padding-right: 12px;
+  padding-left: 12px;
+  margin-right: 2px;
+  line-height: 14px; // keeps the overall height an even number
+  display: block;
+}
+
+.nav-tabs > li > span {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  line-height: $baseLineHeight;
+  border: 1px solid transparent;
+  @include border-radius(4px 4px 0 0);
+}
+
+.nav-pills > li > span {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  @include border-radius(5px);
+}
+
+.nav-pills, .nav-tabs {
+    > li > .nav-header-item {
+        font-weight: bold;
+    }
+}
+
 // Tweak styles for icons as thumbnails
 
 .thumbnail-icon{
@@ -180,6 +212,31 @@ h1, h2, h3, h4, h5, h6{
             font-size: 200px;
             height: 200px;
         }
+    }
+}
+
+// Tiled thumbnails (made up of multiple sub-images.)
+.thumbnail-tiles {
+    > ul {
+        list-style: none;
+        max-width: 300px;
+        margin: auto;
+
+        > li {
+            display: inline-block;
+        }
+    }
+}
+
+.thumbnail-tiles-2 {
+    > ul > li {
+        width: 50%;
+    }
+}
+
+.thumbnail-tiles-6 {
+    > ul > li {
+        width: 33%;
     }
 }
 

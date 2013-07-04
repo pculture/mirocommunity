@@ -1,26 +1,39 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "localtv/__base.html" %}
 
-{% load pagetabs i18n %}
+{% load pagetabs i18n daguerre %}
 
-{% block title %}{{ block.super }} - Categories{% endblock %}
+{% block title %}{% trans "Categories" %} – {{ block.super }}{% endblock %}
 
 {% block main %}
-	<header class="page-header">
-	  <h1 class="page-title">{% trans "Categories" %}</h1>
-	</header>
-	<div class="padded page-content">
-		<div class="pagination upper">
-			{% if page_obj.has_other_pages %}
-				{% pagetabs page_obj %}
-			{% endif %}
-		</div>
+  <h1>{% trans "Categories" %}</h1>
 
-		{% include "localtv/_grid/category_list.html" %}
+  {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% pagetabs page_obj %}
+    </div>
+  {% endif %}
 
-		<div class="pagination lower">
-			{% if page_obj.has_other_pages %}
-				{% pagetabs page_obj %}
-			{% endif %}
-		</div>
-	</div>
+  {% if category_list %}
+    <ul class='thumbnails'>
+      {% adjust_bulk category_list "logo" 'fill' width=300 height=216 as adjusted %}
+      {% for category, image in adjusted %}
+        <li class='span3'>
+          {% if image %}
+            <a class='thumbnail' href='{{ category.get_absolute_url }}'><img src="{{ image }}" width={{ image.width }} height={{ image.height }} /></a>
+          {% else %}
+            {% include 'localtv/video/_tiles.html' with video_list=category.approved_set|slice:":6" url=category.get_absolute_url icon='icon-sitemap' %}
+          {% endif %}
+          <h5><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></h5>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No categories have been added yet.</p>
+  {% endif %}
+
+  {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% pagetabs page_obj %}
+    </div>
+  {% endif %}
 {% endblock %}

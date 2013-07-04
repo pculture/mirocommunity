@@ -9,7 +9,7 @@
   <div class='row'>
     <div class='span3'>
       <ul class='thumbnails'>
-        <li{% if not profile_image %} class='span3'{% endif %}><a class='thumbnail{% if not profile_image %} thumbnail-icon{% endif %}' href='{{ author.get_absolute_url }}'>{% if profile_image %}<img class='img-polaroid' src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" />{% else %}<i class='icon-user'></i>{% endif %}</a></li>
+        <li{% if not profile_image %} class='span3'{% endif %}><a class='thumbnail{% if not profile_image %} thumbnail-icon{% endif %}' href='{{ author.get_absolute_url }}'>{% if profile_image %}<img src="{{ profile_image }}" height="{{ profile_image.height }}" width="{{ profile_image.width }}" />{% else %}<i class='icon-user'></i>{% endif %}</a></li>
       </ul>
     </div>
 
@@ -28,6 +28,7 @@
       <div>{{ author.get_profile.description|sanitize }}</div>
     </div>
   </div>
+  <hr />
 {% endblock %}
 
 {% block page_title %}{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}{% endblock %}

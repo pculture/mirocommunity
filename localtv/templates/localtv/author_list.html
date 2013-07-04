@@ -1,29 +1,41 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "localtv/__base.html" %}
 
 {% load url from future %}
-{% load pagetabs %}
+{% load pagetabs i18n daguerre %}
 
-{% block title %}{{ block.super }} - Users{% endblock %}
-
-{% block body_classes %}{{ block.super }} author-list-page{% endblock %}
+{% block title %}{% trans 'Authors' %} – {{ block.super }}{% endblock %}
 
 {% block main %}
-	<header class="page-header">
-		<h1 class="page-title">Authors</h1>
-	</header>
-	<div class="padded page-content">
-		<div class="pagination upper">
-			{% if page_obj.has_other_pages %}
-				{% pagetabs page_obj %}
-			{% endif %}
-		</div>
+	<h1>{% trans 'Authors' %}</h1>
 
-		{% include "localtv/_grid/author_list.html" %}
+  {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% pagetabs page_obj %}
+    </div>
+  {% endif %}
 
-		<div class="pagination lower">
-			{% if page_obj.has_other_pages %}
-				{% pagetabs page_obj %}
-			{% endif %}
-		</div>
-	</div>
+  {% if authors %}
+    <ul class='thumbnails'>
+      {% adjust_bulk authors "get_profile.logo" 'fill' width=300 height=216 as adjusted %}
+      {% for author, image in adjusted %}
+      	{% url 'localtv_author' author.pk as url %}
+        <li class='span3'>
+          {% if image %}
+            <a class='thumbnail' href='{{ url }}'><img src="{{ image }}" width={{ image.width }} height={{ image.height }} /></a>
+          {% else %}
+            {% include 'localtv/video/_tiles.html' with video_list=author.approved_set|slice:":6" url=url icon='icon-user' %}
+          {% endif %}
+          <h5><a href="{{ url }}">{% if author.first_name %}{{ author.get_full_name }} ({{ author.username }}){% else %}{{ author.username }}{% endif %}</a></h5>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No authors have been added yet.</p>
+  {% endif %}
+
+  {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% pagetabs page_obj %}
+    </div>
+  {% endif %}
 {% endblock %}

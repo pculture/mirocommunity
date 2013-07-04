@@ -719,17 +719,6 @@ class ListingViewTestCase(BaseTestCase):
 
     fixtures = BaseTestCase.fixtures + ['feeds', 'videos', 'watched']
 
-    def test_index(self):
-        """
-        The listing index view should render the 'localtv/browse.html'
-        template.
-        """
-        c = Client()
-        response = c.get(reverse('localtv_list_index'))
-        self.assertStatusCodeEquals(response, 200)
-        self.assertEqual(response.templates[0].name,
-                          'localtv/browse.html')
-
     def test_latest_videos(self):
         """
         The new_videos view should render the
