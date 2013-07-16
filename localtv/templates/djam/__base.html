@@ -1,4 +1,4 @@
-{% load staticfiles i18n daguerre %}
+{% load staticfiles i18n daguerre djam %}
 {% load url from future %}
 
 <!doctype html>
@@ -68,21 +68,29 @@
     </footer>
     
     {% block scripts-foot %}
-        {% if "MSIE 6" in request.META.HTTP_USER_AGENT or "MSIE 7" in request.META.HTTP_USER_AGENT %}
-            {% if not "chromeframe" in request.META.HTTP_USER_AGENT %}
-                <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
-                <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
-            {% endif %}
-        {% endif %}
-
-        <script src="{% static 'mirocommunity/js/bootstrap-2.3.2.min.js' %}"></script>
+        {# Set some variables #}
+        <script>
+        window.djam = {
+          genRelURL: "{% filter slice:":-2" %}{% riff_url base_riff 'genrelinfo' 1 %}{% endfilter %}",
+        }
+        </script>
+        <script src="{% static 'djam/js/jquery-1.10.0.js' %}" type="text/javascript" charset="utf-8"></script>
+        <script src="{% static 'djam/js/bootstrap-2.3.1.js' %}" type="text/javascript" charset="utf-8"></script>
         <script src="{% static 'djam/js/bootstrap.file-input.js' %}" type="text/javascript" charset="utf-8"></script>
+        <script src="{% static 'djam/js/bootstrap-timepicker.js' %}" type="text/javascript" charset="utf-8"></script>
+        <script src="{% static 'djam/js/bootstrap-datepicker.js' %}" type="text/javascript" charset="utf-8"></script>
         <script src="{% static 'djam/js/chosen.jquery.js' %}" type="text/javascript" charset="utf-8"></script>
         <script src="{% static 'djam/js/djam.kickoff.js' %}" type="text/javascript" charset="utf-8"></script>
         <script src="{% static 'mirocommunity/js/jquery.history.js' %}"></script>
         <script src="{% static 'mirocommunity/js/jquery.infinitescroll.js' %}"></script>
         <script src="{% static 'mirocommunity/js/localtv.shrinkydink.js' %}"></script>
         <script src="{% static 'mirocommunity/js/localtv.kickoff.js' %}"></script>
+        {% if "MSIE 6" in request.META.HTTP_USER_AGENT or "MSIE 7" in request.META.HTTP_USER_AGENT %}
+            {% if not "chromeframe" in request.META.HTTP_USER_AGENT %}
+                <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+                <script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+            {% endif %}
+        {% endif %}
 
         {% if GOOGLE_ANALYTICS_UA %}
             <script type="text/javascript">
