@@ -41,9 +41,9 @@ def localtv(request):
         'sitelocation': site_settings,
         'user_is_admin': request.user_is_admin(),
         'display_submit_button': display_submit_button,
-        'VIDEO_STATUS_UNAPPROVED': Video.UNAPPROVED,
-        'VIDEO_STATUS_ACTIVE': Video.ACTIVE,
-        'VIDEO_STATUS_REJECTED': Video.REJECTED,
+        'VIDEO_STATUS_UNAPPROVED': Video.NEEDS_MODERATION,
+        'VIDEO_STATUS_ACTIVE': Video.PUBLISHED,
+        'VIDEO_STATUS_REJECTED': Video.HIDDEN,
         'base_riff': admin_riff,
     })
 

@@ -140,7 +140,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
         """
         model = self.get_model()
-        return model._default_manager.using(using).filter(status=model.ACTIVE)
+        return model._default_manager.using(using).filter(status=model.PUBLISHED)
 
     def read_queryset(self):
         """
@@ -148,7 +148,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
 
         """
         model = self.get_model()
-        return model._default_manager.filter(status=model.ACTIVE
+        return model._default_manager.filter(status=model.PUBLISHED
                                     ).select_related('feed', 'user', 'search'
                                     ).prefetch_related('authors')
 

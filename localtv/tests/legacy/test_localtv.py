@@ -272,7 +272,7 @@ class ViewTestCase(BaseTestCase):
         popular = response.context['popular_videos']
         self.assertIsInstance(popular, NormalizedVideoList)
         self.assertEqual(len(popular),
-                         Video.objects.filter(status=Video.ACTIVE).count())
+                         Video.objects.filter(status=Video.PUBLISHED).count())
         popular_list = list(popular.queryset)
         self.assertEqual(popular_list, sorted(popular_list, reverse=True,
                                          key=lambda v: v.watch_count))
@@ -285,11 +285,11 @@ class ViewTestCase(BaseTestCase):
         Recent comments should only include approved videos.
         """
         unapproved = Video.objects.filter(
-            status=Video.UNAPPROVED)[0]
+            status=Video.NEEDS_MODERATION)[0]
         approved = Video.objects.filter(
-            status=Video.ACTIVE)[0]
+            status=Video.PUBLISHED)[0]
         rejected = Video.objects.filter(
-            status=Video.REJECTED)[0]
+            status=Video.HIDDEN)[0]
         for video in unapproved, approved, rejected:
             Comment.objects.create(
                 site=self.site_settings.site,
@@ -303,7 +303,7 @@ class ViewTestCase(BaseTestCase):
         self.assertEqual(response.context['comments'][0].content_object,
                           approved)
 
-        approved.status = Video.REJECTED
+        approved.status = Video.HIDDEN
         approved.save()
 
         c = Client()
@@ -422,7 +422,7 @@ class ViewTestCase(BaseTestCase):
         page_num = response.context['page_obj'].number
         videos = list(response.context['video_list'])
         expected_sqs_results = [r.object for r in expected_sqs if
-                                r.object.status == Video.ACTIVE]
+                                r.object.status == Video.PUBLISHED]
         start = (page_num - 1) * per_page
         end = page_num * per_page
 
@@ -656,7 +656,7 @@ class ViewTestCase(BaseTestCase):
         template, and include the appropriate category.
         """
         category = Category.objects.get(slug='miro')
-        for video in models.Video.objects.filter(status=models.Video.ACTIVE):
+        for video in models.Video.objects.filter(status=models.Video.PUBLISHED):
             video.categories = [1] # Linux
             video.save()
         c = Client()
@@ -666,7 +666,7 @@ class ViewTestCase(BaseTestCase):
                           'localtv/category.html')
         self.assertEqual(response.context['category'], category)
         videos = list(models.Video.objects.with_best_date().filter(
-                status=models.Video.ACTIVE).order_by('-best_date')[:15])
+                status=models.Video.PUBLISHED).order_by('-best_date')[:15])
         self.assertEqual(videos, sorted(videos, key=lambda v: v.when(),
                                         reverse=True))
         self.assertEqual(response.context['page_obj'].object_list,
@@ -773,7 +773,7 @@ class ListingViewTestCase(BaseTestCase):
                           'localtv/video_listing_featured.html')
         self.assertEqual(response.context['paginator'].count, 2)
         self.assertEqual(list(response.context['page_obj'].object_list),
-                          list(Video.objects.filter(status=Video.ACTIVE,
+                          list(Video.objects.filter(status=Video.PUBLISHED,
                                last_featured__isnull=False)))
 
     def test_tag_videos(self):
@@ -815,7 +815,7 @@ class ListingViewTestCase(BaseTestCase):
         self.assertEqual(len(response.context['page_obj'].object_list), 1)
         self.assertEqual(list(response.context['page_obj'].object_list),
                           list(feed.video_set.filter(
-                    status=Video.ACTIVE)))
+                    status=Video.PUBLISHED)))
 
 
 # -----------------------------------------------------------------------------
@@ -1166,7 +1166,7 @@ class VideoModelTestCase(BaseTestCase):
         should return the same videos.
 
         """
-        expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
+        expected_pks = set(Video.objects.filter(status=Video.PUBLISHED,
                                                 site=self.site_settings.site
                                        ).values_list('pk', flat=True))
 
@@ -1191,7 +1191,7 @@ class VideoModelTestCase(BaseTestCase):
         same videos.
 
         """
-        expected_pks = set(Video.objects.filter(status=Video.ACTIVE,
+        expected_pks = set(Video.objects.filter(status=Video.PUBLISHED,
                                                 site=self.site_settings.site
                                        ).values_list('pk', flat=True))
 
@@ -1350,7 +1350,7 @@ class LegacyFeedViewTestCase(BaseTestCase):
         self.assertEqual(len(three_vids), 3)
         for vid in three_vids:
             vid.categories.add(linux_category)
-            vid.status = Video.ACTIVE
+            vid.status = Video.PUBLISHED
             vid.save()
         self.assertEqual(linux_category.approved_set.count(), 3)
         # Do a GET for the first 2 in the feed

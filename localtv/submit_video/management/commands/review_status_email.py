@@ -24,7 +24,7 @@ class Command(NoArgsCommand):
         previous = datetime.datetime.now() - delta
 
         queue_videos = Video.objects.filter(
-            status=Video.UNAPPROVED,
+            status=Video.NEEDS_MODERATION,
             site=site_settings.site,
         )
         new_videos = queue_videos.filter(when_submitted__gte=previous)

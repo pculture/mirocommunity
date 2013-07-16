@@ -68,7 +68,7 @@ class FeedImportUnitTestCase(BaseTestCase):
             self.create_vidscraper_video()
             ]
         Source.update(feed, video_iter, feed_import)
-        self.assertEqual(Feed.objects.get(pk=feed.pk).status, Feed.ACTIVE)
+        self.assertEqual(Feed.objects.get(pk=feed.pk).status, Feed.PUBLISHED)
 
     def test_auto_approve_True(self):
         """
@@ -85,7 +85,7 @@ class FeedImportUnitTestCase(BaseTestCase):
         Source.update(feed, video_iter, feed_import)
         self.assertEqual(Video.objects.count(), 2)
         self.assertEqual(Video.objects.filter(
-                status=Video.ACTIVE).count(), 2)
+                status=Video.PUBLISHED).count(), 2)
 
     def test_auto_approve_False(self):
         """
@@ -101,7 +101,7 @@ class FeedImportUnitTestCase(BaseTestCase):
         Source.update(feed, video_iter, feed_import)
         self.assertEqual(Video.objects.count(), 2)
         self.assertEqual(Video.objects.filter(
-                status=Video.UNAPPROVED).count(), 2)
+                status=Video.NEEDS_MODERATION).count(), 2)
 
     def test_entries_inserted_in_feed_order(self):
         """

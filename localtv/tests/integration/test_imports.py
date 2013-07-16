@@ -43,7 +43,7 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
             feed = Feed.objects.get()
 
         self.assertEqual(feed.feed_url, feed_url)
-        self.assertEqual(feed.status, Feed.ACTIVE)
+        self.assertEqual(feed.status, Feed.PUBLISHED)
         self.assertEqual(feed.name, u'Yahoo Media TEST')
         self.assertEqual(feed.description, u'This is a PCF-governed RSS 2.0 feed to '
                                            u'test Yahoo media enclosures. All '
@@ -57,7 +57,7 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         self.assertEqual(self.save_thumbnail.delay.call_count, 2)
 
         self.assertEqual(
-            feed.video_set.filter(status=Video.UNAPPROVED).count(), 2)
+            feed.video_set.filter(status=Video.NEEDS_MODERATION).count(), 2)
 
     def test_POST_auto_approve(self):
         """
@@ -75,7 +75,7 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         while feed.status == feed.INACTIVE and time.time() < finish_by:
             time.sleep(0.3)
             feed = Feed.objects.get()
-        self.assertEqual(feed.status, Feed.ACTIVE)
+        self.assertEqual(feed.status, Feed.PUBLISHED)
         self.assertEqual(feed.auto_approve, True)
         feed_import = feed.imports.get()
         self.assertEqual(feed_import.auto_approve, True)
@@ -86,4 +86,4 @@ class AdminFeedImportIntegrationTestCase(BaseTestCase):
         self.assertEqual(self.save_thumbnail.delay.call_count, 2)
 
         self.assertEqual(
-            feed.video_set.filter(status=Video.ACTIVE).count(), 2)
+            feed.video_set.filter(status=Video.PUBLISHED).count(), 2)

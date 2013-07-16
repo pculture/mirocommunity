@@ -33,8 +33,7 @@ class CategoryResource(ModelResource):
 
 class FeedResource(ThumbnailableResource):
     class Meta:
-        queryset = Feed.objects.filter(status=Feed.ACTIVE,
-                                       site=settings.SITE_ID)
+        queryset = Feed.objects.filter(site=settings.SITE_ID)
         fields = ('id', 'auto_approve', 'auto_update', 'feed_url',
                   'name', 'webpage', 'description', 'last_updated',
                   'when_submitted', 'etag', 'thumbnail')
@@ -57,7 +56,7 @@ class VideoResource(ThumbnailableResource):
     tags = fields.ListField(attribute='tags')
 
     class Meta:
-        queryset = Video.objects.filter(status=Video.ACTIVE,
+        queryset = Video.objects.filter(status=Video.PUBLISHED,
                                         site=settings.SITE_ID)
         fields = ('id', 'file_url', 'when_modified', 'when_submitted',
                   'when_published', 'website_url', 'embed_code',

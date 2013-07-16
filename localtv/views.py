@@ -29,7 +29,7 @@ class IndexView(TemplateView):
         new_form = SearchForm({'sort': 'newest'})
 
         video_pks = Video.objects.filter(site=settings.SITE_ID,
-                                         status=Video.ACTIVE
+                                         status=Video.PUBLISHED
                                          ).values_list('pk', flat=True)
         recent_comments = comments.get_model().objects.filter(
             site=settings.SITE_ID,
@@ -64,7 +64,7 @@ class VideoView(DetailView):
     def get_queryset(self):
         qs = super(VideoView, self).get_queryset()
         if not self.request.user_is_admin():
-            qs = qs.filter(status=Video.ACTIVE)
+            qs = qs.filter(status=Video.PUBLISHED)
         return qs.filter(site=settings.SITE_ID)
 
     def get(self, request, *args, **kwargs):

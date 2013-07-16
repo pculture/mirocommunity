@@ -82,7 +82,7 @@ class NormalizedVideoList(object):
             results = self.queryset[k]
             if isinstance(results, list):
                 pks = [r.pk for r in results]
-                qs = Video.objects.filter(status=Video.ACTIVE)
+                qs = Video.objects.filter(status=Video.PUBLISHED)
                 qs = qs.select_related(*self.select_related)
                 qs = qs.prefetch_related(*self.prefetch_related)
                 video_dict = qs.in_bulk(pks)

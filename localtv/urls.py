@@ -73,7 +73,6 @@ urlpatterns += patterns(
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^accounts/', include('social_auth.urls')),
     url(r'^thumbs/', include('daguerre.urls')),
-    url(r'^admin/edit_attributes/', include('localtv.inline_edit.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
     url(r'^submit_video/', include('localtv.submit_video.urls')),
     url(r'^listing/', include('localtv.listing.urls')),

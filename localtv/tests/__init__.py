@@ -107,14 +107,14 @@ class BaseTestCase(TestCase):
         SiteSettings.objects.clear_cache()
 
     @classmethod
-    def create_video(cls, name='Test.', status=Video.ACTIVE, site_id=1,
+    def create_video(cls, name='Test.', status=Video.PUBLISHED, site_id=1,
                      watches=0, categories=None, authors=None, tags=None,
                      update_index=True, **kwargs):
         """
         Factory method for creating videos. Supplies the following defaults:
 
         * name: 'Test'
-        * status: :attr:`Video.ACTIVE`
+        * status: :attr:`Video.PUBLISHED`
         * site_id: 1
 
         In addition to kwargs for the video's fields, which are passed directly
@@ -144,7 +144,7 @@ class BaseTestCase(TestCase):
 
         # Update the index here to be sure that the categories and authors get
         # indexed correctly.
-        if update_index and status == Video.ACTIVE and site_id == 1:
+        if update_index and status == Video.PUBLISHED and site_id == 1:
             index = connections['default'].get_unified_index().get_index(Video)
             index._enqueue_update(video)
 
@@ -208,7 +208,7 @@ class BaseTestCase(TestCase):
 
     @classmethod
     def create_feed(cls, feed_url, name=None, description='Lorem ipsum',
-                    last_updated=None, status=Feed.ACTIVE, site_id=1,
+                    last_updated=None, status=Feed.PUBLISHED, site_id=1,
                     **kwargs):
         if name is None:
             name = feed_url

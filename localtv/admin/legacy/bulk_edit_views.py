@@ -26,7 +26,7 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
                                   context_instance=RequestContext(request))
 
     site_settings = SiteSettings.objects.get_current()
-    videos = Video.objects.filter(status=Video.ACTIVE,
+    videos = Video.objects.filter(status=Video.PUBLISHED,
                                   site=site_settings.site)
 
     if 'filter' in request.GET:
@@ -34,13 +34,13 @@ def bulk_edit(request, formset_class=forms.VideoFormSet):
         if filter_type == 'featured':
             videos = videos.exclude(last_featured=None)
         elif filter_type == 'rejected':
-            videos = Video.objects.filter(status=Video.REJECTED)
+            videos = Video.objects.filter(status=Video.HIDDEN)
         elif filter_type == 'no-attribution':
             videos = videos.filter(authors=None)
         elif filter_type == 'no-category':
             videos = videos.filter(categories=None)
         elif filter_type == 'unapproved':
-            videos = Video.objects.filter(status=Video.UNAPPROVED)
+            videos = Video.objects.filter(status=Video.NEEDS_MODERATION)
 
     videos = videos.select_related('feed', 'search', 'site')
 

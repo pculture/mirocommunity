@@ -17,7 +17,7 @@ class VideoViewTestCase(BaseTestCase):
         site2 = Site.objects.create(name='test', domain='test.com')
         video1 = self.create_video(site_id=site1.pk)
         video2 = self.create_video(site_id=site1.pk)
-        self.create_video(status=Video.UNAPPROVED)
+        self.create_video(status=Video.NEEDS_MODERATION)
         self.create_video(site_id=site2.pk)
 
         view = VideoView()

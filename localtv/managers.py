@@ -121,7 +121,7 @@ class VideoManager(models.Manager):
         if site_settings is None:
             from localtv.models import SiteSettings
             site_settings = SiteSettings.objects.get_current()
-        return self.filter(status=self.model.ACTIVE, site=site_settings.site)
+        return self.filter(status=self.model.PUBLISHED, site=site_settings.site)
 
     def get_featured_videos(self, site_settings=None):
         """
@@ -186,7 +186,7 @@ class VideoManager(models.Manager):
             site = settings.SITE_ID
         else:
             site = site_settings.site
-        return self.model.tagged.with_all(tag).filter(status=self.model.ACTIVE,
+        return self.model.tagged.with_all(tag).filter(status=self.model.PUBLISHED,
                                                       site=site
                                              ).order_by('-when_approved',
                                                         '-when_published',

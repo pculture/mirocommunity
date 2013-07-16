@@ -16,9 +16,9 @@ class NormalizedVideoListUnitTestCase(BaseTestCase):
         self._clear_index()
         self.create_video()
         self.create_video()
-        self.create_video(status=Video.UNAPPROVED)
+        self.create_video(status=Video.NEEDS_MODERATION)
         self.nvl1 = utils.NormalizedVideoList(
-                            Video.objects.filter(status=Video.ACTIVE))
+                            Video.objects.filter(status=Video.PUBLISHED))
         sqs = SearchQuerySet().models(Video)
         sqs = sqs.filter(utils._exact_q(sqs, 'site', 1))
         self.nvl2 = utils.NormalizedVideoList(sqs)
@@ -320,7 +320,7 @@ class TagFilterFieldUnitTestCase(BaseTestCase):
         self.video3 = self.create_video(name='tags1-2-3', tags='tag1 tag2 tag3')
         self.video4 = self.create_video(name='tag3', tags='tag3')
         self.video5 = self.create_video(name='tag4', tags='tag4',
-                                        status=Video.UNAPPROVED)
+                                        status=Video.NEEDS_MODERATION)
         site2 = Site.objects.create(name='example.com', domain='example.com')
         self.video6 = self.create_video(name='tag4_2', tags='tag4', site_id=site2.pk)
 

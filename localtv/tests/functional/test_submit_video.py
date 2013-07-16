@@ -275,7 +275,7 @@ class SubmitURLViewTestCase(BaseTestCase):
         """
         url = 'http://www.pculture.org/'
         video = Video.objects.create(site=self.site_settings.site,
-                                     status=Video.REJECTED,
+                                     status=Video.HIDDEN,
                                      name='test video',
                                      website_url=url)
         self._test_submit__succeed(url,
@@ -296,7 +296,7 @@ class SubmitURLViewTestCase(BaseTestCase):
         video = Video.objects.create(
             site=self.site_settings.site,
             name='Participatory Culture',
-            status=Video.UNAPPROVED,
+            status=Video.NEEDS_MODERATION,
             website_url='http://www.pculture.org/')
 
         response = self.client.get(self.url,
@@ -320,7 +320,7 @@ class SubmitURLViewTestCase(BaseTestCase):
         video = Video.objects.create(
             site=self.site_settings.site,
             name='Participatory Culture',
-            status=Video.ACTIVE,
+            status=Video.PUBLISHED,
             **video_kwargs
         )
         data = {'url': 'http://pculture.org/'}
@@ -378,7 +378,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         # Create three videos submitted two days ago.
         when_submitted = datetime.datetime.now() - datetime.timedelta(2)
         for i in range(3):
-            video = self.create_video(status=Video.UNAPPROVED)
+            video = self.create_video(status=Video.NEEDS_MODERATION)
             video.when_submitted = when_submitted
             video.save()
 
@@ -407,7 +407,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         self._set_notification(self.admin, True)
         self._set_notification(self.superuser, True)
         queue_videos = Video.objects.filter(
-            status=Video.UNAPPROVED)
+            status=Video.NEEDS_MODERATION)
 
         new_video = queue_videos[0]
         new_video.when_submitted = datetime.datetime.now() - \
@@ -435,7 +435,7 @@ class ReviewStatusEmailCommandTestCase(BaseTestCase):
         self._set_notification(self.superuser, False)
 
         queue_videos = Video.objects.filter(
-            status=Video.UNAPPROVED)
+            status=Video.NEEDS_MODERATION)
 
         new_video = queue_videos[0]
         new_video.when_submitted = datetime.datetime.now()
@@ -596,9 +596,9 @@ class SubmitVideoViewFunctionalTestCase(BaseTestCase):
         self.assertRedirects(response, reverse('localtv_submit_thanks',
                                                args=[video.pk]))
         if approve:
-            self.assertEqual(video.status, Video.ACTIVE)
+            self.assertEqual(video.status, Video.PUBLISHED)
         else:
-            self.assertEqual(video.status, Video.UNAPPROVED)
+            self.assertEqual(video.status, Video.NEEDS_MODERATION)
         self.assertEqual(len(mail.outbox), 0)
         self.assertFalse(SubmitURLView.session_key in self.client.session)
 
@@ -713,7 +713,7 @@ class SubmitVideoViewFunctionalTestCase(BaseTestCase):
         # no matter which kind of view it is.
         rejected_video = Video.objects.create(
             site=Site.objects.get_current(),
-            status=Video.REJECTED,
+            status=Video.HIDDEN,
             name='test video',
             file_url=data['video_data']['url'],
             website_url=data['video_data']['url'])
@@ -726,7 +726,7 @@ class SubmitVideoViewFunctionalTestCase(BaseTestCase):
 
         self.assertRedirects(response, reverse('localtv_submit_thanks',
                                                args=[video.pk]))
-        self.assertEqual(video.status, Video.UNAPPROVED)
+        self.assertEqual(video.status, Video.NEEDS_MODERATION)
         self.assertEqual(len(mail.outbox), 0)
         self.assertFalse(SubmitURLView.session_key in self.client.session)
 
@@ -751,7 +751,7 @@ class SubmitVideoViewFunctionalTestCase(BaseTestCase):
         # no matter which kind of view it is.
         unrejected_video = Video.objects.create(
             site=Site.objects.get_current(),
-            status=Video.ACTIVE,
+            status=Video.PUBLISHED,
             name='test video',
             file_url=data['video_data']['url'],
             website_url=data['video_data']['url'])

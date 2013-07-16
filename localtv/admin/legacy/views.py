@@ -15,13 +15,13 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         site_videos = Video.objects.filter(site=settings.SITE_ID)
-        active_site_videos = site_videos.filter(status=Video.ACTIVE)
+        active_site_videos = site_videos.filter(status=Video.PUBLISHED)
         week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
         context.update({
             'total_count': active_site_videos.count(),
             'videos_this_week_count': active_site_videos.filter(
                              when_approved__gt=week_ago).count(),
-            'unreviewed_count': site_videos.filter(status=Video.UNAPPROVED
+            'unreviewed_count': site_videos.filter(status=Video.NEEDS_MODERATION
                                           ).count(),
             'comment_count': comments.get_model().objects.filter(
                                                               is_public=False,

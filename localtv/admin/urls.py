@@ -17,6 +17,4 @@ admin_riff.autodiscover(with_modeladmins=False, with_batteries=False)
 
 urlpatterns = patterns('',
     url(r'^', include(admin_riff.urls)),
-
-    url(r'^', include('localtv.admin.legacy.urls')),
 )

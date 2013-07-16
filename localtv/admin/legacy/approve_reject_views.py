@@ -22,7 +22,7 @@ from notification import models as notification
 ## --------------------
 
 def get_video_paginator(site_settings):
-    videos = Video.objects.filter(status=Video.UNAPPROVED,
+    videos = Video.objects.filter(status=Video.NEEDS_MODERATION,
                                   site=site_settings.site
                          ).order_by('when_submitted', 'when_published')
 
@@ -52,7 +52,7 @@ def preview_video(request):
     current_video = get_object_or_404(
         Video,
         id=request.GET['video_id'],
-        status=Video.UNAPPROVED,
+        status=Video.NEEDS_MODERATION,
         site=Site.objects.get_current())
     return render_to_response(
         'localtv/admin/video_preview.html',
@@ -69,7 +69,7 @@ def approve_video(request):
         id=request.GET['video_id'],
         site=site_settings.site)
 
-    current_video.status = Video.ACTIVE
+    current_video.status = Video.PUBLISHED
     current_video.when_approved = datetime.datetime.now()
 
     if request.GET.get('feature'):
@@ -101,7 +101,7 @@ def reject_video(request):
         Video,
         id=request.GET['video_id'],
         site=Site.objects.get_current())
-    current_video.status = Video.REJECTED
+    current_video.status = Video.HIDDEN
     current_video.save()
     return HttpResponse('SUCCESS')
 
@@ -113,8 +113,8 @@ def feature_video(request):
     site_settings = SiteSettings.objects.get_current()
     current_video = get_object_or_404(
         Video, pk=video_id, site=site_settings.site)
-    if not current_video.status == Video.ACTIVE:
-        current_video.status = Video.ACTIVE
+    if not current_video.status == Video.PUBLISHED:
+        current_video.status = Video.PUBLISHED
         current_video.when_approved = datetime.datetime.now()
     current_video.last_featured = datetime.datetime.now()
     current_video.save()
@@ -148,7 +148,7 @@ def reject_all(request):
             'Page number request exceeded available pages')
 
     for video in page.object_list:
-        video.status = Video.REJECTED
+        video.status = Video.HIDDEN
         video.save()
 
     return HttpResponse('SUCCESS')
@@ -168,7 +168,7 @@ def approve_all(request):
             'Page number request exceeded available pages')
 
     for video in page.object_list:
-        video.status = Video.ACTIVE
+        video.status = Video.PUBLISHED
         video.when_approved = datetime.datetime.now()
         video.save()
 
@@ -177,11 +177,11 @@ def approve_all(request):
 @require_site_admin
 @csrf_protect
 def clear_all(request):
-    videos = Video.objects.filter(status=Video.UNAPPROVED,
+    videos = Video.objects.filter(status=Video.NEEDS_MODERATION,
                                   site=Site.objects.get_current())
     if request.POST.get('confirm') == 'yes':
         for video in videos:
-            video.status = Video.REJECTED
+            video.status = Video.HIDDEN
             video.save()
         return HttpResponseRedirect(reverse('localtv_admin_approve_reject'))
     else:

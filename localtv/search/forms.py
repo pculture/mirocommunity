@@ -181,7 +181,7 @@ class SearchForm(HaystackForm):
         if use_haystack:
             qs = SmartSearchQuerySet().models(Video)
         else:
-            qs = Video.objects.filter(status=Video.ACTIVE)
+            qs = Video.objects.filter(status=Video.PUBLISHED)
 
         return qs.filter(site=settings.SITE_ID)
 

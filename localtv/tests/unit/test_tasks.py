@@ -43,7 +43,7 @@ class HaystackUpdateUnitTestCase(BaseTestCase):
         BaseTestCase.setUp(self)
         self._clear_index()
         self.video0 = self.create_video(name='Unapproved',
-                                        status=Video.UNAPPROVED,
+                                        status=Video.NEEDS_MODERATION,
                                         update_index=False)
         self.video1 = self.create_video(name='Video1', update_index=False)
         self.video2 = self.create_video(name='Video2', update_index=False)
@@ -77,7 +77,7 @@ class HaystackUpdateUnitTestCase(BaseTestCase):
                                     all_pks))
 
         # If remove is True, the changed instance should be removed.
-        self.video1.status = Video.REJECTED
+        self.video1.status = Video.HIDDEN
         self.video1.save(update_index=False)
         expected = set(all_pks[1:])
         results = set((int(r.pk) for r in SearchQuerySet()))
@@ -92,7 +92,7 @@ class HaystackUpdateUnitTestCase(BaseTestCase):
         self.assertEqual(results, expected)
 
         # Otherwise, it shouldn't be removed.
-        self.video2.status = Video.REJECTED
+        self.video2.status = Video.HIDDEN
         self.video2.save(update_index=False)
         expected = set(all_pks[2:])
         results = set((int(r.pk) for r in SearchQuerySet()))

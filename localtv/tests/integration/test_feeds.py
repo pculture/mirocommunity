@@ -29,7 +29,7 @@ class FeedViewIntegrationTestCase(BaseTestCase):
             when_submitted=yesterday,
             when_approved=yesterday,
             when_published=yesterday)
-        self.unapproved_video = self.create_video(status=Video.UNAPPROVED)
+        self.unapproved_video = self.create_video(status=Video.NEEDS_MODERATION)
 
     def test_search_feed(self):
         bar_video = self.create_video(name='Foo Bar')
@@ -112,10 +112,10 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         self.feed = Feed.objects.create(name='Feed', site_id=1,
                                         last_updated=datetime.datetime.now())
         self.unapproved_video = self.create_video('Feed Video',
-                                                  status=Video.UNAPPROVED,
+                                                  status=Video.NEEDS_MODERATION,
                                                   feed=self.feed)
         self.unapproved_user_video = self.create_video('User Video',
-                                                       status=Video.UNAPPROVED)
+                                                       status=Video.NEEDS_MODERATION)
 
     def test_unapproved(self):
         url = reverse('localtv_admin_feed_unapproved',
@@ -124,7 +124,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         fp = feedparser.parse(response.content)
         expected_titles = Video.objects.filter(
-            status=Video.UNAPPROVED,
+            status=Video.NEEDS_MODERATION,
             site=1).order_by('when_submitted', 'when_published'
             ).values_list('name', flat=True)
         self.assertEquals([entry.title for entry in fp.entries],
@@ -137,7 +137,7 @@ class AdminFeedViewIntegrationTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         fp = feedparser.parse(response.content)
         expected_titles = Video.objects.filter(
-            status=Video.UNAPPROVED, feed=None, search=None,
+            status=Video.NEEDS_MODERATION, feed=None, search=None,
             site=1).order_by('when_submitted', 'when_published'
             ).values_list('name', flat=True)
         self.assertEquals([entry.title for entry in fp.entries],

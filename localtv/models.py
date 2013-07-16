@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 from django.contrib.comments.moderation import CommentModerator, moderator
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.signals import request_finished
@@ -254,6 +255,157 @@ class WidgetSettings(Thumbnailable):
         return prefix % suffix
 
 
+class SourceImportIdentifier(models.Model):
+    """
+    Represents a single identifier for a video, seen during an import of a
+    given source.
+
+    """
+    identifier_hash = models.CharField(max_length=40)
+    source_id = models.PositiveIntegerField()
+    source_content_type = models.ForeignKey(ContentType)
+    source = generic.GenericForeignKey('source_content_type', 'source_id')
+
+
+class SourceImport(models.Model):
+    created_timestamp = models.DateTimeField(auto_now_add=True)
+    modified_timestamp = models.DateTimeField(auto_now=True)
+    is_complete = models.BooleanField(default=False)
+    #: Denormalized field displaying (eventually accurate) count of
+    #: errors during the import process.
+    error_count = models.PositiveIntegerField(default=0)
+    #: Denormalized field displaying (eventually accurate) count of
+    #: videos imported during the import process.
+    import_count = models.PositiveIntegerField(default=0)
+    source_id = models.PositiveIntegerField()
+    source_content_type = models.ForeignKey(ContentType)
+    source = generic.GenericForeignKey('source_content_type', 'source_id')
+
+    class Meta:
+        get_latest_by = 'created_timestamp'
+        ordering = ['-created_timestamp']
+
+    def run(self):
+        from localtv.tasks import video_save_thumbnail, haystack_batch_update
+        auto_authors = list(self.source.auto_authors.all())
+        auto_categories = list(self.source.auto_categories.all())
+        try:
+            iterator = self.source.get_iterator()
+            for vidscraper_video in iterator:
+                try:
+                    vidscraper_video.load()
+                    if self.is_seen(vidscraper_video):
+                        if self.source.stop_if_seen:
+                            break
+                        else:
+                            self.record_step(SourceImportStep.VIDEO_FOUND)
+                            continue
+                    video = Video.from_vidscraper_video(
+                        vidscraper_video,
+                        status=Video.UNPUBLISHED,
+                        commit=False,
+                        source=self.source,
+                        site_pk=self.source.site_id,
+                        authors=auto_authors,
+                        categories=auto_categories,
+                        update_index=False,
+                    )
+                    try:
+                        video.clean_fields()
+                        video.validate_unique()
+                    except ValidationError, e:
+                        self.record_step(SourceImportStep.VIDEO_INVALID,
+                                         with_traceback=True)
+
+                    video.save(update_index=False)
+                    try:
+                        video.save_m2m()
+                    except Exception:
+                        video.delete()
+                        raise
+                    self.mark_seen(vidscraper_video)
+                    if video.thumbnail_url:
+                        video_save_thumbnail.delay(video.pk)
+                    self.record_step(SourceImportStep.VIDEO_IMPORTED,
+                                     video=video)
+                except Exception:
+                    self.record_step(SourceImportStep.VIDEO_ERRORED,
+                                     with_traceback=True)
+                # Update timestamp (and potentially counts) after each video.
+                self.save()
+        except Exception:
+            self.record_step(SourceImportStep.IMPORT_ERRORED,
+                             with_traceback=True)
+
+        # Pt 2: Mark videos active all at once.
+        if not self.source.moderate_imported_videos:
+            videos = Video.objects.filter(sourceimportstep_set__source_import=self,
+                                          status=Video.UNPUBLISHED)
+            for receiver, response in pre_publish.send_robust(
+                    sender=self, videos=videos):
+                if response:
+                    if isinstance(response, Q):
+                        videos = videos.filter(response)
+                    elif isinstance(response, dict):
+                        videos = videos.filter(**response)
+
+            videos.update(status=Video.PUBLISHED)
+            video_pks = Video.objects.filter(sourceimportstep_set__source_import=self,
+                                             status=Video.PUBLISHED
+                                             ).values_list('pk', flat=True)
+            if video_pks:
+                opts = Video._meta
+                haystack_batch_update.delay(opts.app_label, opts.module_name,
+                                            pks=list(video_pks), remove=False)
+
+        Video.objects.filter(sourceimportstep_set__source_import=self,
+                             status=Video.UNPUBLISHED
+                             ).update(status=Video.NEEDS_MODERATION)
+        self.is_complete = True
+        self.save()
+
+    def record_step(self, step_type, video=None, with_traceback=False):
+        if step_type in (SourceImportStep.VIDEO_ERRORED,
+                         SourceImportStep.IMPORT_ERRORED):
+            self.error_count += 1
+        if step_type == SourceImportStep.VIDEO_IMPORTED:
+            self.import_count += 1
+        traceback = traceback.format_exc() if with_traceback else ''
+        self.steps.create(step_type=step_type,
+                          video=video,
+                          traceback=traceback)
+
+
+class SourceImportStep(models.Model):
+    #: Something errored on the import level.
+    IMPORT_ERRORED = 'import errored'
+    #: A video was found to already be in the database - i.e. previously imported.
+    VIDEO_FOUND = 'video found'
+    #: Something semi-expected is wrong with the video which prevents
+    #: it from being imported.
+    VIDEO_INVALID = 'video invalid'
+    #: Something unexpected happened during an import of a video.
+    VIDEO_ERRORED = 'video errored'
+    #: A video was successfully imported.
+    VIDEO_IMPORTED = 'video imported'
+    STEP_TYPE_CHOICES = (
+        (IMPORT_ERRORED, _(u'Import errored')),
+        (VIDEO_FOUND, _(u'Video found')),
+        (VIDEO_INVALID, _(u'Video invalid')),
+        (VIDEO_ERRORED, _(u'Video errored')),
+        (VIDEO_IMPORTED, _(u'Video imported')),
+    )
+    step_type = models.CharField(max_length=14,
+                                 choices=STEP_TYPE_CHOICES)
+    video = models.OneToOneField('Video',
+                                 blank=True,
+                                 null=True,
+                                 on_delete=models.SET_NULL)
+    traceback = models.TextField(blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    source_import = models.ForeignKey(SourceImport, related_name='steps')
+
+
 class Source(Thumbnailable):
     """
     An abstract base class to represent things which are sources of multiple
@@ -272,64 +424,23 @@ class Source(Thumbnailable):
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
 
+    imports = generic.GenericRelation(SourceImport,
+                                      content_type_field='source_content_type',
+                                      object_id_field='source_id')
+
     class Meta:
         abstract = True
 
-    def update(self, video_iter, source_import, clear_rejected=False):
-        """
-        Imports videos from a feed/search.  `videos` is an iterable which
-        returns :class:`vidscraper.videos.Video` objects.  We use
-        :method:`.Video.from_vidscraper_video` to map the Vidscraper fields to
-        Video attributes.
-
-        If ``clear_rejected`` is ``True``, rejected versions of videos that are
-        found in the ``video_iter`` will be deleted and re-imported.
-
-        """
-        author_pks = list(self.auto_authors.values_list('pk', flat=True))
-        category_pks = list(self.auto_categories.values_list('pk', flat=True))
-
-        import_opts = source_import.__class__._meta
-
-        from localtv.tasks import video_from_vidscraper_video, mark_import_pending
-
-        total_videos = 0
-
-        try:
-            for vidscraper_video in video_iter:
-                total_videos += 1
-                try:
-                    video_from_vidscraper_video.delay(
-                        vidscraper_video.serialize(),
-                        site_pk=self.site_id,
-                        import_app_label=import_opts.app_label,
-                        import_model=import_opts.module_name,
-                        import_pk=source_import.pk,
-                        status=Video.PENDING,
-                        author_pks=author_pks,
-                        category_pks=category_pks,
-                        clear_rejected=clear_rejected)
-                except Exception:
-                    source_import.handle_error(
-                        'Import task creation failed for %r' % (
-                            vidscraper_video.url,),
-                        is_skip=True,
-                        with_exception=True)
-        except Exception:
-            source_import.fail(with_exception=True)
-            return
-
-        source_import.__class__._default_manager.filter(
-            pk=source_import.pk
-        ).update(
-            total_videos=total_videos
-        )
-        mark_import_pending.delay(import_app_label=import_opts.app_label,
-                                  import_model=import_opts.module_name,
-                                  import_pk=source_import.pk)
+    def start_import(self):
+        imp = SourceImport()
+        imp.source = self
+        imp.save()
+        imp.run()
 
 
 class Feed(Source):
+    # Feeds are expected to stay in the same order.
+    stop_if_seen = True
     # was "feed_url"
     original_url = models.URLField(verify_exists=False)
 
@@ -340,8 +451,7 @@ class Feed(Source):
     description = models.TextField(blank=True)
     etag = models.CharField(max_length=250, blank=True)
 
-    # Deprecated.
-    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
+    update_metadata = models.BooleanField(default=True)
 
     def __unicode__(self):
         return self.name
@@ -350,83 +460,73 @@ class Feed(Source):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def update(self, **kwargs):
-        """
-        Fetch and import new videos from this feed.
-
-        """
-        try:
-            FeedImport.objects.get(source=self,
-                                   status=FeedImport.STARTED)
-        except FeedImport.DoesNotExist:
-            pass
-        else:
-            logging.info('Skipping import of %s: already in progress' % self)
-            return
-
-        feed_import = FeedImport.objects.create(source=self,
-                                                auto_approve=self.auto_approve)
-
-        video_iter = vidscraper.auto_feed(
+    def get_iterator(self):
+        iterator = vidscraper.auto_feed(
             self.feed_url,
-            max_results=None if self.status == self.INACTIVE else 100,
+            # We'll stop at the first previously-seen video.
+            max_results=None,
             api_keys=lsettings.API_KEYS,
         )
+        iterator.load()
 
-        try:
-            video_iter.load()
-        except Exception:
-            feed_import.fail("Data loading failed for {source}",
-                             with_exception=True)
-            return
+        save = False
 
-        self.etag = getattr(video_iter, 'etag', None) or ''
-        self.last_updated = datetime.datetime.now()
-        if self.status == self.INACTIVE:
+        etag = getattr(iterator, 'etag', None) or ''
+        if (etag and etag != self.etag):
+            self.etag = etag
+            save = True
+
+        if self.update_metadata:
             # If these fields have already been changed, don't
             # override those changes. Don't unset the name field
             # if no further data is available.
             if self.name == self.feed_url:
-                self.name = video_iter.title or self.name
+                self.name = iterator.title or self.name
             if not self.webpage:
-                self.webpage = video_iter.webpage or ''
+                self.webpage = iterator.webpage or ''
             if not self.description:
-                self.description = video_iter.description or ''
-        self.save()
+                self.description = iterator.description or ''
+            # Only do this on the first run (for now.)
+            self.update_metadata = False
+            save = True
 
-        super(Feed, self).update(video_iter, source_import=feed_import,
-                                 **kwargs)
+        if save:
+            self.save()
 
-    def source_type(self):
-        return self.calculated_source_type
-
-    def _calculate_source_type(self):
-        video_service = self.video_service()
-        if video_service is None:
-            return u'Feed'
-        else:
-            return u'User: %s' % video_service
-
-    def video_service(self):
-        for service, regexp in VIDEO_SERVICE_REGEXES:
-            if re.search(regexp, self.feed_url, re.I):
-                return service
+        return iterator
 
 
-def pre_save_set_calculated_source_type(instance, **kwargs):
-    # Always save the calculated_source_type
-    instance.calculated_source_type = instance._calculate_source_type()
-    # Plus, if the name changed, we have to recalculate all the Videos that depend on us.
-    try:
-        v = Feed.objects.get(id=instance.id)
-    except Feed.DoesNotExist:
-        return instance
-    if v.name != instance.name:
-        # recalculate all the sad little videos' calculated_source_type
-        for vid in instance.video_set.all():
-            vid.save()
-models.signals.pre_save.connect(pre_save_set_calculated_source_type,
-                                sender=Feed)
+class SavedSearch(Source):
+    """
+    A set of keywords to regularly pull in new videos from.
+
+    """
+    # Searches may have seen entries before unseen.
+    stop_if_seen = False
+    query_string = models.TextField()
+
+    def __unicode__(self):
+        return self.query_string
+
+    def get_iterator(self):
+        searches = vidscraper.auto_search(
+            self.query_string,
+            max_results=100,
+            api_keys=lsettings.API_KEYS,
+        )
+
+        video_iters = []
+        for video_iter in searches:
+            try:
+                video_iter.load()
+            except Exception:
+                search_import.handle_error(u'Skipping import of search results '
+                               u'from %s' % video_iter.__class__.__name__,
+                               with_exception=True)
+                continue
+            video_iters.append(video_iter)
+
+        return itertools.chain(*video_iters)
 
 
 class Category(MPTTModel):
@@ -507,7 +607,7 @@ class Category(MPTTModel):
         opts = self._mptt_meta
 
         lookups = {
-            'status': Video.ACTIVE,
+            'status': Video.PUBLISHED,
             'categories__left__gte': getattr(self, opts.left_attr),
             'categories__left__lte': getattr(self, opts.right_attr),
             'categories__tree_id': getattr(self, opts.tree_id_attr)
@@ -519,235 +619,6 @@ class Category(MPTTModel):
     def unique_error_message(self, model_class, unique_check):
         return 'Category with this %s already exists.' % (
             unique_check[0],)
-
-
-class SavedSearch(Source):
-    """
-    A set of keywords to regularly pull in new videos from.
-
-    There's an administrative interface for doing "live searches"
-
-    Fields:
-     - site: site this savedsearch applies to
-     - query_string: a whitespace-separated list of words to search for.  Words
-       starting with a dash will be processed as negative query terms
-     - when_created: date and time that this search was saved.
-    """
-    query_string = models.TextField()
-
-    def __unicode__(self):
-        return self.query_string
-
-    def update(self, **kwargs):
-        """
-        Fetch and import new videos from this search.
-
-        """
-        try:
-            SearchImport.objects.get(source=self,
-                                     status=SearchImport.STARTED)
-        except SearchImport.DoesNotExist:
-            pass
-        else:
-            logging.info('Skipping import of %s: already in progress' % self)
-            return
-
-        search_import = SearchImport.objects.create(
-            source=self,
-            auto_approve=self.auto_approve
-        )
-
-        searches = vidscraper.auto_search(
-            self.query_string,
-            max_results=100,
-            api_keys=lsettings.API_KEYS,
-        )
-
-        video_iters = []
-        for video_iter in searches:
-            try:
-                video_iter.load()
-            except Exception:
-                search_import.handle_error(u'Skipping import of search results '
-                               u'from %s' % video_iter.__class__.__name__,
-                               with_exception=True)
-                continue
-            video_iters.append(video_iter)
-
-        if video_iters:
-            super(SavedSearch, self).update(itertools.chain(*video_iters),
-                                            source_import=search_import,
-                                            **kwargs)
-        else:
-            # Mark the import as failed if none of the searches could load.
-            search_import.fail("All searches failed for {source}",
-                               with_exception=False)
-
-    def source_type(self):
-        return u'Search'
-
-
-class SourceImportIndex(models.Model):
-    video = models.OneToOneField('Video', unique=True)
-    index = models.PositiveIntegerField(blank=True, null=True)
-
-    class Meta:
-        abstract = True
-
-
-class FeedImportIndex(SourceImportIndex):
-    source_import = models.ForeignKey('FeedImport', related_name='indexes')
-
-
-class SearchImportIndex(SourceImportIndex):
-    source_import = models.ForeignKey('SearchImport', related_name='indexes')
-
-
-class SourceImportError(models.Model):
-    message = models.TextField()
-    traceback = models.TextField(blank=True)
-    is_skip = models.BooleanField(help_text="Whether this error represents a "
-                                            "video that was skipped.")
-    datetime = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        abstract = True
-
-
-class FeedImportError(SourceImportError):
-    source_import = models.ForeignKey('FeedImport', related_name='errors')
-
-
-class SearchImportError(SourceImportError):
-    source_import = models.ForeignKey('SearchImport', related_name='errors')
-
-
-class SourceImport(models.Model):
-    STARTED = 'started'
-    PENDING = 'pending'
-    COMPLETE = 'complete'
-    FAILED = 'failed'
-    STATUS_CHOICES = (
-        (STARTED, _('Started')),
-        (PENDING, _('Pending haystack updates')),
-        (COMPLETE, _('Complete')),
-        (FAILED, _('Failed'))
-    )
-    start = models.DateTimeField(auto_now_add=True)
-    last_activity = models.DateTimeField(blank=True, null=True)
-    total_videos = models.PositiveIntegerField(blank=True, null=True)
-    videos_imported = models.PositiveIntegerField(default=0)
-    videos_skipped = models.PositiveIntegerField(default=0)
-    #: Caches the auto_approve of the search on the import, so that the imported
-    #: videos can be approved en masse at the end of the import based on the
-    #: settings at the beginning of the import.
-    auto_approve = models.BooleanField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES,
-                              default=STARTED)
-
-    class Meta:
-        get_latest_by = 'start'
-        ordering = ['-start']
-        abstract = True
-
-    def is_running(self):
-        """
-        Returns True if the SourceImport is currently running.
-        """
-        return self.status in (self.STARTED, self.PENDING)
-
-    def set_video_source(self, video):
-        """
-        Sets the value of the correct field on the ``video`` to mark it as
-        having the same source as this import. Must be implemented by
-        subclasses.
-
-        """
-        raise NotImplementedError
-
-    def get_videos(self):
-        raise NotImplementedError
-
-    def handle_error(self, message, is_skip=False, with_exception=False):
-        """
-        Logs the error with the default logger and to the database.
-
-        :param message: A human-friendly description of the error that does
-                        not contain sensitive information.
-        :param is_skip: ``True`` if the error results in a video being skipped.
-                        Default: False.
-        :param with_exception: ``True`` if exception information should be
-                               recorded. Default: False.
-        :param using: The database to use. Default: 'default'.
-
-        """
-        if with_exception:
-            exc_info = sys.exc_info()
-            logging.warn(message, exc_info=exc_info)
-            tb = ''.join(traceback.format_exception(*exc_info))
-        else:
-            logging.warn(message)
-            tb = ''
-        self.errors.create(message=message,
-                           source_import=self,
-                           traceback=tb,
-                           is_skip=is_skip)
-        if is_skip:
-            self.__class__._default_manager.filter(pk=self.pk
-                        ).update(videos_skipped=models.F('videos_skipped') + 1)
-
-    def get_index_creation_kwargs(self, video, vidscraper_video):
-        return {
-            'source_import': self,
-            'video': video,
-            'index': vidscraper_video.index
-        }
-
-    def handle_video(self, video, vidscraper_video):
-        """
-        Creates an index instance connecting the video to this import.
-
-        :param video: The :class:`Video` instance which was imported.
-        :param vidscraper_video: The original video from :mod:`vidscraper`.
-        :param using: The database alias to use. Default: 'default'
-
-        """
-        self.indexes.create(
-                    **self.get_index_creation_kwargs(video, vidscraper_video))
-        self.__class__._default_manager.filter(pk=self.pk
-                    ).update(videos_imported=models.F('videos_imported') + 1)
-
-    def fail(self, message="Import failed for {source}", with_exception=False):
-        """
-        Mark an import as failed, along with some post-fail cleanup.
-
-        """
-        self.status = self.FAILED
-        self.last_activity = datetime.datetime.now()
-        self.save()
-        self.handle_error(message.format(source=self.source),
-                          with_exception=with_exception)
-        self.get_videos().delete()
-
-
-class FeedImport(SourceImport):
-    source = models.ForeignKey(Feed, related_name='imports')
-
-    def set_video_source(self, video):
-        video.feed_id = self.source_id
-
-    def get_videos(self):
-        return Video.objects.filter(feedimportindex__source_import=self)
-
-
-class SearchImport(SourceImport):
-    source = models.ForeignKey(SavedSearch, related_name='imports')
-
-    def set_video_source(self, video):
-        video.search_id = self.source_id
-
-    def get_videos(self):
-        return Video.objects.filter(searchimportindex__source_import=self)
 
 
 class Video(Thumbnailable):
@@ -762,6 +633,11 @@ class Video(Thumbnailable):
         (PUBLISHED, _(u'Published')),
         (HIDDEN, _(u'Hidden')),
     )
+
+    # Backwards-compat
+    ACTIVE = PUBLISHED
+    REJECTED = HIDDEN
+    UNAPPROVED = NEEDS_MODERATION
 
     # Video core data
     #: This field contains a URL which a user gave as "the" URL
@@ -837,7 +713,6 @@ class Video(Thumbnailable):
     featured_datetime = models.DateTimeField(null=True, blank=True)
 
     # Deprecated fields
-    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     # Use case unclear. Dump it ASAP.
     notes = models.TextField(verbose_name='Notes (optional)', blank=True)
 
@@ -858,13 +733,15 @@ class Video(Thumbnailable):
         self._check_for_duplicates(exclude_rejected=True)
 
     def _check_for_duplicates(self, exclude_rejected=True):
+        # This should be part of the submission process, not inherent to the model.
+        # Users should have the option of submitting even if it *is* a duplicate?
         if not self.embed_code and not self.file_url:
             raise ValidationError("Video has no embed code or file url.")
 
         qs = Video.objects.filter(site=self.site_id)
 
         if exclude_rejected:
-            qs = qs.exclude(status=Video.REJECTED)
+            qs = qs.exclude(status=Video.HIDDEN)
 
         if self.pk is not None:
             qs = qs.exclude(pk=self.pk)
@@ -900,7 +777,7 @@ class Video(Thumbnailable):
             q_filter |= models.Q(guid=self.guid)
         qs = Video.objects.filter(
             site=self.site_id,
-            status=Video.REJECTED).filter(q_filter)
+            status=Video.HIDDEN).filter(q_filter)
         qs.delete()
 
     @models.permalink
@@ -924,7 +801,7 @@ class Video(Thumbnailable):
 
     @classmethod
     def from_vidscraper_video(cls, video, status=None, commit=True,
-                              source_import=None, site_pk=None, authors=None,
+                              source=None, site_pk=None, authors=None,
                               categories=None, update_index=True):
         """
         Builds a :class:`Video` instance from a
@@ -940,7 +817,7 @@ class Video(Thumbnailable):
             file_url = None
 
         if status is None:
-            status = cls.UNAPPROVED
+            status = cls.NEEDS_MODERATION
         if site_pk is None:
             site_pk = settings.SITE_ID
 
@@ -956,7 +833,7 @@ class Video(Thumbnailable):
             file_url_mimetype=getattr(video_file, 'mime_type', '') or '',
             file_url_length=getattr(video_file, 'length', None),
             when_submitted=now,
-            when_approved=now if status == cls.ACTIVE else None,
+            when_approved=now if status == cls.PUBLISHED else None,
             status=status,
             thumbnail_url=video.thumbnail_url or '',
             embed_code=video.embed_code or '',
@@ -977,8 +854,10 @@ class Video(Thumbnailable):
 
         instance._vidscraper_video = video
 
-        if source_import is not None:
-            source_import.set_video_source(instance)
+        if isinstance(source, Feed):
+            instance.feed = source
+        elif isinstance(source, SavedSearch):
+            instance.search = source
 
         def save_m2m():
             if authors:
@@ -1012,8 +891,6 @@ class Video(Thumbnailable):
                         tagging.models.Tag._default_manager.get_or_create(name=tag_name)
                     tagging.models.TaggedItem._default_manager.create(
                         tag=tag, object=instance)
-            if source_import is not None:
-                source_import.handle_video(instance, video)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video)
             if update_index:
@@ -1063,39 +940,6 @@ class Video(Thumbnailable):
         if site_settings.use_original_date and self.when_published:
             return self.when_published
         return self.when_approved or self.when_submitted
-
-    def source_type(self):
-        if self.id and self.search_id:
-            try:
-                return u'Search: %s' % self.search
-            except SavedSearch.DoesNotExist:
-                return u''
-
-        if self.id and self.feed_id:
-            try:
-                if self.feed.video_service():
-                    return u'User: %s: %s' % (
-                        self.feed.video_service(),
-                        self.feed.name)
-                else:
-                    return 'Feed: %s' % self.feed.name
-            except Feed.DoesNotExist:
-                return ''
-
-        if self.video_service_user:
-            return u'User: %s: %s' % (self.video_service(),
-                                      self.video_service_user)
-
-        return ''
-
-    def video_service(self):
-        if not self.website_url:
-            return
-
-        url = self.website_url
-        for service, regexp in VIDEO_SERVICE_REGEXES:
-            if re.search(regexp, url, re.I):
-                return service
 
     def when_prefix(self):
         """
@@ -1167,13 +1011,6 @@ class VideoFile(models.Model):
                 guess = mimetypes.guess_type(self.url)
                 if guess[0] is not None:
                     self.mimetype = guess[0]
-
-
-def pre_save_video_set_calculated_source_type(instance, **kwargs):
-    # Always recalculate the source_type field.
-    instance.calculated_source_type = instance.source_type()
-models.signals.pre_save.connect(pre_save_video_set_calculated_source_type,
-                                sender=Video)
 
 
 class Watch(models.Model):
@@ -1320,7 +1157,7 @@ tagging.models.Tag.__unicode__ = tag_unicode
 def send_new_video_email(sender, **kwargs):
     site_settings = SiteSettings.objects.get_cached(site=sender.site_id,
                                                     using=sender._state.db)
-    if sender.status == Video.ACTIVE:
+    if sender.status == Video.PUBLISHED:
         # don't send the e-mail for videos that are already active
         return
     t = loader.get_template('localtv/submit_video/new_video_email.txt')

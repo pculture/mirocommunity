@@ -177,7 +177,7 @@ class SubmitVideoView(CreateView):
         if self.object.guid:
             identifiers |= Q(guid=self.object.guid)
         Video.objects.filter(identifiers, site=Site.objects.get_current(),
-                             status=Video.REJECTED).delete()
+                             status=Video.HIDDEN).delete()
         del self.request.session[self.get_session_key()]
         submit_finished.send(sender=self.object)
         return response

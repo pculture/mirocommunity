@@ -26,7 +26,7 @@ class SubmitURLForm(forms.Form):
         if guid is not None:
             identifiers |= Q(guid=guid)
         videos = Video.objects.filter(identifiers,
-                                      ~Q(status=Video.REJECTED),
+                                      ~Q(status=Video.HIDDEN),
                                       site=Site.objects.get_current())
 
         # HACK: We set attributes on the form so that we can provide
@@ -41,7 +41,7 @@ class SubmitURLForm(forms.Form):
         else:
             self.was_duplicate = True
             self.duplicate_video_pk = video.pk
-            if video.status == Video.ACTIVE:
+            if video.status == Video.PUBLISHED:
                 self.duplicate_video = video
             else:
                 self.duplicate_video = None
@@ -81,7 +81,7 @@ class SubmitVideoFormBase(forms.ModelForm):
             self.fields['contact'].required = True
             self.fields['contact'].label = 'Email (required)'
         self.instance.site = Site.objects.get_current()
-        self.instance.status = Video.UNAPPROVED
+        self.instance.status = Video.NEEDS_MODERATION
         if not self.instance.website_url:
             self.instance.website_url = url
 
@@ -112,7 +112,7 @@ class SubmitVideoFormBase(forms.ModelForm):
             identifiers |= Q(guid=self.instance.guid)
 
         videos = Video.objects.filter(identifiers,
-                                      ~Q(status=Video.REJECTED),
+                                      ~Q(status=Video.HIDDEN),
                                       site=Site.objects.get_current())
         if videos.exists():
             self._update_errors({NON_FIELD_ERRORS: ["That video has already "
@@ -130,7 +130,7 @@ class SubmitVideoFormBase(forms.ModelForm):
             self.instance.contact = self.request.user.email
 
         if self.request.user_is_admin():
-            instance.status = Video.ACTIVE
+            instance.status = Video.PUBLISHED
 
         if 'website_url' in self.fields:
             # Then this was a form which required a website_url - i.e. a direct
@@ -140,7 +140,7 @@ class SubmitVideoFormBase(forms.ModelForm):
         old_m2m = self.save_m2m
 
         def save_m2m():
-            if instance.status == Video.ACTIVE:
+            if instance.status == Video.PUBLISHED:
                 # when_submitted isn't set until after the save
                 instance.when_approved = instance.when_submitted
                 instance.save()

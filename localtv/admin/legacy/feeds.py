@@ -36,7 +36,7 @@ class UnapprovedVideosFeed(BaseVideosFeed):
 
     def items(self, obj):
         items = Video.objects.filter(
-            status=Video.UNAPPROVED,
+            status=Video.NEEDS_MODERATION,
             site=Site.objects.get_current()
         ).order_by(
             'when_submitted', 'when_published'
@@ -52,7 +52,7 @@ class UnapprovedUserVideosFeed(UnapprovedVideosFeed):
 
     def items(self, obj):
         items = Video.objects.filter(
-            status=Video.UNAPPROVED,
+            status=Video.NEEDS_MODERATION,
             site=Site.objects.get_current(),
             feed=None,
             search=None

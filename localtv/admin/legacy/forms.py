@@ -485,7 +485,7 @@ class BulkEditVideoFormSet(BaseModelFormSet):
 
         for form in list(self.deleted_forms):
             form.cleaned_data[DELETION_FIELD_NAME] = False
-            form.instance.status = models.Video.REJECTED
+            form.instance.status = models.Video.HIDDEN
             form.instance.save()
         bulk_edits = self.extra_forms[0].cleaned_data
         for key in list(bulk_edits.keys()): # get the list because we'll be
@@ -518,16 +518,16 @@ class BulkEditVideoFormSet(BaseModelFormSet):
         self.can_delete = False
 
     def action_delete(self, form):
-        form.instance.status = models.Video.REJECTED
+        form.instance.status = models.Video.HIDDEN
 
     def action_approve(self, form):
-        form.instance.status = models.Video.ACTIVE
+        form.instance.status = models.Video.PUBLISHED
 
     def action_unapprove(self, form):
-        form.instance.status = models.Video.UNAPPROVED
+        form.instance.status = models.Video.NEEDS_MODERATION
 
     def action_feature(self, form):
-        form.instance.status = models.Video.ACTIVE
+        form.instance.status = models.Video.PUBLISHED
         form.instance.last_featured = datetime.datetime.now()
 
     def action_unfeature(self, form):

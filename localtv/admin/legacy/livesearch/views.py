@@ -180,11 +180,11 @@ class LiveSearchApproveVideoView(LiveSearchVideoMixin, View):
         else:
             video.search = saved_search
 
-        video.status = Video.ACTIVE
+        video.status = Video.PUBLISHED
         if request.GET.get('feature'):
             video.last_featured = datetime.now()
         elif request.GET.get('queue'):
-            video.status = Video.UNAPPROVED
+            video.status = Video.NEEDS_MODERATION
         video.save()
 
         try:
