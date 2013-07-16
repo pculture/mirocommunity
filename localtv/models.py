@@ -801,7 +801,17 @@ class Video(Thumbnailable):
         (HIDDEN, _(u'Hidden')),
     )
 
-    # Video core data (except files)
+    # Video core data
+    #: This field contains a URL which a user gave as "the" URL
+    #: for this video. It may or may not be the same as ``external_url``
+    #: or a file url. It may not even exist, if they're using embedding.
+    original_url = models.URLField(max_length=2048,
+                                   verify_exists=False,
+                                   blank=True)
+
+    # Video metadata
+    #: This field contains a URL to a web page that is the canonical HTML
+    #: home of the video as best as we can tell.
     # Was website_url
     external_url = models.URLField(
         verbose_name='Original Video Page URL (optional)',
@@ -811,8 +821,6 @@ class Video(Thumbnailable):
     embed_code = models.TextField(verbose_name="Video <embed> code", blank=True)
     flash_enclosure_url = models.URLField(verify_exists=False, max_length=2048,
                                           blank=True)
-
-    # Video metadata
     name = models.CharField(verbose_name="Video Name", max_length=250)
     description = models.TextField(verbose_name="Video Description (optional)",
                                    blank=True)
@@ -831,9 +839,10 @@ class Video(Thumbnailable):
     # Was "user"
     owner = models.ForeignKey('auth.User', null=True, blank=True)
     # was "contact"
-    owner_email = models.CharField(verbose_name='Email (optional)',
-                                   max_length=250,
-                                   blank=True)
+    owner_email = models.EmailField(verbose_name='Email (optional)',
+                                    max_length=250,
+                                    blank=True)
+    owner_session = models.ForeignKey('sessions.Session', blank=True, null=True)
 
     # Source info.
     feed = models.ForeignKey(Feed, null=True, blank=True)

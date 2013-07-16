@@ -8,32 +8,30 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.rename_column('localtv_video', 'website_url', 'external_url')
-        db.rename_column('localtv_video', 'user_id', 'owner_id')
-        db.rename_column('localtv_video', 'contact', 'owner_email')
-        db.rename_column('localtv_video', 'video_service_user', 'external_user')
-        db.rename_column('localtv_video', 'video_service_url', 'external_user_url')
-        db.rename_column('localtv_video', 'thumbnail_url', 'external_thumbnail_url')
-        db.rename_column('localtv_video', 'when_modified', 'modified_timestamp')
-        db.rename_column('localtv_video', 'when_submitted', 'created_timestamp')
-        db.rename_column('localtv_video', 'when_approved', 'published_datetime')
-        db.rename_column('localtv_video', 'when_published', 'external_published_datetime')
-        db.rename_column('localtv_video', 'last_featured', 'featured_datetime')
-        db.rename_column('localtv_video', 'status', 'old_status')
+        # Adding field 'Video.original_url'
+        db.add_column('localtv_video', 'original_url',
+                      self.gf('django.db.models.fields.URLField')(blank=True, max_length=2048),
+                      keep_default=False)
+
+        # Adding field 'Video.owner_session'
+        db.add_column('localtv_video', 'owner_session',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['sessions.Session'], null=True, blank=True),
+                      keep_default=False)
+
+
+        # Changing field 'Video.owner_email'
+        db.alter_column('localtv_video', 'owner_email', self.gf('django.db.models.fields.EmailField')(max_length=250))
 
     def backwards(self, orm):
-        db.rename_column('localtv_video', 'external_url', 'website_url')
-        db.rename_column('localtv_video', 'owner_id', 'user_id')
-        db.rename_column('localtv_video', 'owner_email', 'contact')
-        db.rename_column('localtv_video', 'external_user', 'video_service_user')
-        db.rename_column('localtv_video', 'external_user_url', 'video_service_url')
-        db.rename_column('localtv_video', 'external_thumbnail_url', 'thumbnail_url')
-        db.rename_column('localtv_video', 'modified_timestamp', 'when_modified')
-        db.rename_column('localtv_video', 'created_timestamp', 'when_submitted')
-        db.rename_column('localtv_video', 'published_datetime', 'when_approved')
-        db.rename_column('localtv_video', 'external_published_datetime', 'when_published')
-        db.rename_column('localtv_video', 'featured_datetime', 'last_featured')
-        db.rename_column('localtv_video', 'old_status', 'status')
+        # Deleting field 'Video.original_url'
+        db.delete_column('localtv_video', 'original_url')
+
+        # Deleting field 'Video.owner_session'
+        db.delete_column('localtv_video', 'owner_session_id')
+
+
+        # Changing field 'Video.owner_email'
+        db.alter_column('localtv_video', 'owner_email', self.gf('django.db.models.fields.CharField')(max_length=250))
 
     models = {
         'auth.group': {
@@ -217,12 +215,14 @@ class Migration(SchemaMigration):
             'modified_timestamp': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'old_status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'original_url': ('django.db.models.fields.URLField', [], {'max_length': '2048', 'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
-            'owner_email': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
+            'owner_email': ('django.db.models.fields.EmailField', [], {'max_length': '250', 'blank': 'True'}),
+            'owner_session': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sessions.Session']", 'null': 'True', 'blank': 'True'}),
             'published_datetime': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'search': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['localtv.SavedSearch']", 'null': 'True', 'blank': 'True'}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['sites.Site']"}),
+            'status': ('django.db.models.fields.CharField', [], {'default': "'unpublished'", 'max_length': '16'}),
             'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'blank': 'True'})
         },
         'localtv.videofile': {
@@ -257,6 +257,12 @@ class Migration(SchemaMigration):
             'text_color_editable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'title_editable': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+        },
+        'sessions.session': {
+            'Meta': {'object_name': 'Session', 'db_table': "'django_session'"},
+            'expire_date': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'}),
+            'session_data': ('django.db.models.fields.TextField', [], {}),
+            'session_key': ('django.db.models.fields.CharField', [], {'max_length': '40', 'primary_key': 'True'})
         },
         'sites.site': {
             'Meta': {'ordering': "('domain',)", 'object_name': 'Site', 'db_table': "'django_site'"},
