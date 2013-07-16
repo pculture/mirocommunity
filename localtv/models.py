@@ -259,17 +259,15 @@ class Source(Thumbnailable):
     An abstract base class to represent things which are sources of multiple
     videos.  Current subclasses are Feed and SavedSearch.
     """
-    id = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site)
     thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/source/thumbnail/%Y/%m/%d/'),
                                   blank=True)
 
-    auto_approve = models.BooleanField(default=False)
-    auto_update = models.BooleanField(default=True,
-                                      help_text=_("If selected, new videos will"
-                                                  " automatically be imported "
-                                                  "from this source."))
-    user = models.ForeignKey('auth.User', null=True, blank=True)
+    modified_timestamp = models.DateTimeField(auto_now=True)
+    created_timestamp = models.DateTimeField(auto_now_add=True)
+
+    moderate_imported_videos = models.BooleanField(default=False)
+    disable_imports = models.BooleanField(default=False)
     auto_categories = models.ManyToManyField("Category", blank=True)
     auto_authors = models.ManyToManyField("auth.User", blank=True,
                                           related_name='auto_%(class)s_set')
@@ -332,53 +330,18 @@ class Source(Thumbnailable):
 
 
 class Feed(Source):
-    """
-    Feed to pull videos in from.
+    # was "feed_url"
+    original_url = models.URLField(verify_exists=False)
 
-    If the same feed is used on two different sites, they will require two
-    separate entries here.
-
-    Fields:
-      - feed_url: The location of this field
-      - site: which site this feed belongs to
-      - name: human readable name for this feed
-      - webpage: webpage that this feed\'s content is associated with
-      - description: human readable description of this item
-      - last_updated: last time we ran self.update_items()
-      - when_submitted: when this feed was first registered on this site
-      - status: one of Feed.STATUS_CHOICES
-      - etag: used to see whether or not the feed has changed since our last
-        update.
-      - auto_approve: whether or not to set all videos in this feed to approved
-        during the import process
-      - user: a user that submitted this feed, if any
-      - auto_categories: categories that are automatically applied to videos on
-        import
-      - auto_authors: authors that are automatically applied to videos on
-        import
-    """
-    INACTIVE = 0
-    ACTIVE = 1
-
-    STATUS_CHOICES = (
-        (INACTIVE, _(u'Inactive')),
-        (ACTIVE, _(u'Active')),
-    )
-
-    feed_url = models.URLField(verify_exists=False)
+    # Feed metadata
     name = models.CharField(max_length=250)
-    webpage = models.URLField(verify_exists=False, blank=True)
+    # Was "webpage"
+    external_url = models.URLField(verify_exists=False, blank=True)
     description = models.TextField(blank=True)
-    last_updated = models.DateTimeField()
-    when_submitted = models.DateTimeField(auto_now_add=True)
     etag = models.CharField(max_length=250, blank=True)
-    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
-    status = models.IntegerField(choices=STATUS_CHOICES, default=INACTIVE)
 
-    class Meta:
-        unique_together = (
-            ('feed_url', 'site'))
-        get_latest_by = 'last_updated'
+    # Deprecated.
+    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
     def __unicode__(self):
         return self.name
@@ -571,7 +534,6 @@ class SavedSearch(Source):
      - when_created: date and time that this search was saved.
     """
     query_string = models.TextField()
-    when_created = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return self.query_string
@@ -861,9 +823,7 @@ class Video(Thumbnailable):
                               choices=STATUS_CHOICES,
                               default=UNPUBLISHED)
     # was "when_modified".
-    modified_timestamp = models.DateTimeField(auto_now=True,
-                                              db_index=True,
-                                              default=datetime.datetime.now)
+    modified_timestamp = models.DateTimeField(auto_now=True)
     # was "when_submitted"
     created_timestamp = models.DateTimeField(auto_now_add=True)
     # was "when_approved".
