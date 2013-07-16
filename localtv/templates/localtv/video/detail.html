@@ -88,34 +88,44 @@
               {% trans "(no title)" %}
             {% endif %}
             <small>
-              {% with current_video as instance %}
-                {% include "localtv/_when_published.html" %} {% include "localtv/inline_edit/video_authors.html" %}
+              {% with current_video as video %}
+                {% include 'localtv/video/_published.html' %} {% include 'localtv/video/_authors.html' %}
               {% endwith %}
             </small>
           </h2>
           <section class="video-details">
             {{ current_video.description|safe }}
             <div class="extra-details">
-              {% if current_video.categories.count > 0 %}
-                <div class="video-full-categories compact">
-                  {% with current_video as instance %}
-                    {% include "localtv/inline_edit/video_categories.html" %}
-                  {% endwith %}
-                </div>{# /.video-full-categories #}
-              {% endif %}
-              {% if current_video.tags %}
-                <div class="video-full-tags compact">
-                  {% with current_video as instance %}
-                    {% include "localtv/inline_edit/video_tags.html" %}
-                  {% endwith %}
-                </div>{# /.video-full-tags #}
-              {% endif %}
+              {% with categories=current_video.categories.all %}
+                {% if categories %}
+                  <ul class='inline'>
+                    <li><strong>Categories</strong></li>
+                    {% for category in categories %}
+                      <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endwith %}
+              {% with tags=current_video.tags.all %}
+                {% if tags %}
+                  <ul class='inline'>
+                    <li><strong>Tags</strong></li>
+                    {% for tag in tags %}
+                      {% if tag.name %}
+                        {% url localtv_list_tag tag.name as tag_url %}
+                        <li>{% if tag_url %}<a href="{% url localtv_list_tag tag.name %}">{% endif %}{{ tag.name }}{% if tag_url %}</a>{% endif %},</li>{% if not forloop.last %} {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endwith %}
               {% if user_is_admin %}
-                {% if current_video.submitter %}<div class="compact"><h4>{% trans "Submitted by" %}:</h4> {{ current_video.submitter }}</div>{% endif %}
-                {% if current_video.search %}<div class="compact"><h4>{% trans "From search" %}:</h4> {{ current_video.search }}</div>{% endif %}
-                {% if current_video.feed %}<div class="compact"><h4>{% trans "From feed" %}:</h4> <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></div>{% endif %}
-                {% if current_video.contact %}<div class="compact"><h4>{% trans "Contact" %}:</h4> {{ current_video.contact }}</div>{% endif %}
-                {% if current_video.notes %}<div class="compact"><h4>{% trans "Notes" %}:</h4> {{ current_video.notes }}</div>{% endif %}
+                <ul>
+                  {% if current_video.owner %}<li>{% trans "Owner" %}: {{ current_video.owner }}</li>{% endif %}
+                  {% if current_video.search %}<li>{% trans "From search" %}: {{ current_video.search }}</li>{% endif %}
+                  {% if current_video.feed %}<li>{% trans "From feed" %}: <a href="{% url 'localtv_list_feed' current_video.feed.pk %}">{{ current_video.feed }}</a></li>{% endif %}
+                  {% if current_video.owner_email %}<li>{% trans "Contact" %}: {{ current_video.owner_email }}</li>{% endif %}
+                </ul>
               {% endif %}
             </div>
           </section>{# /.video-details #}

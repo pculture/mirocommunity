@@ -1,6 +1,6 @@
 {% load generate_embed filters daguerre video i18n %}
-{% if current_video.website_url|has_embed_generator %}
-  {% generate_embed current_video.website_url width=800 height=500 autoplay=0 %}
+{% if current_video.external_url|has_embed_generator %}
+  {% generate_embed current_video.external_url width=800 height=500 autoplay=0 %}
 {% elif current_video.embed_code %}
   {{ current_video.embed_code|wmode_transparent }}
 {% else %}

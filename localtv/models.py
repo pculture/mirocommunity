@@ -915,44 +915,6 @@ class Video(Thumbnailable):
                     self._prefetched_objects_cache['taggeditem_set']]
         return self.tags
 
-    def submitter(self):
-        """
-        Return the user that submitted this video.  If necessary, use the
-        submitter from the originating feed or savedsearch.
-        """
-        if self.user is not None:
-            return self.user
-        elif self.feed is not None:
-            return self.feed.user
-        elif self.search is not None:
-            return self.search.user
-        else:
-            # XXX warning?
-            return None
-
-    def when(self):
-        """
-        Simple method for getting the when_published date if the video came
-        from a feed or a search, otherwise the when_approved date.
-        """
-        site_settings = SiteSettings.objects.get_cached(self.site_id,
-                                                        self._state.db)
-        if site_settings.use_original_date and self.when_published:
-            return self.when_published
-        return self.when_approved or self.when_submitted
-
-    def when_prefix(self):
-        """
-        When videos are bulk imported (from a feed or a search), we list the
-        date as "published", otherwise we show 'posted'.
-        """
-        site_settings = SiteSettings.objects.get_cached(site=self.site_id,
-                                                        using=self._state.db)
-        if self.when_published and site_settings.use_original_date:
-            return 'published'
-        else:
-            return 'posted'
-
     @property
     def all_categories(self):
         """
