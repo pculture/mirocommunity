@@ -1,7 +1,6 @@
 import datetime
 import itertools
 import re
-import urllib2
 import mimetypes
 import operator
 import logging
@@ -30,6 +29,7 @@ from django.utils.translation import ugettext_lazy as _
 from haystack import connections, connection_router
 from mptt.models import MPTTModel
 from notification import models as notification
+import requests
 from slugify import slugify
 
 from localtv import utils, settings as lsettings
@@ -797,10 +797,6 @@ class Video(Thumbnailable):
      - tags: A list of Tag objects associated with this item
      - categories: Similar to Tags
      - authors: the person/people responsible for this video
-     - file_url: The file this object points to (if any) ... if not
-       provided, at minimum we need the embed_code for the item.
-     - file_url_length: size of the file, in bytes
-     - file_url_mimetype: mimetype of the file
      - when_submitted: When this item was first entered into the
        database
      - when_approved: When this item was marked to appear publicly on
@@ -851,10 +847,6 @@ class Video(Thumbnailable):
     categories = models.ManyToManyField(Category, blank=True)
     authors = models.ManyToManyField('auth.User', blank=True,
                                      related_name='authored_set')
-    file_url = models.URLField(verify_exists=False, blank=True,
-                               max_length=2048)
-    file_url_length = models.IntegerField(null=True, blank=True)
-    file_url_mimetype = models.CharField(max_length=60, blank=True)
     when_modified = models.DateTimeField(auto_now=True,
                                          db_index=True,
                                          default=datetime.datetime.now)
@@ -1086,32 +1078,6 @@ class Video(Thumbnailable):
                     self._prefetched_objects_cache['taggeditem_set']]
         return self.tags
 
-    def try_to_get_file_url_data(self):
-        """
-        Do a HEAD request on self.file_url to find information about
-        self.file_url_length and self.file_url_mimetype
-
-        Note that while this method fills in those attributes, it does *NOT*
-        run self.save() ... so be sure to do so after calling this method!
-        """
-        if not self.file_url:
-            return
-
-        request = urllib2.Request(utils.quote_unicode_url(self.file_url))
-        request.get_method = lambda: 'HEAD'
-        try:
-            http_file = urllib2.urlopen(request, timeout=5)
-        except Exception:
-            pass
-        else:
-            self.file_url_length = http_file.headers.get('content-length')
-            self.file_url_mimetype = http_file.headers.get('content-type', '')
-            if self.file_url_mimetype in ('application/octet-stream', ''):
-                # We got a not-useful MIME type; guess!
-                guess = mimetypes.guess_type(self.file_url)
-                if guess[0] is not None:
-                    self.file_url_mimetype = guess[0]
-
     def submitter(self):
         """
         Return the user that submitted this video.  If necessary, use the
@@ -1204,6 +1170,43 @@ class Video(Thumbnailable):
             q_list.append(models.Q(**l))
         q = reduce(operator.or_, q_list)
         return Category.objects.filter(q)
+
+
+class VideoFile(models.Model):
+    video = models.ForeignKey(Video, related_name='files')
+    url = models.URLField(verify_exists=False, max_length=2048)
+    length = models.PositiveIntegerField(null=True, blank=True)
+    mimetype = models.CharField(max_length=60, blank=True)
+
+    def fetch_metadata(self):
+        """
+        Do a HEAD request on self.url to try to get metadata
+        (self.length and self.mimetype).
+
+        Note that while this method fills in those attributes, it does *not*
+        call self.save() - so be sure to do so after calling this method!
+
+        """
+        if not self.url:
+            return
+
+        try:
+            response = requests.head(self.url, timeout=5)
+            if response.status_code == 302:
+                response = requests.head(response.headers['location'],
+                                         timeout=5)
+        except Exception:
+            pass
+        else:
+            if response.status_code != 200:
+                return
+            self.length = response.headers.get('content-length')
+            self.mimetype = response.headers.get('content-type', '')
+            if self.mimetype in ('application/octet-stream', ''):
+                # We got a not-useful MIME type; guess!
+                guess = mimetypes.guess_type(self.url)
+                if guess[0] is not None:
+                    self.mimetype = guess[0]
 
 
 def pre_save_video_set_calculated_source_type(instance, **kwargs):
