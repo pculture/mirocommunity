@@ -789,16 +789,16 @@ class SearchImport(SourceImport):
 
 
 class Video(Thumbnailable):
-    UNAPPROVED = 0
-    ACTIVE = 1
-    REJECTED = 2
-    PENDING = 3
+    UNPUBLISHED = 'unpublished'
+    NEEDS_MODERATION = 'needs moderation'
+    PUBLISHED = 'published'
+    HIDDEN = 'hidden'
 
     STATUS_CHOICES = (
-        (UNAPPROVED, _(u'Unapproved')),
-        (ACTIVE, _(u'Active')),
-        (REJECTED, _(u'Rejected')),
-        (PENDING, _(u'Waiting on import to finish')),
+        (UNPUBLISHED, _(u'Unpublished')),
+        (NEEDS_MODERATION, _(u'Needs moderation')),
+        (PUBLISHED, _(u'Published')),
+        (HIDDEN, _(u'Hidden')),
     )
 
     # Video core data (except files)
@@ -848,6 +848,9 @@ class Video(Thumbnailable):
 
     # Other internal use.
     site = models.ForeignKey(Site)
+    status = models.CharField(max_length=16,
+                              choices=STATUS_CHOICES,
+                              default=UNPUBLISHED)
     # was "when_modified".
     modified_timestamp = models.DateTimeField(auto_now=True,
                                               db_index=True,
@@ -868,9 +871,6 @@ class Video(Thumbnailable):
     calculated_source_type = models.CharField(max_length=255, blank=True, default='')
     # Use case unclear. Dump it ASAP.
     notes = models.TextField(verbose_name='Notes (optional)', blank=True)
-
-    # Was "status".
-    old_status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
 
     objects = VideoManager()
 
