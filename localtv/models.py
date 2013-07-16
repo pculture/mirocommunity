@@ -789,40 +789,6 @@ class SearchImport(SourceImport):
 
 
 class Video(Thumbnailable):
-    """
-    Fields:
-     - name: Name of this video
-     - site: Site this video is attached to
-     - description: Video description
-     - tags: A list of Tag objects associated with this item
-     - categories: Similar to Tags
-     - authors: the person/people responsible for this video
-     - when_submitted: When this item was first entered into the
-       database
-     - when_approved: When this item was marked to appear publicly on
-       the site
-     - when_published: When this file was published at its original
-       source (if known)
-     - last_featured: last time this item was featured.
-     - status: one of Video.STATUS_CHOICES
-     - feed: which feed this item came from (if any)
-     - website_url: The page that this item is associated with.
-     - embed_code: code used to embed this item.
-     - flash_enclosure_url: Crappy enclosure link that doesn't
-       actually point to a url.. the kind crappy flash video sites
-       give out when they don't actually want their enclosures to
-       point to video files.
-     - guid: data used to identify this video
-     - thumbnail_url: url to the thumbnail, if such a thing exists
-     - user: if not None, the user who submitted this video
-     - search: if not None, the SavedSearch from which this video came
-     - video_service_user: if not blank, the username of the user on the video
-       service who owns this video.  We can figure out the service from the
-       website_url.
-     - contact: a free-text field for anonymous users to specify some contact
-       info
-     - notes: a free-text field to add notes about the video
-    """
     UNAPPROVED = 0
     ACTIVE = 1
     REJECTED = 2
@@ -835,31 +801,9 @@ class Video(Thumbnailable):
         (PENDING, _(u'Waiting on import to finish')),
     )
 
-    site = models.ForeignKey(Site)
-    name = models.CharField(verbose_name="Video Name", max_length=250)
-    description = models.TextField(verbose_name="Video Description (optional)",
-                                   blank=True)
-    thumbnail_url = models.URLField(verbose_name="Thumbnail URL (optional)",
-                                    verify_exists=False, blank=True,
-                                    max_length=400)
-    thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/video/thumbnail/%Y/%m/%d/'),
-                                  blank=True)
-    categories = models.ManyToManyField(Category, blank=True)
-    authors = models.ManyToManyField('auth.User', blank=True,
-                                     related_name='authored_set')
-    when_modified = models.DateTimeField(auto_now=True,
-                                         db_index=True,
-                                         default=datetime.datetime.now)
-    when_submitted = models.DateTimeField(auto_now_add=True)
-    when_approved = models.DateTimeField(null=True, blank=True)
-    when_published = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text='Format: yyyy-mm-dd hh:mm:ss')
-    last_featured = models.DateTimeField(null=True, blank=True)
-    status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
-    feed = models.ForeignKey(Feed, null=True, blank=True)
-    website_url = models.URLField(
+    # Video core data (except files)
+    # Was website_url
+    external_url = models.URLField(
         verbose_name='Original Video Page URL (optional)',
         max_length=2048,
         verify_exists=False,
@@ -867,25 +811,72 @@ class Video(Thumbnailable):
     embed_code = models.TextField(verbose_name="Video <embed> code", blank=True)
     flash_enclosure_url = models.URLField(verify_exists=False, max_length=2048,
                                           blank=True)
-    guid = models.CharField(max_length=250, blank=True)
-    user = models.ForeignKey('auth.User', null=True, blank=True)
-    search = models.ForeignKey(SavedSearch, null=True, blank=True)
-    video_service_user = models.CharField(max_length=250, blank=True)
-    video_service_url = models.URLField(verify_exists=False, blank=True)
-    contact = models.CharField(verbose_name='Email (optional)', max_length=250,
-                               blank=True)
-    notes = models.TextField(verbose_name='Notes (optional)', blank=True)
-    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
 
-    objects = VideoManager()
+    # Video metadata
+    name = models.CharField(verbose_name="Video Name", max_length=250)
+    description = models.TextField(verbose_name="Video Description (optional)",
+                                   blank=True)
+    thumbnail = models.ImageField(upload_to=utils.UploadTo('localtv/video/thumbnail/%Y/%m/%d/'),
+                                  blank=True)
+    categories = models.ManyToManyField(Category, blank=True)
+    authors = models.ManyToManyField('auth.User', blank=True,
+                                     related_name='authored_set')
+    guid = models.CharField(max_length=250, blank=True)
 
     taggeditem_set = generic.GenericRelation(tagging.models.TaggedItem,
                                              content_type_field='content_type',
                                              object_id_field='object_id')
 
+    # Owner info.
+    # Was "user"
+    owner = models.ForeignKey('auth.User', null=True, blank=True)
+    # was "contact"
+    owner_email = models.CharField(verbose_name='Email (optional)',
+                                   max_length=250,
+                                   blank=True)
+
+    # Source info.
+    feed = models.ForeignKey(Feed, null=True, blank=True)
+    search = models.ForeignKey(SavedSearch, null=True, blank=True)
+    # Was video_service_user and video_service_url
+    external_user = models.CharField(max_length=250, blank=True)
+    external_user_url = models.URLField(verify_exists=False, blank=True)
+    # was "thumbnail_url"
+    external_thumbnail_url = models.URLField(verbose_name="Thumbnail URL (optional)",
+                                             verify_exists=False, blank=True,
+                                             max_length=400)
+
+    # Other internal use.
+    site = models.ForeignKey(Site)
+    # was "when_modified".
+    modified_timestamp = models.DateTimeField(auto_now=True,
+                                              db_index=True,
+                                              default=datetime.datetime.now)
+    # was "when_submitted"
+    created_timestamp = models.DateTimeField(auto_now_add=True)
+    # was "when_approved".
+    published_datetime = models.DateTimeField(null=True, blank=True)
+    # was when_published
+    external_published_datetime = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Format: yyyy-mm-dd hh:mm:ss')
+    # was last_featured
+    featured_datetime = models.DateTimeField(null=True, blank=True)
+
+    # Deprecated fields
+    calculated_source_type = models.CharField(max_length=255, blank=True, default='')
+    # Use case unclear. Dump it ASAP.
+    notes = models.TextField(verbose_name='Notes (optional)', blank=True)
+
+    # Was "status".
+    old_status = models.IntegerField(choices=STATUS_CHOICES, default=UNAPPROVED)
+
+    objects = VideoManager()
+
     class Meta:
-        ordering = ['-when_submitted']
-        get_latest_by = 'when_modified'
+        ordering = ['-created_timestamp']
+        get_latest_by = 'modified_timestamp'
 
     def __unicode__(self):
         return self.name
