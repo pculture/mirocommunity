@@ -1,0 +1,2 @@
+{% load filters %}
+{{ video.published_datetime|default:video.created_timestamp|simpletimesince }} ago

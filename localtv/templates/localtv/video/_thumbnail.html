@@ -6,7 +6,7 @@
             </div>
         {% endif %}
         {% with video as instance %}
-            <p><small class='muted'>{% include 'localtv/_when_published.html' %} {% include 'localtv/inline_edit/video_authors.html' %}</small></p>
+            <p><small class='muted'>{% include 'localtv/video/_published.html' %} {% include 'localtv/video/_authors.html' %}</small></p>
         {% endwith %}
     {% endfilter %}
 " data-toggle="popover" data-trigger="hover" data-html="true" data-title="{{ video.name }}">{% if image %}<img src="{{ image }}" width={{ image.width }} height={{ image.height }} />{% else %}{% with value="12345"|make_list|random %}<i class="{% if value == '1' %}icon-rocket{% elif value == '2' %}icon-picture{% elif value == '3' %}icon-road{% elif value == '4' %}icon-beaker{% else %}icon-globe{% endif %}"></i>{% endwith %}{% endif %}</a>

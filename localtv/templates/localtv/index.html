@@ -61,7 +61,7 @@
       {% adjust_bulk new_videos|slice:":4" "thumbnail" 'fill' width=300 height=216 as adjusted %}
       <ul class='thumbnails'>
       {% for video, image in adjusted %}
-        <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.when|simpletimesince|add:" ago" %}</li>
+        <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.published_datetime|default:video.created_timestamp|simpletimesince|add:" ago" %}</li>
       {% endfor %}
       </ul>
 

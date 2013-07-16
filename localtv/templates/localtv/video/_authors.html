@@ -1,0 +1,16 @@
+{% with authors=video.authors.all %}
+	{% if authors %}
+		by
+		{% for user in authors %}<a href="{% url localtv_author user.pk %}">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+	{% else %}
+		{% if video.feed %}
+			from
+			<a href="{% url localtv_list_feed video.feed.pk %}">{{ video.feed.name }}</a>
+		{% else %}
+			{% if video.external_user %}
+				by
+				{{ video.external_user }}
+			{% endif %}
+		{% endif %}
+	{% endif %}
+{% endwith %}
