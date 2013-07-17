@@ -91,6 +91,7 @@ class SiteSettings(Thumbnailable):
     ## Site styles ##
     #: Custom logo image for this site.
     logo = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/logo/%Y/%m/%d/'), blank=True)
+    logo_contains_site_name = models.BooleanField()
 
     #: Custom background image for this site.
     background = models.ImageField(upload_to=utils.UploadTo('localtv/sitesettings/background/%Y/%m/%d/'),
@@ -99,54 +100,59 @@ class SiteSettings(Thumbnailable):
     css = models.TextField(blank=True)
 
     ## Custom HTML ##
-    #: Subheader for the site.
-    tagline = models.CharField(max_length=4096, blank=True)
-    #: Arbitrary custom HTML which (currently) is used as a site description
-    #: on the main page.
-    sidebar_html = models.TextField(blank=True)
+    # was footer_html, about_html
     #: Arbitrary custom HTML which displays in the footer of all non-admin pages.
-    footer_html = models.TextField(blank=True)
+    footer_content = models.TextField(blank=True)
     #: Arbitrary custom HTML which displays on the about page.
-    about_html = models.TextField(blank=True)
+    site_description = models.TextField(blank=True)
+
+    ## Custom API Keys/service settings ##
+    google_analytics_ua = models.CharField('Google Analytics UA',
+                                           max_length=20,
+                                           blank=True)
+    google_analytics_domain = models.CharField('Google Analytics domain',
+                                               max_length=100,
+                                               blank=True)
+    #: Usernames that can be used to moderate comments.
+    facebook_admins = models.CharField(max_length=200, blank=True)
 
     ## Site permissions ##
     #: A collection of Users who have administrative access to the site.
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
+    # was display_submit_button
     #: Whether or not the Submit Video button should display or not.
     #: Doesn't affect whether videos can be submitted or not.
     #: See http://bugzilla.pculture.org/show_bug.cgi?id=19809
-    display_submit_button = models.BooleanField(default=True)
+    submission_allowed = models.BooleanField(default=True)
     #: Whether or not users need to log in to submit videos.
     submission_requires_login = models.BooleanField(default=False)
     #: Whether or not an email address needs to be given with an
     #: unauthenticated video submission.
     submission_requires_email = models.BooleanField(default=False)
 
-    ## Feature switches ##
-    #: Whether playlist functionality is enabled.
-    playlists_enabled = models.IntegerField(default=1)
-    #: Whether the original publication date or date added to this site
-    #: should be used for sorting videos.
-    use_original_date = models.BooleanField(
-        default=True,
-        help_text="If set, use the original date the video was posted.  "
-        "Otherwise, use the date the video was added to this site.")
-    #: Whether comments should be held for moderation.
+    ## Internal use ##
+    #: Whether a user has elected to hide the "get started" section in
+    #: the admin interface.
+    hide_get_started = models.BooleanField(default=False)
+
+    # Backwards-compat/deprecated fields
+    tagline = models.CharField(max_length=4096, blank=True)
+    sidebar_html = models.TextField(blank=True)
     screen_all_comments = models.BooleanField(
         verbose_name='Hold comments for moderation',
         default=True,
         help_text="Hold all comments for moderation by default?")
-    #: Whether leaving a comment requires you to be logged in.
     comments_required_login = models.BooleanField(
         default=False,
         verbose_name="Require Login",
         help_text="If True, comments require the user to be logged in.")
+    use_original_date = models.BooleanField(
+        default=True,
+        help_text="If set, use the original date the video was posted.  "
+        "Otherwise, use the date the video was added to this site.")
+    playlists_enabled = models.IntegerField(default=1)
 
-    ## Tracking fields ##
-    #: Whether a user has elected to hide the "get started" section in
-    #: the admin interface.
-    hide_get_started = models.BooleanField(default=False)
 
     objects = SiteRelatedManager()
 
