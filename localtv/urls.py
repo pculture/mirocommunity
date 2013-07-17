@@ -5,7 +5,7 @@ from django.views.generic import ListView
 from localtv.api.v1 import api as api_v1
 from localtv.listing.views import CompatibleListingView, SiteListView
 from localtv.models import Category
-from localtv.views import IndexView, VideoView
+from localtv.views import IndexView, VideoView, can_submit, SubmitView
 
 
 # "Base" patterns
@@ -17,6 +17,9 @@ urlpatterns = patterns(
     url(r'^video/(?P<video_id>[0-9]+)(?:/(?P<slug>[\w~-]+))?/?$',
         VideoView.as_view(),
         name='localtv_view_video'),
+    url(r'^submit/$',
+        can_submit(SubmitView.as_view()),
+        name='localtv_submit_video'),
     url(r'^api/', include(api_v1.urls)))
 
 # Listing patterns
@@ -74,7 +77,6 @@ urlpatterns += patterns(
     url(r'^accounts/', include('social_auth.urls')),
     url(r'^thumbs/', include('daguerre.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
-    url(r'^submit_video/', include('localtv.submit_video.urls')),
     url(r'^listing/', include('localtv.listing.urls')),
     url(r'^feeds/', include('localtv.feeds.urls')),
     url(r'^goodies/', include('localtv.goodies.urls')),

@@ -292,7 +292,6 @@ class SourceImport(models.Model):
         ordering = ['-created_timestamp']
 
     def run(self):
-        from localtv.tasks import video_save_thumbnail, haystack_batch_update
         auto_authors = list(self.source.auto_authors.all())
         auto_categories = list(self.source.auto_categories.all())
         try:
@@ -330,8 +329,6 @@ class SourceImport(models.Model):
                         video.delete()
                         raise
                     self.mark_seen(vidscraper_video)
-                    if video.thumbnail_url:
-                        video_save_thumbnail.delay(video.pk)
                     self.record_step(SourceImportStep.VIDEO_IMPORTED,
                                      video=video)
                 except Exception:
@@ -344,6 +341,7 @@ class SourceImport(models.Model):
                              with_traceback=True)
 
         # Pt 2: Mark videos active all at once.
+        from localtv.tasks import haystack_batch_update
         if not self.source.moderate_imported_videos:
             videos = Video.objects.filter(sourceimportstep_set__source_import=self,
                                           status=Video.UNPUBLISHED)
@@ -731,61 +729,6 @@ class Video(Thumbnailable):
     def __unicode__(self):
         return self.name
 
-    def clean(self):
-        # clean is always run during ModelForm cleaning. If a model form is in
-        # play, rejected videos don't matter; the submission of that form
-        # should be considered valid. During automated imports, rejected
-        # videos are not excluded.
-        self._check_for_duplicates(exclude_rejected=True)
-
-    def _check_for_duplicates(self, exclude_rejected=True):
-        # This should be part of the submission process, not inherent to the model.
-        # Users should have the option of submitting even if it *is* a duplicate?
-        if not self.embed_code and not self.file_url:
-            raise ValidationError("Video has no embed code or file url.")
-
-        qs = Video.objects.filter(site=self.site_id)
-
-        if exclude_rejected:
-            qs = qs.exclude(status=Video.HIDDEN)
-
-        if self.pk is not None:
-            qs = qs.exclude(pk=self.pk)
-
-        if self.guid and qs.filter(guid=self.guid).exists():
-            raise ValidationError("Another video with the same guid "
-                                  "already exists.")
-
-        if (self.website_url and
-            qs.filter(website_url=self.website_url).exists()):
-            raise ValidationError("Another video with the same website url "
-                                  "already exists.")
-
-        if self.file_url and qs.filter(file_url=self.file_url).exists():
-            raise ValidationError("Another video with the same file url "
-                                  "already exists.")
-
-    def clear_rejected_duplicates(self):
-        """
-        Deletes rejected copies of this video based on the file_url,
-        website_url, and guid fields.
-
-        """
-        if not any((self.website_url, self.file_url, self.guid)):
-            return
-
-        q_filter = models.Q()
-        if self.website_url:
-            q_filter |= models.Q(website_url=self.website_url)
-        if self.file_url:
-            q_filter |= models.Q(file_url=self.file_url)
-        if self.guid:
-            q_filter |= models.Q(guid=self.guid)
-        qs = Video.objects.filter(
-            site=self.site_id,
-            status=Video.HIDDEN).filter(q_filter)
-        qs.delete()
-
     @models.permalink
     def get_absolute_url(self):
         return ('localtv_view_video', (),
@@ -833,19 +776,15 @@ class Video(Thumbnailable):
             guid=video.guid or '',
             name=video.title or '',
             description=video.description or '',
-            website_url=video.link or '',
-            when_published=video.publish_datetime,
-            file_url=file_url or '',
-            file_url_mimetype=getattr(video_file, 'mime_type', '') or '',
-            file_url_length=getattr(video_file, 'length', None),
-            when_submitted=now,
-            when_approved=now if status == cls.PUBLISHED else None,
+            published_datetime=now if status == cls.PUBLISHED else None,
             status=status,
-            thumbnail_url=video.thumbnail_url or '',
+            external_url=video.link or '',
+            external_published_datetime=video.publish_datetime,
+            external_thumbnail_url=video.thumbnail_url or '',
             embed_code=video.embed_code or '',
             flash_enclosure_url=video.flash_enclosure_url or '',
-            video_service_user=video.user or '',
-            video_service_url=video.user_url or '',
+            external_user=video.user or '',
+            external_user_url=video.user_url or '',
             site_id=site_pk
         )
 
@@ -897,6 +836,14 @@ class Video(Thumbnailable):
                         tagging.models.Tag._default_manager.get_or_create(name=tag_name)
                     tagging.models.TaggedItem._default_manager.create(
                         tag=tag, object=instance)
+            if video.files:
+                for video_file in video.files:
+                    VideoFile.objects.create(video=instance,
+                                             url=video_file.url,
+                                             length=video_file.length,
+                                             mimetype=video_file.mime_type)
+            from localtv.tasks import video_save_thumbnail
+            video_save_thumbnail.delay(instance.pk)
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video)
             if update_index:

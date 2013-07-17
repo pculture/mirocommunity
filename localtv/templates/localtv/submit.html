@@ -1,7 +1,6 @@
 {% extends "localtv/__base.html" %}
 
-{% load url from future %}
-{% load i18n floppyforms %}
+{% load uploadtemplate i18n %}{% load url from future %}
 
 {% block title %}{% trans "Submit a Video" %} – {{ block.super }}{% endblock %}
 
@@ -9,22 +8,27 @@
   <div class='row'>
     <div class='span6 offset3'>
       <h2>{% trans "Submit a Video" %}</h2>
-      {% if was_duplicate %}
+
+      {% for error in form.non_field_errors %}
         <div class="alert alert-error">
-          It appears that we already have a copy of that video{% if video %} <a href="{{ video.get_absolute_url }}">here</a>{% endif %}... sorry! You can submit another video if you like.
+          {{ error }}
         </div>
-      {% else %}
-        {% for error in form.url.errors %}
-          <div class="alert alert-error">
-            {{ error }}
-          </div>
       {% endfor %}
-      {% endif %}
-      <form action="{% url 'localtv_submit_video' %}" method='get'>
+
+      <form action="{% url 'localtv_submit_video' %}" method='post'>{% csrf_token %}
         <div class='input-append'>
           <input class='span5' type='url' name='url' placeholder='Enter video URL' />
           <button class='btn btn-success'>{% trans "Submit" %}</button>
         </div>
+        {% if form.duplicate_video %}
+          <div class='alert'>
+            It looks like a similar video <a href="{{ form.duplicate_video.get_absolute_url }}">already exists on the site</a>. You can still submit your video by checking the box below.
+          </div>
+          <label for="id_submit_duplicate"><input type='checkbox' name='submit_duplicate' id="id_submit_duplicate"> Submit anyway.</label>
+        {% endif %}
+        {% if form.fields.email %}
+          <input class='span5' type='email' name='email' placeholder='Email'{% if form.fields.email.required %} required{% endif %}>
+        {% endif %}
       </form>
       <h3>Tips</h3>
       <ul>

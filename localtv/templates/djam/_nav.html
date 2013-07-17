@@ -7,7 +7,7 @@
   {% trans 'About' as text %}
   {% include 'djam/_nav_item.html' with url=url text=text request=request only %}
 
-  {% if site_settings.display_submit_button %}
+  {% if site_settings.submission_allowed %}
     {% url 'localtv_submit_video' as url %}
     {% trans 'Submit' as text %}
     {% include 'djam/_nav_item.html' with url=url text=text request=request only %}

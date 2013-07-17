@@ -31,7 +31,7 @@ from localtv.utils import quote_unicode_url
 
 @task(ignore_result=True)
 def update_sources():
-    feeds = Feed.objects.filter(status=Feed.ACTIVE,
+    feeds = Feed.objects.filter(status=Feed.PUBLISHED,
                                 auto_update=True)
     for feed_pk in feeds.values_list('pk', flat=True):
         feed_update.delay(feed_pk)

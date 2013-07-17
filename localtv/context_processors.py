@@ -13,9 +13,6 @@ BROWSE_NAVIGATION_MODULES = [
 def localtv(request):
     site_settings = SiteSettings.objects.get_current()
 
-    display_submit_button = (site_settings.display_submit_button or
-                             request.user_is_admin())
-
     safe_settings = ('FACEBOOK_APP_ID', 'LOGIN_URL', 'LOGOUT_URL',
                      'GOOGLE_ANALYTICS_UA', 'GOOGLE_ANALYTICS_DOMAIN',
                      'MEDIA_URL', 'RECAPTCHA_PUBLIC_KEY')
@@ -40,7 +37,7 @@ def localtv(request):
         'settings': settings_context,
         'sitelocation': site_settings,
         'user_is_admin': request.user_is_admin(),
-        'display_submit_button': display_submit_button,
+        'display_submit_button': site_settings.submission_allowed,
         'VIDEO_STATUS_UNAPPROVED': Video.NEEDS_MODERATION,
         'VIDEO_STATUS_ACTIVE': Video.PUBLISHED,
         'VIDEO_STATUS_REJECTED': Video.HIDDEN,

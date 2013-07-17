@@ -31,7 +31,7 @@
   {% include 'localtv/admin/_forms/field.html' with field=form.footer_html only %}
 
   <h2>Additional Settings</h2>
-  {% include 'localtv/admin/_forms/checkbox_field.html' with field=form.display_submit_button only %}
+  {% include 'localtv/admin/_forms/checkbox_field.html' with field=form.submission_allowed only %}
   {% include 'localtv/admin/_forms/checkbox_field.html' with field=form.submission_requires_login only %}
   {% include 'localtv/admin/_forms/checkbox_field.html' with field=form.submission_requires_email only %}
   {% include 'localtv/admin/_forms/checkbox_field.html' with field=form.use_original_date only %}

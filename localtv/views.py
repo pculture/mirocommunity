@@ -7,8 +7,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.encoding import iri_to_uri
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import TemplateView, DetailView, CreateView
 
+from localtv.decorators import request_passes_test
+from localtv.forms import SubmitForm
 from localtv.models import Video, Watch, Category, SiteSettings
 from localtv.search.forms import SearchForm
 from localtv.search.utils import NormalizedVideoList
@@ -186,3 +188,33 @@ def share_email(request, content_type_pk, object_id):
                               'site_settings': site_settings},
                              form_class = forms.ShareMultipleEmailForm
                              )
+
+
+def _can_submit(request, *args, **kwargs):
+    site_settings = SiteSettings.objects.get_current()
+    if not site_settings.submission_allowed:
+        return False
+
+    if site_settings.submission_requires_login:
+        return request.user.is_authenticated()
+
+    return True
+can_submit = request_passes_test(_can_submit)
+
+
+class SubmitView(CreateView):
+    form_class = SubmitForm
+    template_name = "localtv/submit.html"
+
+    def get_form_kwargs(self):
+        kwargs = super(SubmitView, self).get_form_kwargs()
+        del kwargs['instance']
+        kwargs['request'] = self.request
+        return kwargs
+
+    def form_invalid(self, form):
+        if (form.duplicate_video and
+                (form.duplicate_video.owner == self.request.user or
+                 form.duplicate_video.session == self.request.session)):
+            return HttpResponseRedirect(form.duplicate_video.get_absolute_url())
+        return super(SubmitView, self).form_invalid(form)

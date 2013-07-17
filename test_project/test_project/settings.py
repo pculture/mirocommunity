@@ -171,7 +171,6 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'localtv',
     'localtv.comments',
-    'localtv.submit_video',
     'localtv.user_profile',
     'localtv.playlists',
     'djvideo',
