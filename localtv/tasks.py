@@ -76,22 +76,22 @@ def video_save_thumbnail(video_pk):
             video_pk)
         return
 
-    if not video.thumbnail_url:
+    if not video.external_thumbnail_url:
         return
 
-    thumbnail_url = quote_unicode_url(video.thumbnail_url)
+    thumbnail_url = quote_unicode_url(video.external_thumbnail_url)
 
     try:
         remote_file = urllib.urlopen(thumbnail_url)
     except httplib.InvalidURL:
         # If the URL isn't valid, erase it.
         Video.objects.filter(pk=video.pk
-                    ).update(thumbnail_url='')
+                    ).update(external_thumbnail_url='')
         return
 
     if remote_file.getcode() != 200:
         logging.info("Code %i when getting %r, retrying",
-                     remote_file.getcode(), video.thumbnail_url)
+                     remote_file.getcode(), video.external_thumbnail_url)
         video_save_thumbnail.retry()
 
     temp = NamedTemporaryFile()
@@ -111,12 +111,13 @@ def video_save_thumbnail(video_pk):
     except Exception:
         # If the file isn't valid, erase the url.
         Video.objects.filter(pk=video.pk
-                    ).update(thumbnail_url='')
+                    ).update(external_thumbnail_url='')
         return
 
     f = video._meta.get_field('thumbnail')
     format = im.format if im.format in KEEP_FORMATS else DEFAULT_FORMAT
-    args = (video.thumbnail_url, video.pk, datetime.datetime.now().isoformat())
+    args = (video.external_thumbnail_url, video.pk,
+            datetime.datetime.now().isoformat())
     filename = '.'.join((make_hash(*args, step=2), format.lower()))
     storage_path = f.generate_filename(video, filename)
 
