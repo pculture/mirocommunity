@@ -65,8 +65,19 @@ class VideoView(DetailView):
 
     def get_queryset(self):
         qs = super(VideoView, self).get_queryset()
-        if not self.request.user_is_admin():
-            qs = qs.filter(status=Video.PUBLISHED)
+
+        # Admins can see everything. Other users who are authenticated
+        # or who have a session key can see their own unpublished videos.
+        if (not self.request.user_is_admin() and
+                (self.request.user.is_authenticated() or
+                 self.request.session.session_key)):
+            if self.request.user.is_authenticated():
+                owner_q = Q(owner=self.request.user)
+            else:
+                owner_q = Q(owner_session_id=self.request.session.session_key)
+            own_q = owner_q & ~Q(status=Video.HIDDEN)
+            other_q = ~owner_q & Q(status=Video.PUBLISHED)
+            qs = qs.filter(own_q | other_q)
         return qs.filter(site=settings.SITE_ID)
 
     def get(self, request, *args, **kwargs):
@@ -211,10 +222,3 @@ class SubmitView(CreateView):
         del kwargs['instance']
         kwargs['request'] = self.request
         return kwargs
-
-    def form_invalid(self, form):
-        if (form.duplicate_video and
-                (form.duplicate_video.owner == self.request.user or
-                 form.duplicate_video.session == self.request.session)):
-            return HttpResponseRedirect(form.duplicate_video.get_absolute_url())
-        return super(SubmitView, self).form_invalid(form)

@@ -9,25 +9,29 @@
     <div class='span6 offset3'>
       <h2>{% trans "Submit a Video" %}</h2>
 
-      {% for error in form.non_field_errors %}
-        <div class="alert alert-error">
-          {{ error }}
-        </div>
-      {% endfor %}
-
       <form action="{% url 'localtv_submit_video' %}" method='post'>{% csrf_token %}
-        <div class='input-append'>
-          <input class='span5' type='url' name='url' placeholder='Enter video URL' />
+        {% if form.own_duplicate or form.other_duplicate %}
+          <div class='alert'>
+            <p>{% if form.own_duplicate %}
+              You already submitted a <a href="{{ form.own_duplicate.get_absolute_url }}">similar video</a>.
+            {% else %}
+              It look a <a href="{{ form.duplicate_video.get_absolute_url }}">similar video</a> already exists on the site.
+            {% endif %}
+
+            You can still submit this video by checking the box below.</p>
+
+            <label class='checkbox' for="id_submit_duplicate"><input type='checkbox' name='submit_duplicate' id="id_submit_duplicate"> <strong>Yes, I want to submit a duplicate video.</strong></label>
+          </div>
+        {% endif %}
+        <div class='input-append{% if form.url.errors %} control-group error{% endif %}'>
+          <input class='span5' type='url' name='url'{% if form.url.value %} value="{{ form.url.value }}"{% endif %} placeholder='Enter video URL' />
           <button class='btn btn-success'>{% trans "Submit" %}</button>
         </div>
-        {% if form.duplicate_video %}
-          <div class='alert'>
-            It looks like a similar video <a href="{{ form.duplicate_video.get_absolute_url }}">already exists on the site</a>. You can still submit your video by checking the box below.
-          </div>
-          <label for="id_submit_duplicate"><input type='checkbox' name='submit_duplicate' id="id_submit_duplicate"> Submit anyway.</label>
-        {% endif %}
+        {% for error in form.url.errors %}
+          <span class='help-block'><span class='text-error'>{{ error }}</span></span>
+        {% endfor %}
         {% if form.fields.email %}
-          <input class='span5' type='email' name='email' placeholder='Email'{% if form.fields.email.required %} required{% endif %}>
+          <input class='span5' type='email' name='email' placeholder='Email{% if not form.fields.email.required %} (optional){% endif %}'{% if form.fields.email.required %} required{% endif %}{% if form.email.value %} value="{{ form.email.value }}"{% endif %}>
         {% endif %}
       </form>
       <h3>Tips</h3>

@@ -847,7 +847,7 @@ class Video(Thumbnailable):
             post_video_from_vidscraper.send(sender=cls, instance=instance,
                                             vidscraper_video=video)
             if update_index:
-                using = connection_router.for_write()
+                using = connection_router.for_write()[0]
                 index = connections[using].get_unified_index().get_index(cls)
                 index._enqueue_update(instance)
 
