@@ -1,9 +1,6 @@
 import datetime
-import re
 import mimetypes
 import operator
-import logging
-import sys
 import traceback
 import warnings
 from hashlib import sha1
@@ -152,7 +149,6 @@ class SiteSettings(Thumbnailable):
         help_text="If set, use the original date the video was posted.  "
         "Otherwise, use the date the video was added to this site.")
     playlists_enabled = models.IntegerField(default=1)
-
 
     objects = SiteRelatedManager()
 
