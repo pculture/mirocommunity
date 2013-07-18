@@ -1,5 +1,4 @@
 import datetime
-import itertools
 import re
 import mimetypes
 import operator
@@ -7,6 +6,7 @@ import logging
 import sys
 import traceback
 import warnings
+from hashlib import sha1
 
 import tagging
 import tagging.models
@@ -35,7 +35,7 @@ from slugify import slugify
 
 from localtv import utils, settings as lsettings
 from localtv.managers import SiteRelatedManager, VideoManager
-from localtv.signals import post_video_from_vidscraper, submit_finished
+from localtv.signals import post_video_from_vidscraper, submit_finished, pre_publish
 from localtv.templatetags.filters import sanitize
 
 
@@ -272,6 +272,9 @@ class SourceImportIdentifier(models.Model):
     source_content_type = models.ForeignKey(ContentType)
     source = generic.GenericForeignKey('source_content_type', 'source_id')
 
+    def __unicode__(self):
+        return self.identifier_hash
+
 
 class SourceImport(models.Model):
     created_timestamp = models.DateTimeField(auto_now_add=True)
@@ -291,70 +294,111 @@ class SourceImport(models.Model):
         get_latest_by = 'created_timestamp'
         ordering = ['-created_timestamp']
 
+    def _get_identifier_hashes(self, vidscraper_video):
+        identifiers = (
+            vidscraper_video.guid,
+            vidscraper_video.link,
+            vidscraper_video.flash_enclosure_url,
+            vidscraper_video.embed_code
+        )
+        if vidscraper_video.files is not None:
+            identifiers += tuple(f.url for f in vidscraper_video.files
+                                 if not f.expires)
+
+        return [sha1(i).hexdigest() for i in identifiers if i]
+
+    def is_seen(self, vidscraper_video):
+        hashes = self._get_identifier_hashes(vidscraper_video)
+        if not hashes:
+            return False
+        kwargs = {
+            'source_id': self.source_id,
+            'source_content_type': self.source_content_type,
+            'identifier_hash__in': hashes,
+        }
+        return SourceImportIdentifier.objects.filter(**kwargs).exists()
+
+    def mark_seen(self, vidscraper_video):
+        hashes = self._get_identifier_hashes(vidscraper_video)
+        # TODO: Use bulk_create.
+        for identifier_hash in hashes:
+            kwargs = {
+                'source_id': self.source_id,
+                'source_content_type': self.source_content_type,
+                'identifier_hash': identifier_hash,
+            }
+            SourceImportIdentifier.objects.create(**kwargs)
+
     def run(self):
         auto_authors = list(self.source.auto_authors.all())
         auto_categories = list(self.source.auto_categories.all())
         try:
-            iterator = self.source.get_iterator()
-            for vidscraper_video in iterator:
-                try:
-                    vidscraper_video.load()
-                    if self.is_seen(vidscraper_video):
-                        if self.source.stop_if_seen:
-                            break
-                        else:
-                            self.record_step(SourceImportStep.VIDEO_FOUND)
-                            continue
-                    video = Video.from_vidscraper_video(
-                        vidscraper_video,
-                        status=Video.UNPUBLISHED,
-                        commit=False,
-                        source=self.source,
-                        site_pk=self.source.site_id,
-                        authors=auto_authors,
-                        categories=auto_categories,
-                        update_index=False,
-                    )
-                    try:
-                        video.clean_fields()
-                        video.validate_unique()
-                    except ValidationError, e:
-                        self.record_step(SourceImportStep.VIDEO_INVALID,
-                                         with_traceback=True)
-
-                    video.save(update_index=False)
-                    try:
-                        video.save_m2m()
-                    except Exception:
-                        video.delete()
-                        raise
-                    self.mark_seen(vidscraper_video)
-                    self.record_step(SourceImportStep.VIDEO_IMPORTED,
-                                     video=video)
-                except Exception:
-                    self.record_step(SourceImportStep.VIDEO_ERRORED,
-                                     with_traceback=True)
-                # Update timestamp (and potentially counts) after each video.
-                self.save()
+            iterators = self.source.get_iterators()
         except Exception:
             self.record_step(SourceImportStep.IMPORT_ERRORED,
                              with_traceback=True)
+            return
+        for iterator in iterators:
+            try:
+                for vidscraper_video in iterator:
+                    try:
+                        vidscraper_video.load()
+                        if self.is_seen(vidscraper_video):
+                            self.record_step(SourceImportStep.VIDEO_SEEN)
+                            if self.source.stop_if_seen:
+                                break
+                            else:
+                                continue
+                        video = Video.from_vidscraper_video(
+                            vidscraper_video,
+                            status=Video.UNPUBLISHED,
+                            commit=False,
+                            source=self.source,
+                            site_pk=self.source.site_id,
+                            authors=auto_authors,
+                            categories=auto_categories,
+                            update_index=False,
+                        )
+                        try:
+                            video.clean_fields()
+                            video.validate_unique()
+                        except ValidationError:
+                            self.record_step(SourceImportStep.VIDEO_INVALID,
+                                             with_traceback=True)
+
+                        video.save(update_index=False)
+                        try:
+                            video.save_m2m()
+                        except Exception:
+                            video.delete()
+                            raise
+                        self.mark_seen(vidscraper_video)
+                        self.record_step(SourceImportStep.VIDEO_IMPORTED,
+                                         video=video)
+                    except Exception:
+                        self.record_step(SourceImportStep.VIDEO_ERRORED,
+                                         with_traceback=True)
+                    # Update timestamp (and potentially counts) after each video.
+                    self.save()
+            except Exception:
+                self.record_step(SourceImportStep.IMPORT_ERRORED,
+                                 with_traceback=True)
 
         # Pt 2: Mark videos active all at once.
         from localtv.tasks import haystack_batch_update
         if not self.source.moderate_imported_videos:
-            videos = Video.objects.filter(sourceimportstep_set__source_import=self,
+            videos = Video.objects.filter(sourceimportstep__source_import=self,
                                           status=Video.UNPUBLISHED)
             for receiver, response in pre_publish.send_robust(
                     sender=self, videos=videos):
                 if response:
-                    if isinstance(response, Q):
+                    if isinstance(response, models.Q):
                         videos = videos.filter(response)
                     elif isinstance(response, dict):
                         videos = videos.filter(**response)
 
             videos.update(status=Video.PUBLISHED)
-            video_pks = Video.objects.filter(sourceimportstep_set__source_import=self,
+            video_pks = Video.objects.filter(sourceimportstep__source_import=self,
                                              status=Video.PUBLISHED
                                              ).values_list('pk', flat=True)
             if video_pks:
@@ -362,7 +406,7 @@ class SourceImport(models.Model):
                 haystack_batch_update.delay(opts.app_label, opts.module_name,
                                             pks=list(video_pks), remove=False)
 
-        Video.objects.filter(sourceimportstep_set__source_import=self,
+        Video.objects.filter(sourceimportstep__source_import=self,
                              status=Video.UNPUBLISHED
                              ).update(status=Video.NEEDS_MODERATION)
         self.is_complete = True
@@ -374,17 +418,17 @@ class SourceImport(models.Model):
             self.error_count += 1
         if step_type == SourceImportStep.VIDEO_IMPORTED:
             self.import_count += 1
-        traceback = traceback.format_exc() if with_traceback else ''
+        tb = traceback.format_exc() if with_traceback else ''
         self.steps.create(step_type=step_type,
                           video=video,
-                          traceback=traceback)
+                          traceback=tb)
 
 
 class SourceImportStep(models.Model):
     #: Something errored on the import level.
     IMPORT_ERRORED = 'import errored'
     #: A video was found to already be in the database - i.e. previously imported.
-    VIDEO_FOUND = 'video found'
+    VIDEO_SEEN = 'video seen'
     #: Something semi-expected is wrong with the video which prevents
     #: it from being imported.
     VIDEO_INVALID = 'video invalid'
@@ -394,7 +438,7 @@ class SourceImportStep(models.Model):
     VIDEO_IMPORTED = 'video imported'
     STEP_TYPE_CHOICES = (
         (IMPORT_ERRORED, _(u'Import errored')),
-        (VIDEO_FOUND, _(u'Video found')),
+        (VIDEO_SEEN, _(u'Video seen')),
         (VIDEO_INVALID, _(u'Video invalid')),
         (VIDEO_ERRORED, _(u'Video errored')),
         (VIDEO_IMPORTED, _(u'Video imported')),
@@ -408,6 +452,9 @@ class SourceImportStep(models.Model):
     traceback = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     source_import = models.ForeignKey(SourceImport, related_name='steps')
+
+    def __unicode__(self):
+        return unicode(self.step_type)
 
 
 class Source(Thumbnailable):
@@ -464,9 +511,9 @@ class Feed(Source):
     def get_absolute_url(self):
         return ('localtv_list_feed', [self.pk])
 
-    def get_iterator(self):
+    def get_iterators(self):
         iterator = vidscraper.auto_feed(
-            self.feed_url,
+            self.original_url,
             # We'll stop at the first previously-seen video.
             max_results=None,
             api_keys=lsettings.API_KEYS,
@@ -484,10 +531,10 @@ class Feed(Source):
             # If these fields have already been changed, don't
             # override those changes. Don't unset the name field
             # if no further data is available.
-            if self.name == self.feed_url:
+            if self.name == self.original_url:
                 self.name = iterator.title or self.name
-            if not self.webpage:
-                self.webpage = iterator.webpage or ''
+            if not self.external_url:
+                self.external_url = iterator.webpage or ''
             if not self.description:
                 self.description = iterator.description or ''
             # Only do this on the first run (for now.)
@@ -497,7 +544,7 @@ class Feed(Source):
         if save:
             self.save()
 
-        return iterator
+        return [iterator]
 
 
 class SavedSearch(Source):
@@ -512,25 +559,12 @@ class SavedSearch(Source):
     def __unicode__(self):
         return self.query_string
 
-    def get_iterator(self):
-        searches = vidscraper.auto_search(
+    def get_iterators(self):
+        return vidscraper.auto_search(
             self.query_string,
             max_results=100,
             api_keys=lsettings.API_KEYS,
         )
-
-        video_iters = []
-        for video_iter in searches:
-            try:
-                video_iter.load()
-            except Exception:
-                search_import.handle_error(u'Skipping import of search results '
-                               u'from %s' % video_iter.__class__.__name__,
-                               with_exception=True)
-                continue
-            video_iters.append(video_iter)
-
-        return itertools.chain(*video_iters)
 
 
 class Category(MPTTModel):
@@ -759,12 +793,6 @@ class Video(Thumbnailable):
         a `save_m2m()` method that must be called after you call `save()`.
 
         """
-        video_file = video.get_file()
-        if video_file and video_file.expires is None:
-            file_url = video_file.url
-        else:
-            file_url = None
-
         if status is None:
             status = cls.NEEDS_MODERATION
         if site_pk is None:
@@ -838,10 +866,11 @@ class Video(Thumbnailable):
                         tag=tag, object=instance)
             if video.files:
                 for video_file in video.files:
-                    VideoFile.objects.create(video=instance,
-                                             url=video_file.url,
-                                             length=video_file.length,
-                                             mimetype=video_file.mime_type)
+                    if video_file.expires is None:
+                        VideoFile.objects.create(video=instance,
+                                                 url=video_file.url,
+                                                 length=video_file.length,
+                                                 mimetype=video_file.mime_type)
             from localtv.tasks import video_save_thumbnail
             video_save_thumbnail.delay(instance.pk)
             post_video_from_vidscraper.send(sender=cls, instance=instance,

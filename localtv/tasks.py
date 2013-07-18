@@ -42,16 +42,16 @@ def update_sources():
 
 
 @task(ignore_result=True)
-def feed_update(feed_id, clear_rejected=False):
+def feed_update(feed_id):
     try:
-        feed = Feed.objects.filter(auto_update=True
-                                   ).get(pk=feed_id)
+        feed = Feed.objects.exclude(disable_imports=True
+                                    ).get(pk=feed_id)
     except Feed.DoesNotExist:
         logging.warn('feed_update(%s) could not find feed',
                      feed_id)
         return
 
-    feed.update(clear_rejected=clear_rejected)
+    feed.start_import()
 
 
 @task(ignore_result=True)

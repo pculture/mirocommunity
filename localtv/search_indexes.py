@@ -54,7 +54,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     # ForeignKey relationships
     feed = indexes.IntegerField(model_attr='feed_id', null=True)
     search = indexes.IntegerField(model_attr='search_id', null=True)
-    user = indexes.IntegerField(model_attr='user_id', null=True)
+    owner = indexes.IntegerField(model_attr='owner_id', null=True)
     site = indexes.IntegerField(model_attr='site_id')
 
     # M2M relationships
@@ -70,10 +70,10 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     best_date_with_published = indexes.DateTimeField()
     #: Watch count for the last week.
     watch_count = indexes.IntegerField()
-    last_featured = indexes.DateTimeField(model_attr='last_featured',
-                                          default=DATETIME_NULL_PLACEHOLDER)
-    when_approved = indexes.DateTimeField(model_attr='when_approved',
-                                          default=DATETIME_NULL_PLACEHOLDER)
+    featured_datetime = indexes.DateTimeField(model_attr='featured_datetime',
+                                              default=DATETIME_NULL_PLACEHOLDER)
+    published_datetime = indexes.DateTimeField(model_attr='published_datetime',
+                                               default=DATETIME_NULL_PLACEHOLDER)
 
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
@@ -153,7 +153,7 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
                                     ).prefetch_related('authors')
 
     def get_updated_field(self):
-        return 'when_modified'
+        return 'modified_timestamp'
 
     def _prepare_rel_field(self, video, field):
         return [int(rel.pk) for rel in getattr(video, field).all()]
@@ -175,14 +175,15 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
         return video.watch_set.filter(timestamp__gt=since).count()
 
     def prepare_best_date(self, video):
-        return video.when_approved or video.when_submitted
+        return video.published_datetime or video.created_timestamp
 
     def prepare_best_date_with_published(self, video):
-        return video.when_published or self.prepare_best_date(video)
+        return (video.external_published_datetime or
+                self.prepare_best_date(video))
 
     def _enqueue_instance(self, instance, task):
-        if (not instance.name and not instance.description
-            and not instance.website_url and not instance.file_url):
+        if (not instance.name and not instance.description and
+                not instance.external_url and not instance.files.exists()):
             # fake instance for testing. TODO: This should probably not be done.
             return
         # This attribute can be set by passing ``update_index`` as a kwarg to

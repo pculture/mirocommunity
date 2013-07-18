@@ -19,14 +19,14 @@ post_video_from_vidscraper = Signal(providing_args=["instance",
 #: moved elsewhere.
 submit_finished = Signal()
 
-#: This signal is fired from the mark_import_pending task, to optionally filter
-#: what videos should be marked as active.  It provides the following
+#: This signal is fired from source updates, to optionally filter
+#: what videos should be published.  It provides the following
 #: arguments:
 #:
-#: - ``active_set``: A :class:`django.db.models.QuerySet` of the videos that
-#:                   we plan to mark as active.
+#: - ``videos``: A :class:`django.db.models.QuerySet` of the videos that
+#:               we plan to publish.
 #:
 #: Handlers return either a :class:`django.db.models.Q` instance, or a
 #: dictionary of filter keys/values.
 
-pre_mark_as_active = Signal(providing_args=['active_set'])
+pre_publish = Signal(providing_args=['active_set'])
