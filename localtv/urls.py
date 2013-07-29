@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 from django.views.generic import ListView
 
 from localtv.api.v1 import api as api_v1
-from localtv.listing.views import CompatibleListingView, SiteListView
+from localtv.listing.views import SiteListView
 from localtv.models import Category
+from localtv.search.views import SortFilterView
 from localtv.views import IndexView, VideoView, can_submit, SubmitView
 
 
@@ -25,7 +26,7 @@ urlpatterns = patterns(
 # Listing patterns
 # This has to be importable for now because of a hack in the view_video view
 # which imports this view to check whether the referer was a category page.
-category_videos = CompatibleListingView.as_view(
+category_videos = SortFilterView.as_view(
     template_name='localtv/category.html',
     filter_name='category',
     filter_kwarg='slug'
@@ -33,8 +34,7 @@ category_videos = CompatibleListingView.as_view(
 urlpatterns += patterns(
     'localtv.listing.views',
     url(r'^search/$',
-        CompatibleListingView.as_view(
-            old_template_name='localtv/video_listing_search.html',
+        SortFilterView.as_view(
             template_name='localtv/video/search.html',
         ),
         name='localtv_search'),
@@ -50,7 +50,7 @@ urlpatterns += patterns(
                         model=User,
                         context_object_name='authors'
                     ), name='localtv_author_index'),
-    url(r'^author/(?P<pk>\d+)/$', CompatibleListingView.as_view(
+    url(r'^author/(?P<pk>\d+)/$', SortFilterView.as_view(
                         template_name='localtv/author.html',
                         filter_name='author'
                     ), name='localtv_author'))

@@ -1,4 +1,6 @@
-{% load staticfiles %}<a href="{{ video.get_absolute_url }}" class='thumbnail{% if not image %} thumbnail-icon{% endif %}' data-content="
+{% load staticfiles %}{% load url from future %}
+{% url "localtv_view_video" video_id=video.pk as video_url %}
+<a href="{{ video_url }}" class='thumbnail{% if not image %} thumbnail-icon{% endif %}' data-content="
     {% filter force_escape %}
         {% if video.description %}
             <div>
@@ -10,6 +12,6 @@
 " data-toggle="popover" data-trigger="hover" data-html="true" data-title="{{ video.name }}">{% if image %}<img src="{{ image }}" width={{ image.width }} height={{ image.height }} />{% else %}{% with value="12345"|make_list|random %}<i class="{% if value == '1' %}icon-rocket{% elif value == '2' %}icon-picture{% elif value == '3' %}icon-road{% elif value == '4' %}icon-beaker{% else %}icon-globe{% endif %}"></i>{% endwith %}{% endif %}</a>
 
 <h5>
-    <a href="{{ video.get_absolute_url }}">{{ video.name }}</a>{% if sorter %}<br />
+    <a href="{{ video_url }}">{{ video.name }}</a>{% if sorter %}<br />
     <small>{{ sorter }}</small>{% endif %}
 </h5>

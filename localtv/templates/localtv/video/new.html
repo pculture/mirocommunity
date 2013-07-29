@@ -9,5 +9,5 @@
 {% block rss_url %}{% url 'localtv_feeds_new' %}{% endblock %}
 
 {% block video %}
-  <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.when|simpletimesince|add:" ago" %}</li>
+  <li class='span3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.best_date|simpletimesince|add:" ago" %}</li>
 {% endblock %}

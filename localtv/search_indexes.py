@@ -75,6 +75,10 @@ class VideoIndex(QueuedSearchIndex, indexes.Indexable):
     published_datetime = indexes.DateTimeField(model_attr='published_datetime',
                                                default=DATETIME_NULL_PLACEHOLDER)
 
+    thumbnail_path = indexes.CharField(indexed=False, model_attr='thumbnail_path')
+    description = indexes.CharField(indexed=False, model_attr='description')
+    name = indexes.CharField(indexed=False, model_attr='name')
+
     def _setup_save(self):
         super(VideoIndex, self)._setup_save()
         signals.post_save.connect(self._enqueue_related_update,

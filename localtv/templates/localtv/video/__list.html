@@ -22,7 +22,7 @@
 
   {% if video_list %}
     <ul class='thumbnails'>
-      {% adjust_bulk video_list "thumbnail" 'fill' width=300 height=216 as adjusted %}
+      {% adjust_bulk video_list "thumbnail_path" 'fill' width=300 height=216 as adjusted %}
       {% for video, image in adjusted %}
         {% block video %}{% endblock %}
       {% endfor %}
