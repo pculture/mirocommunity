@@ -142,7 +142,7 @@ class SearchForm(HaystackForm):
         ('newest', BestDateSort()),
         ('oldest', BestDateSort(descending=False)),
         ('popular', PopularSort(_('Popularity'))),
-        ('featured', Sort(_('Recently featured'), 'last_featured')),
+        ('featured', Sort(_('Recently featured'), 'featured_datetime')),
         ('relevant', DummySort(_('Relevance')))
     ))
     sort = DefaultChoiceField(choices=tuple((k, s.verbose_name)
@@ -166,7 +166,7 @@ class SearchForm(HaystackForm):
                             field_lookups=('feed',))
     featured = DateTimeFilterField(
                             required=False,
-                            field_lookups=('last_featured',),
+                            field_lookups=('featured_datetime',),
                             label=_('Featured videos'))
 
     def __init__(self, *args, **kwargs):
