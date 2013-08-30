@@ -116,14 +116,14 @@ footer {
 
 // Some cleanup to bootstrap dropdowns to allow for forms/labels inside a dropdown.
 
-.dropdown-menu > li {
-    & > input, & > label, & > select {
+.dropdown-menu {
+    .form-control, label {
         margin: 3px 20px;
         clear: both;
-        font-weight: normal;
         line-height: 20px;
         color: #333333;
         white-space: nowrap;
+        width: auto;
     }
 }
 
