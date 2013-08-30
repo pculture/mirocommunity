@@ -7,20 +7,25 @@ body{
 }
 
 header {
-    margin-bottom: $line-height-base;
+    margin-bottom: $line-height-base * $base-font-size;
 }
 
 footer {
     background-color: $gray-darker;
-    padding-top: $line-height-base * 2;
-    padding-bottom: $line-height-base * 2;
+    padding-top: $line-height-base * $base-font-size * 2;
+    padding-bottom: $line-height-base * $base-font-size * 2;
 
     color: $gray-light;
     position: relative;
     margin-top: -150px; /* negative value of footer height */
-    height: 150px - $line-height-base * 2;
+    height: 150px - $line-height-base * $base-font-size * 2;
     clear: both;
     text-align: center;
+    box-sizing: content-box;
+}
+
+#top {
+    padding-bottom: $line-height-base * $base-font-size * 2;
 }
 
 .featured-field {
@@ -47,33 +52,17 @@ footer {
         margin-left: 0px;
         @include border-radius(0px);
     }
-
-    //.nav li{
-    //    > div{
-    //        float: none;
-    //        // Vertically center the text given $navbarHeight
-    //        // Social media icons have height 20px.
-    //        height: 20px;
-    //        padding: (($navbarHeight - 20px) / 2) 15px (($navbarHeight - 20px) / 2) !important;
-    //        color: $navbarLinkColor;
-    //        text-decoration: none;
-    //        text-shadow: 0 1px 0 $navbarBackgroundHighlight;
-//
-    //        &.social-count{
-    //            min-width: 110px;
-    //        }
-    //    }
-    //}
 }
 
-.carousel {
-    margin: 0;
+
+.carousel-indicators > li {
+    @include box-shadow(0 0 0 1px #000);
 }
+
 
 .carousel-inner .item {
-    background-color: #000;
 
-    > a {
+     > a{
         display: block;
         position: relative;
         overflow: hidden;
@@ -93,24 +82,12 @@ footer {
             margin: auto;
         }
     }
-}
+    > .carousel-caption {
+        text-shadow: 0 0 10px #000;
 
-.carousel-control {
-    top: 0;
-    bottom: 0;
-    margin-top: auto;
-    margin-bottom: auto;
-    opacity: 0;
-    @include transition(opacity 0.4s ease-in-out);
-}
-
-.carousel:hover .carousel-control {
-    opacity: .75;
-    @include transition(opacity 0.4s ease-in-out);
-
-    &:hover {
-        opacity: 1;
-        @include transition(opacity 0.4s ease-in-out);
+        a {
+            color: #fff;
+        }
     }
 }
 
@@ -129,7 +106,7 @@ footer {
 
 // Tweak styles for navs inside headers.
 h1, h2, h3, h4, h5, h6{
-    .inline{
+    .list-inline{
         margin-bottom: 0;
         font-size: .75em;
         display: inline-block;
@@ -149,7 +126,7 @@ h1, h2, h3, h4, h5, h6{
 .nav-tabs > li > span {
   padding-top: 8px;
   padding-bottom: 8px;
-  line-height: $line-height-base;
+  line-height: $line-height-base * $base-font-size;
   border: 1px solid transparent;
   @include border-radius(4px 4px 0 0);
 }
@@ -276,8 +253,8 @@ span.unisubs-tabTextchoose, span.unisubs-tabText, span.unisubs-tabTextfinish{
     display: block;
     border-bottom: 1px solid;
     text-align: center;
-    height: $line-height-base / 2;
-    margin-bottom: $line-height-base * 1.5;
+    height: $line-height-base * $base-font-size / 2;
+    margin-bottom: $line-height-base * $base-font-size * 1.5;
 }
 
 .shrinkydink-handle-inner{

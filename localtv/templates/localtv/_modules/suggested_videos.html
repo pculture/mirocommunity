@@ -6,7 +6,7 @@ module displaying them.
 {% load i18n daguerre %}
 {% load url from future %}
 
-<h3>{% trans "Popular" %} <ul class='inline'><li><a href="{% url 'localtv_list_popular' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_popular' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
+<h3>{% trans "Popular" %} <ul class='list-inline'><li><a href="{% url 'localtv_list_popular' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_popular' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
 
 <ul class='thumbnails'>
   {# TODO: calculate a suggested videos list #}

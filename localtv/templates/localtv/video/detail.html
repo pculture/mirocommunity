@@ -98,7 +98,7 @@
             <div class="extra-details">
               {% with categories=current_video.categories.all %}
                 {% if categories %}
-                  <ul class='inline'>
+                  <ul class='list-inline'>
                     <li><strong>Categories</strong></li>
                     {% for category in categories %}
                       <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
@@ -108,7 +108,7 @@
               {% endwith %}
               {% with tags=current_video.tags.all %}
                 {% if tags %}
-                  <ul class='inline'>
+                  <ul class='list-inline'>
                     <li><strong>Tags</strong></li>
                     {% for tag in tags %}
                       {% if tag.name %}
