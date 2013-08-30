@@ -2,7 +2,7 @@
 
 {% load i18n %}
 
-<ul class="nav pull-right">
+<ul class="nav navbar-nav navbar-right">
   {% url 'localtv_about' as url %}
   {% trans 'About' as text %}
   {% include 'djam/_nav_item.html' with url=url text=text request=request only %}
@@ -14,7 +14,7 @@
   {% endif %}
   {% if browse_modules %}
     <li class="dropdown">
-      <a href="#" class='dropdown-toggle' data-toggle='dropdown'>{% trans "Browse" %} <b class="caret"></b></a>
+      <a href="#" class='dropdown-toggle' data-toggle='dropdown'>{% trans "Browse" %} <span class="caret"></span></a>
       <ul class="dropdown-menu">
         {% for module in browse_modules %}
           {% include module %}

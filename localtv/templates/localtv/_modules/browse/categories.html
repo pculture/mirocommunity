@@ -1,7 +1,7 @@
 {% load i18n %}{% load url from future %}
 {% if categories %}
     {% url 'localtv_category_index' as url %}
-    <li class="nav-header{% if url == request.path %} active{% endif %}"><a href="{{ url }}">{% trans 'Categories' %}</a></li>
+    <li class="dropdown-header{% if url == request.path %} active{% endif %}"><a href="{{ url }}">{% trans 'Categories' %}</a></li>
 
     {% for category in categories %}
         {% with url=category.get_absolute_url %}

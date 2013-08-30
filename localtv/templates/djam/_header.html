@@ -1,20 +1,20 @@
 {% load url from future %}
 {% load i18n daguerre uploadtemplate %}
 
-<div class="navbar navbar-static-top">
-  <div class="navbar-inner">
-    <div class="container">
-      {% adjust site_settings.logo.name "fit" height=28 as logo %}
-      {% if logo %}
-          <a href="/"><img src="{{ logo }}" width={{ logo.width }} height={{ logo.height }} /></a>
-      {% endif %}
-      <a class="brand" href="/">{{ site_settings.site.name }}</a>
+<div class="navbar navbar-default navbar-static-top">
+  <div class="container">
+    {% adjust site_settings.logo.name "fit" height=28 as logo %}
+    {% if logo %}
+        <a href="/"><img src="{{ logo }}" width={{ logo.width }} height={{ logo.height }} /></a>
+    {% endif %}
+    <a class="navbar-brand" href="/">{{ site_settings.site.name }}</a>
 
-      <form class="navbar-search" action="{% url 'localtv_search' %}" method="get">
-        <input type="text" class="search-query" placeholder="{% trans 'Search' %}…" name="q" {% if form.q %} value="{{ form.data.q }}"{% endif %}>
-      </form>
+    <form class="navbar-form navbar-left" role="search" action="{% url 'localtv_search' %}" method="get">
+      <div class='form-group'>
+        <input type="text" class="form-control" placeholder="{% trans 'Search' %}…" name="q" {% if form.q %} value="{{ form.data.q }}"{% endif %}>
+      </div>
+    </form>
 
-      {% include "djam/_nav.html" %}
-    </div>
+    {% include "djam/_nav.html" %}
   </div>
 </div>

@@ -1,5 +1,6 @@
 *.pyc
 .sass-cache
+/Gemfile.lock
 /mirocommunity.egg-info/*
 /docs/_build/*
 /.tox/

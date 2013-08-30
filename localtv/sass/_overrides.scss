@@ -7,18 +7,18 @@ body{
 }
 
 header {
-    margin-bottom: $baseLineHeight;
+    margin-bottom: $line-height-base;
 }
 
 footer {
-    background-color: $grayDarker;
-    padding-top: $baseLineHeight * 2;
-    padding-bottom: $baseLineHeight * 2;
+    background-color: $gray-darker;
+    padding-top: $line-height-base * 2;
+    padding-bottom: $line-height-base * 2;
 
-    color: $grayLight;
+    color: $gray-light;
     position: relative;
     margin-top: -150px; /* negative value of footer height */
-    height: 150px - $baseLineHeight * 2;
+    height: 150px - $line-height-base * 2;
     clear: both;
     text-align: center;
 }
@@ -31,9 +31,9 @@ footer {
 .featured-inner {
     margin: 0 auto;
     border: 1px solid $gray;
-    @include box-shadow(0 0 10px $black);
+    @include box-shadow(0 0 10px #000);
     width: 800px;
-    background: $black;
+    background: #000;
 
     @media (max-width: 979px) {
         width: 100%;
@@ -48,22 +48,22 @@ footer {
         @include border-radius(0px);
     }
 
-    .nav li{
-        > div{
-            float: none;
-            // Vertically center the text given $navbarHeight
-            // Social media icons have height 20px.
-            height: 20px;
-            padding: (($navbarHeight - 20px) / 2) 15px (($navbarHeight - 20px) / 2) !important;
-            color: $navbarLinkColor;
-            text-decoration: none;
-            text-shadow: 0 1px 0 $navbarBackgroundHighlight;
-
-            &.social-count{
-                min-width: 110px;
-            }
-        }
-    }
+    //.nav li{
+    //    > div{
+    //        float: none;
+    //        // Vertically center the text given $navbarHeight
+    //        // Social media icons have height 20px.
+    //        height: 20px;
+    //        padding: (($navbarHeight - 20px) / 2) 15px (($navbarHeight - 20px) / 2) !important;
+    //        color: $navbarLinkColor;
+    //        text-decoration: none;
+    //        text-shadow: 0 1px 0 $navbarBackgroundHighlight;
+//
+    //        &.social-count{
+    //            min-width: 110px;
+    //        }
+    //    }
+    //}
 }
 
 .carousel {
@@ -149,7 +149,7 @@ h1, h2, h3, h4, h5, h6{
 .nav-tabs > li > span {
   padding-top: 8px;
   padding-bottom: 8px;
-  line-height: $baseLineHeight;
+  line-height: $line-height-base;
   border: 1px solid transparent;
   @include border-radius(4px 4px 0 0);
 }
@@ -192,7 +192,7 @@ h1, h2, h3, h4, h5, h6{
     }
 
     > i {
-        @extend .muted;
+        @extend .text-muted;
         text-align: center;
         font-size: 100px;
         height: 100px;
@@ -272,12 +272,12 @@ span.unisubs-tabTextchoose, span.unisubs-tabText, span.unisubs-tabTextfinish{
 // Shrinkydink
 .shrinkydink-handle{
     @extend small;
-    @extend .muted;
+    @extend .text-muted;
     display: block;
     border-bottom: 1px solid;
     text-align: center;
-    height: $baseLineHeight / 2;
-    margin-bottom: $baseLineHeight * 1.5;
+    height: $line-height-base / 2;
+    margin-bottom: $line-height-base * 1.5;
 }
 
 .shrinkydink-handle-inner{

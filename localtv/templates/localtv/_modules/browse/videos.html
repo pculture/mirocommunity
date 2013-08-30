@@ -1,6 +1,6 @@
 {% load i18n %}{% load url from future %}
 {% url 'localtv_index' as url %}
-<li class="nav-header{% if url == request.path %} active{% endif %}"><a href="{{ url }}">{% trans 'Videos' %}</a></li>
+<li class="dropdown-header{% if url == request.path %} active{% endif %}"><a href="{{ url }}">{% trans 'Videos' %}</a></li>
 
 {% url 'localtv_list_featured' as url %}
 <li{% if url == request.path %} class="active"{% endif %}><a href="{{ url }}">{% trans 'Featured' %}</a></li>
