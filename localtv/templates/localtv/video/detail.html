@@ -78,7 +78,7 @@
   <div class='container'>
     {% block main %}
       <div class='row'>
-        <div class='span8'>
+        <div class='col-sm-9'>
           <h2>
             {% if current_video.name %}
               {{ current_video.name }}
@@ -131,7 +131,7 @@
             <div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-width="360px" data-num-posts="4"></div>
           </div>
         </div>
-        <div class='span4'>
+        <div class='col-sm-3'>
           {% for module in sidebar_modules %}
             {% include module %}
           {% endfor %}

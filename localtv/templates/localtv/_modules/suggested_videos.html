@@ -8,10 +8,8 @@ module displaying them.
 
 <h3>{% trans "Popular" %} <ul class='list-inline'><li><a href="{% url 'localtv_list_popular' %}" title='{% trans "Browse" %}'><i class='icon-th-large'></i></a></li> <li><a href="{% url 'localtv_feeds_popular' %}" title='RSS'><i class='icon-rss'></i></a></li></ul></h3>
 
-<ul class='thumbnails'>
-  {# TODO: calculate a suggested videos list #}
-  {% adjust_bulk popular_videos|slice:":4" "thumbnail" "fill" width=300 height=216 as adjusted %}
-  {% for video, image in adjusted %}
-    <li class='span4'>{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</li>
-  {% endfor %}
-</ul>
+{# TODO: calculate a suggested videos list #}
+{% adjust_bulk popular_videos|slice:":4" "thumbnail" "fill" width=300 height=216 as adjusted %}
+{% for video, image in adjusted %}
+<div class="col-sm-12 col-xs-6">{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</div>
+{% endfor %}
