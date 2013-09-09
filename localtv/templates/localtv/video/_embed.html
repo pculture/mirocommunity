@@ -1,11 +1,11 @@
 {% load generate_embed filters daguerre video i18n %}
 {% if current_video.external_url|has_embed_generator %}
-  {% generate_embed current_video.external_url width=800 height=500 autoplay=0 %}
+  {% generate_embed current_video.external_url width="100%" height="100%" autoplay=0 %}
 {% elif current_video.embed_code %}
   {{ current_video.embed_code|wmode_transparent }}
 {% else %}
   {% adjust current_video.thumbnail_path 'fill' width=800 height=500 as video_thumbnail %}
-  {% generate_embed current_video.file_url mime_type=current_video.file_url_mimetype width=800 height=500 autoplay=0 poster=video_thumbnail %}
+  {% generate_embed current_video.file_url mime_type=current_video.file_url_mimetype width="100%" height="100%" autoplay=0 poster=video_thumbnail %}
   {% if current_video.file_url_mimetype|is_ogg_media %}
   <p class="help">
     {% blocktrans %}

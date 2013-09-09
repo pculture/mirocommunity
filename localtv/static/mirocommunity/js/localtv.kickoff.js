@@ -73,55 +73,6 @@
             }
         });
     };
-
-    // Amara corrections.
-    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
-    if ($('body').hasClass('video-detail') && (MutationObserver !== undefined)) {
-        function fixAmara() {
-            var wrapper = $('.unisubs-widget'),
-                videoplayer = $('.unisubs-videoplayer'),
-                video = videoplayer.children();
-
-            wrapper.css('width', '');
-            videoplayer.css({'width': '', 'height': ''});
-
-            var container = $('.unisubs-videoTab-container'),
-                link = container.find('.unisubs-subtitleMeLink'),
-                nav = $('.featured-inner ul'),
-                li = $('<li class="dropdown"></li>');
-
-            link.append($('<b class="caret"></b>'));
-            link.addClass('dropdown-toggle')
-            li.append(link);
-            nav.prepend(li);
-
-            container.remove();
-
-            var state = 0,
-                observer = new MutationObserver(function(mutations, observer) {
-                    video.css({'width': '', 'height': ''});
-                    video.attr('width', "");
-                    video.attr('height', "");
-                    observer.disconnect();
-                });
-                observer.observe(video[0], {
-                    attributes: true
-                });
-        }
-        // Done when state is 3.
-        var state = 0,
-            observer = new MutationObserver(function(mutations, observer) {
-                state += 1;
-                if (state == 3) {
-                    fixAmara();
-                    observer.disconnect();
-                };
-            });
-        observer.observe($('.featured-inner')[0], {
-            childList: true,
-            subtree: true
-        });
-    }
     
     // Dropdowns
     $('.nav-item-dropdown').dropdown()

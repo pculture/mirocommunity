@@ -41,37 +41,35 @@
 {% block main-outer %}
   <div class='featured-field'>
     <div class='container'>
-      <div class='featured-inner'>
+      <div class='featured-inner featured-video'>
         {% include "localtv/video/_embed.html" %}
       </div>
       <div class='featured-inner'>
         <div class="navbar navbar-inverse">
-          <div class="navbar-inner">
-            <ul class="nav">
-              <li>
-                <div class="fb-like social-count" data-href="{{ request.build_absolute_uri }}" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false" data-colorscheme="dark"></div>
-              </li>
-              <li>
-                <div class='social-count'>
-                  <a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
-                </div>
-              </li>
-              <li>
-                <div class='social-count'>
-                  <g:plusone size="medium"></g:plusone>
-                </div>
-              </li>
-              <li>
-                <div>
-                  <a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name "fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
-                </div>
-              </li>
-              <li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" title="{% trans 'Email' %}"><i class='icon-envelope'></i></a></li>
-              {% if current_video.file_url %}
-                <li class="file-social"><a href="{{ current_video.file_url }}" title='{% trans "Download Video File" %}'><i class='icon-download-alt'></i></a></li>
-              {% endif %}
-            </ul>
-          </div>
+          <ul class="nav navbar-nav navbar-left">
+            <li>
+              <div class="fb-like navbar-embed" data-href="{{ request.build_absolute_uri }}" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false" data-colorscheme="dark"></div>
+            </li>
+            <li>
+              <div class='navbar-embed'>
+                <a href="https://twitter.com/share" class="twitter-share-button" data-url="{{ request.build_absolute_uri }}">Tweet</a>
+              </div>
+            </li>
+            <li>
+              <div class='navbar-embed'>
+                <g:plusone size="medium"></g:plusone>
+              </div>
+            </li>
+            <li>
+              <div class='navbar-embed'>
+                <a href="http://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&amp;media={% filter urlencode %}http{% if request.is_secure %}s{% endif %}://{{ request.META.HTTP_HOST }}{% adjust current_video.thumbnail.name "fit" width=600 %}{% endfilter %}&amp;description={{ current_video.name|iriencode }}" class="pin-it-button" count-layout="horizontal"><img border="0" src="//assets.pinterest.com/images/PinExt.png" title="Pin It" /></a>
+              </div>
+            </li>
+            <li><a href="{% get_email_share_url_for current_video %}" rel="#overlay" title="{% trans 'Email' %}"><i class='icon-envelope'></i></a></li>
+            {% if current_video.file_url %}
+              <li class="file-social"><a href="{{ current_video.file_url }}" title='{% trans "Download Video File" %}'><i class='icon-download-alt'></i></a></li>
+            {% endif %}
+          </ul>
         </div>
       </div>
     </div>
