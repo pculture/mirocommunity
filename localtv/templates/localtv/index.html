@@ -61,7 +61,9 @@
       {% adjust_bulk new_videos|slice:":4" "thumbnail" 'fill' width=300 height=216 as adjusted %}
       <div class='row'>
         {% for video, image in adjusted %}
-          <div class='col-sm-3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.published_datetime|default:video.created_timestamp|simpletimesince|add:" ago" %}</div>
+          <div class='col-sm-3 col-xs-6'>{% include 'localtv/video/_thumbnail.html' with sorter=video.published_datetime|default:video.created_timestamp|simpletimesince|add:" ago" %}</div>
+          {% cycle 0 1 as display_clearfix silent %}
+          {% if display_clearfix %}<div class='clearfix visible-xs'></div>{% endif %}
         {% endfor %}
       </div>
 
@@ -70,7 +72,9 @@
       {% adjust_bulk popular_videos|slice:":4" "thumbnail" 'fill' width=300 height=216 as adjusted %}
       <div class='row'>
         {% for video, image in adjusted %}
-          <div class='col-sm-3'>{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</div>
+          <div class='col-sm-3 col-xs-6'>{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</div>
+          {% cycle 0 1 as display_clearfix silent %}
+          {% if display_clearfix %}<div class='clearfix visible-xs'></div>{% endif %}
         {% endfor %}
       </div>
     {% endblock %}

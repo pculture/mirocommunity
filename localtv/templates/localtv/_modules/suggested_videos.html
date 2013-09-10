@@ -11,5 +11,8 @@ module displaying them.
 {# TODO: calculate a suggested videos list #}
 {% adjust_bulk popular_videos|slice:":4" "thumbnail" "fill" width=300 height=216 as adjusted %}
 {% for video, image in adjusted %}
-<div class="col-sm-12 col-xs-6">{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</div>
+  <div class="col-xs-6 col-sm-12">{% include 'localtv/video/_thumbnail.html' with sorter=video.watch_count|lower|add:" views" %}</div>
+
+  {% cycle 0 1 as display_clearfix silent %}
+  {% if display_clearfix %}<div class='clearfix visible-xs'></div>{% endif %}
 {% endfor %}
