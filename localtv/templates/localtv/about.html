@@ -6,23 +6,19 @@
 
 {% block main %}
   <div class='row'>
-    <div class='span6'>
+    <div class='col-sm-6 col-xs-12'>
       <h1>{% trans "About" %}</h1>
       {% if site_settings.logo %}
-        <figure class="pull-left">
-          <img class="logo" alt="{{ site_settings.site.name }} Logo" src="{% adjust site_settings.logo.name 'fit' width=480 height=160 %}" />
-        </figure>
+          <img class='img-thumbnail' alt="{{ site_settings.site.name }} Logo" src="{% adjust site_settings.logo.name 'fit' width=480 height=160 %}" />
       {% endif %}
       {% autoescape off %}
         {{ site_settings.about_html }}
       {% endautoescape %}
     </div>
-    <div class='span6'>
+    <div class='col-sm-6 col-xs-12'>
       <h1>{% trans "Powered by Miro Community" %}</h1>
 
-      <figure class="figure-left">
-        <img class="logo" alt="Miro Community logo" src="http://s3.mirocommunity.org.s3.amazonaws.com/static/mirocommunity_site/images/logo.png" width="422" height="65"/>
-      </figure>
+      <a href='http://www.mirocommunity.org' class='thumbnail'><img alt="Miro Community logo" src="http://s3.mirocommunity.org.s3.amazonaws.com/static/mirocommunity_site/images/logo.png" /></a>
       <p>
         {% blocktrans %}
           <a href="http://www.mirocommunity.org">Miro Community</a> is an easy open source video curation platform. Anyone can quickly embed, organize and display videos from around the internet. <a href="http://mirocommunity.org/pricing/">Get started now</a>&#8212;it&#8217;s free and takes less than a minute.

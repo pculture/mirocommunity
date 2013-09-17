@@ -16,7 +16,7 @@
 
   <h1>Login</h1>
   <div class="row">
-    <div class="col-xs-5">
+    <div class="col-sm-5 col-xs-12">
       <form action="{% url 'auth_login' %}{% if next %}?next={{ next }}{% endif %}" method="post">
         {% csrf_token %}
 
@@ -64,46 +64,52 @@
         </div>
       </form>
     </div>
-    <div class='col-xs-2'>
-      <h2>- or -</h2>
+
+    <div class='col-sm-2 col-xs-12'>
+      <h2 class='text-center'>- or -</h2>
     </div>
-    <div class="col-xs-5">
-      <p>
-        {# facebook #}
-        <a href="{% url 'socialauth_begin' backend='facebook' %}{% if next %}?next={{ next }}{% endif %}">
-          <img src="{% static 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Facebook" />
-        </a>
-      </p>
 
-      <p>
-        {# twitter #}
-        <a href="{% url 'socialauth_begin' backend='twitter' %}{% if next %}?next={{ next }}{% endif %}">
-          <img src="{% static 'localtv/images/twitter_login.png' %}" width="151" height="24" alt="Sign In with Twitter" />
-        </a>
-      </p>
+    <div class="col-sm-5 col-xs-12">
+      <div class='row'>
+        <div class='col-sm-12 col-xs-6'>
+          {# facebook #}
+          <p><a href="{% url 'socialauth_begin' backend='facebook' %}{% if next %}?next={{ next }}{% endif %}">
+            <img src="{% static 'localtv/images/facebook_login.png' %}" width="151" height="24" alt="Sign In with Facebook" />
+          </a></p>
+        </div>
 
-      <p>
-        {# google #}
-        <form action="{% url 'socialauth_begin' backend='google' %}" method="post">{% csrf_token %}
-        <button class='btn btn-primary'>Sign in with Google</button>
-        </form>
-      </p>
+        <div class='col-sm-12 col-xs-6'>
+          {# twitter #}
+          <p><a href="{% url 'socialauth_begin' backend='twitter' %}{% if next %}?next={{ next }}{% endif %}">
+            <img src="{% static 'localtv/images/twitter_login.png' %}" width="151" height="24" alt="Sign In with Twitter" />
+          </a></p>
+        </div>
 
-      <p>
-        {# openid #}
-        <form action="{% url 'socialauth_begin' backend='openid' %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
-          {% csrf_token %}
-          <div class='input-group'>
-            <input class='form-control' type="text" name="openid_identifier" placeholder="Login with OpenID" />
-            <span class="input-group-btn">
-              <button class='btn btn-primary'>Sign in</button>
+        <div class='clearfix visible-xs'></div>
+
+        <div class='col-sm-12 col-xs-6'>
+          {# google #}
+          <form action="{% url 'socialauth_begin' backend='google' %}" method="post">{% csrf_token %}
+          <p><button class='btn btn-primary'>Sign in with Google</button></p>
+          </form>
+        </div>
+
+        <div class='col-sm-12 col-xs-6'>
+          {# openid #}
+          <form action="{% url 'socialauth_begin' backend='openid' %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
+            {% csrf_token %}
+            <div class='input-group'>
+              <input class='form-control' type="text" name="openid_identifier" placeholder="Login with OpenID" />
+              <span class="input-group-btn">
+                <button class='btn btn-primary'>Sign in</button>
+              </span>
+            </div>
+            <span class='help-block'>
+              <a href="http://openid.net/get/" target="_blank">Don't have an openid? Get One!</a>
             </span>
-          </div>
-          <span class='help-block'>
-            <a href="http://openid.net/get/" target="_blank">Don't have an openid? Get One!</a>
-          </span>
-        </form>
-      </p>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
