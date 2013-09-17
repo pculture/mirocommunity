@@ -18,6 +18,9 @@
       <ul class="dropdown-menu">
         {% for module in browse_modules %}
           {% include module %}
+          {% if not forloop.last %}
+            <li class='divider'></li>
+          {% endif %}
         {% endfor %}
       </ul>
     </li>

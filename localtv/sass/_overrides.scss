@@ -125,6 +125,12 @@ footer {
     }
 }
 
+// Support for link dropdown headers.
+.dropdown-menu > .dropdown-header-link > a{
+    font-weight: bold;
+}
+
+
 // Tweak styles for navs inside headers.
 h1, h2, h3, h4, h5, h6{
     .list-inline{
