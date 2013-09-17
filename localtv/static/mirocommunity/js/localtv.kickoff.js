@@ -2,39 +2,14 @@
     // shrinkydink all .video-details classes
     $('.video-details').shrinkydink();
 
-    function calculate_placement(element, parent, default_top) {
-        var $element = $(element),
-            $parent = $(parent),
-            offset = $parent.offset();
-
-        $element.appendTo('body');
-        var width = $element.width(),
-            height = $element.height();
-
-        if (offset.top < height) {
-            return 'bottom';
-        }
-        if (offset.left + $parent.width() + (width / 2) > $(window).width()) {
-            return 'left';
-        } else if (default_top) {
-            return 'top';
-        }
-        return 'right';
-    }
-    function calculate_placement_top(element, parent) {
-        return calculate_placement(element, parent, true);
-    }
-
     $('[title]').tooltip({
-        placement: calculate_placement_top
+        placement: 'auto top'
     });
     
     // add popovers to things
-    // the placement function calculates the placement of the popover,
-    // defaulting to right and switching to left if the popover is too close
-    // to the edge.
     $('[data-toggle="popover"]').popover({
-        placement: calculate_placement
+        placement: 'auto right',
+        container: 'body'
     });
 
     // Infinite Scroll
