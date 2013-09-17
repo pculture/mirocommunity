@@ -265,3 +265,8 @@ h1, h2, h3, h4, h5, h6{
     overflow:auto;
     padding-bottom:150px; /* this needs to be bigger than footer height*/
 }
+
+
+// add margin to input groups. Bootstrap is missing this.
+
+.input-group{margin-bottom: 15px;}

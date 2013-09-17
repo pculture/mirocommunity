@@ -16,26 +16,19 @@
 
   <h1>Login</h1>
   <div class="row">
-    <div class="span5">
+    <div class="col-xs-5">
       <form action="{% url 'auth_login' %}{% if next %}?next={{ next }}{% endif %}" method="post">
         {% csrf_token %}
 
-        <ul class='unstyled'>
-          <li>
-            <div class='input-prepend'>
-              <span class='add-on'><i class='icon-user'></i></span>
-              <input type="text" name="username" maxlength="30" placeholder="Username" />
-            </div>
-          </li>
+        <div class='input-group'>
+          <label class='input-group-addon' for='id_login_username'><i class='icon-user icon-fixed-width'></i></label>
+          <input class='form-control' type="text" id='id_login_username' name="username" maxlength="30" placeholder="Username" />
+        </div>
 
-          <li>
-            <div class='input-prepend'>
-              <span class='add-on'><i class='icon-key'></i></span>
-              <input type="password" name="password" maxlength="30" placeholder="Password" />
-            </div>
-          </li>
-        </ul>
-
+        <div class='input-group'>
+          <label class='input-group-addon' for='id_login_password'><i class='icon-key icon-fixed-width'></i></label>
+          <input class='form-control' type="password" id='id_login_password' name="password" maxlength="30" placeholder="Password" />
+        </div>
         <div>
           <button class='btn btn-success btn-large'>Login</button>
           <a class='btn btn-link' href="{% url 'auth_password_reset' %}">Forgot your password?</a>
@@ -45,45 +38,36 @@
       <h3>Sign up</h3>
       <form action="/accounts/register/" method="post">
         {% csrf_token %}
-        <ul class='unstyled'>
-          <li>
-            <div class='input-prepend'>
-              <span class='add-on'><i class='icon-user'></i></span>
-              <input type="text" name="username" maxlength="30" placeholder="Username" />
-            </div>
-          </li>
 
-          <li>
-            <div class='input-prepend'>
-              <span class='add-on'><i class='icon-envelope'></i></span>
-              <input type="text" name="email" maxlength="75" placeholder="Email" />
-            </div>
-          </li>
+        <div class='input-group'>
+          <label class='input-group-addon' for='id_signup_username'><i class='icon-user icon-fixed-width'></i></label>
+          <input class='form-control' type="text" id='id_signup_username' name="username" maxlength="30" placeholder="Username" />
+        </div>
 
-          <li>
-            <div class='input-prepend'>
-              <span class='add-on'><i class='icon-key'></i></span>
-              <input type="password" name="password1" placeholder="Password" />
-            </div>
-          </li>
+        <div class='input-group'>
+          <label class='input-group-addon' for='id_signup__email'><i class='icon-envelope icon-fixed-width'></i></label>
+          <input class='form-control' type="text" id='id_signup__email' name="email" maxlength="75" placeholder="Email" />
+        </div>
 
-          <li>
-            <div class='input-prepend'>
-              <span class='add-on'><i class='icon-key'></i></span>
-              <input type="password" name="password2" placeholder="Password (again)" />
-            </div>
-          </li>
-        </ul>
+        <div class='input-group'>
+          <label class='input-group-addon' for='id_signup_password1'><i class='icon-key icon-fixed-width'></i></label>
+          <input class='form-control' type="password" id='id_signup_password1' name="password1" placeholder="Password" />
+        </div>
+
+        <div class='input-group'>
+          <label class='input-group-addon' for='id_signup_password2'><i class='icon-key icon-fixed-width'></i></label>
+          <input class='form-control' type="password" id='id_signup_password2' name="password2" placeholder="Password (again)" />
+        </div>
 
         <div>
           <button class='btn btn-large btn-success'>Sign Up</button>
         </div>
       </form>
     </div>
-    <div class='span2'>
+    <div class='col-xs-2'>
       <h2>- or -</h2>
     </div>
-    <div class="span5">
+    <div class="col-xs-5">
       <p>
         {# facebook #}
         <a href="{% url 'socialauth_begin' backend='facebook' %}{% if next %}?next={{ next }}{% endif %}">
@@ -109,9 +93,11 @@
         {# openid #}
         <form action="{% url 'socialauth_begin' backend='openid' %}{% if next %}?openid_next={{ next }}{% endif %}" method="post">
           {% csrf_token %}
-          <div class='input-append'>
-            <input type="text" name="openid_identifier" placeholder="Login with OpenID" />
-            <button class='btn btn-primary'>Sign in</button>
+          <div class='input-group'>
+            <input class='form-control' type="text" name="openid_identifier" placeholder="Login with OpenID" />
+            <span class="input-group-btn">
+              <button class='btn btn-primary'>Sign in</button>
+            </span>
           </div>
           <span class='help-block'>
             <a href="http://openid.net/get/" target="_blank">Don't have an openid? Get One!</a>
