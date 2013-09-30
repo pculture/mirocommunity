@@ -125,6 +125,11 @@ footer {
     }
 }
 
+// Correct dropdown behavior for top navbar.
+.navbar-static-top{
+    z-index: 1001;
+}
+
 // Support for link dropdown headers.
 .dropdown-menu > .dropdown-header-link > a{
     font-weight: bold;
