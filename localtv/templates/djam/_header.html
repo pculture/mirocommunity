@@ -3,11 +3,13 @@
 
 <div class="navbar navbar-default navbar-static-top">
   <div class="container">
-    {% adjust site_settings.logo.name "fit" height=28 as logo %}
-    {% if logo %}
+    <div class='navbar-header'>
+      {% adjust site_settings.logo.name "fit" height=28 as logo %}
+      {% if logo %}
         <a href="/"><img src="{{ logo }}" width={{ logo.width }} height={{ logo.height }} /></a>
-    {% endif %}
-    <a class="navbar-brand" href="/">{{ site_settings.site.name }}</a>
+      {% endif %}
+      <a class="navbar-brand" href="/">{{ site_settings.site.name }}</a>
+    </div>
 
     <form class="navbar-form navbar-left" role="search" action="{% url 'localtv_search' %}" method="get">
       <div class='form-group'>
