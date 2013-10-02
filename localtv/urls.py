@@ -72,7 +72,6 @@ urlpatterns += patterns(
     # and use django-registration's copy of this view.
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {
                     'next_page': '/'}),
-    url(r'^accounts/profile/', include('localtv.user_profile.urls')),
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^accounts/', include('social_auth.urls')),
     url(r'^thumbs/', include('daguerre.urls')),

@@ -1,11 +1,15 @@
-from django import forms
+# encoding: utf-8
+
 from django.contrib.auth.models import User
 from django.utils.encoding import force_unicode
-
-from localtv import models, utils
+import floppyforms as forms
 from notification import models as notification
 
+from localtv import models, utils
+
+
 Profile = utils.get_profile_model()
+
 
 class ProfileForm(forms.ModelForm):
     name = forms.CharField(max_length=61, required=False)
@@ -24,12 +28,12 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs)
-        if self.instance.pk: # existing user:
+        if self.instance.pk:  # existing user:
             self.fields['name'].initial = self.instance.get_full_name()
             try:
                 profile = self.instance.get_profile()
             except Profile.DoesNotExist:
-                pass # we'll do it later
+                pass  # we'll do it later
             else:
                 for field_name in ('location', 'website', 'description', 'logo'):
                     self.fields[field_name].initial = getattr(profile,
@@ -50,7 +54,7 @@ class ProfileForm(forms.ModelForm):
 
     def clean_username(self):
         username = self.cleaned_data['username']
-        if username == force_unicode(self.instance.username): # no change
+        if username == force_unicode(self.instance.username):  # no change
             return username
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError('That username is already taken.')
@@ -84,8 +88,8 @@ class ProfileForm(forms.ModelForm):
 
         return instance
 
-class NotificationsForm(forms.Form):
 
+class NotificationsForm(forms.Form):
     CHOICES = (
         ('video_approved', 'A video you submitted was approved'),
         ('video_comment', 'Someone left a comment on your video'),
@@ -104,10 +108,11 @@ class NotificationsForm(forms.Form):
 
     notifications = forms.MultipleChoiceField(
         required=False, choices=CHOICES,
-        widget=forms.CheckboxSelectMultiple)
+        widget=forms.CheckboxSelectMultiple,
+        label='Get notifications when…')
 
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop('instance', None)
+    def __init__(self, user, *args, **kwargs):
+        self.instance = user
         forms.Form.__init__(self, *args, **kwargs)
         if self.instance:
             field = self.fields['notifications']
@@ -121,7 +126,6 @@ class NotificationsForm(forms.Form):
                 if notification.should_send(self.instance, notice_type, "1"):
                     initial.append(choice)
             self.initial.setdefault('notifications', initial)
-
 
     def save(self):
         if not self.instance:
