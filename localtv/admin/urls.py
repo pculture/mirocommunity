@@ -4,7 +4,7 @@ from djam.riffs.auth import AuthRiff
 from django.conf.urls import patterns, url, include
 
 from localtv.admin.riffs import (VideoRiff, FeedRiff, ProfileRiff,
-                                 NotificationsRiff)
+                                 NotificationsRiff, SettingsRiff)
 
 
 class MirocommunityAdminRiff(AdminRiff):
@@ -18,7 +18,7 @@ class MirocommunityAdminRiff(AdminRiff):
 
 admin_riff = MirocommunityAdminRiff()
 
-for cls in (AuthRiff, VideoRiff, FeedRiff, UserRiff,
+for cls in (AuthRiff, VideoRiff, FeedRiff, UserRiff, SettingsRiff,
             ProfileRiff, NotificationsRiff):
     admin_riff.register(cls)
 

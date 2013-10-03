@@ -5,8 +5,8 @@ from django.db.models import Count
 from django.template.defaultfilters import pluralize
 
 from localtv.admin.forms import (VideoForm, FeedCreateForm, ProfileForm,
-                                 NotificationsForm)
-from localtv.admin.views import ProfileView, NotificationsView
+                                 NotificationsForm, SettingsForm)
+from localtv.admin.views import ProfileView, NotificationsView, SettingsView
 from localtv.models import Video, Feed, SourceImport
 from localtv.templatetags.filters import simpletimesince
 
@@ -119,6 +119,23 @@ class ProfileRiff(Riff):
 
     def get_default_url(self):
         return self.reverse('profile')
+
+
+class SettingsRiff(Riff):
+    display_name = "Settings"
+
+    def get_extra_urls(self):
+        return patterns('',
+            url(r'^$',
+                SettingsView.as_view(
+                    form_class=SettingsForm,
+                    template_name='djam/form.html',
+                    **self.get_view_kwargs()),
+                name='settings'),
+        )
+
+    def get_default_url(self):
+        return self.reverse('settings')
 
 
 class VideoRiff(ModelRiff):

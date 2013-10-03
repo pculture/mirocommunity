@@ -117,10 +117,7 @@ class SiteSettings(Thumbnailable):
     #: A collection of Users who have administrative access to the site.
     admins = models.ManyToManyField('auth.User', blank=True,
                                     related_name='admin_for')
-    # was display_submit_button
-    #: Whether or not the Submit Video button should display or not.
-    #: Doesn't affect whether videos can be submitted or not.
-    #: See http://bugzilla.pculture.org/show_bug.cgi?id=19809
+    #: Whether or not the "submit" workflow is enabled.
     submission_allowed = models.BooleanField(default=True)
     #: Whether or not users need to log in to submit videos.
     submission_requires_login = models.BooleanField(default=False)

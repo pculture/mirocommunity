@@ -155,6 +155,25 @@ class ProfileForm(forms.ModelForm):
         return instance
 
 
+class SettingsForm(forms.ModelForm):
+    name = forms.CharField(label='Site name', max_length=50)
+
+    class Meta:
+        model = SiteSettings
+        fields = ('logo', 'logo_contains_site_name', 'background', 'css',
+                  'footer_content', 'site_description', 'google_analytics_ua',
+                  'google_analytics_domain', 'facebook_admins',
+                  'submission_allowed', 'submission_requires_login',
+                  'submission_requires_email')
+
+    def save(self):
+        settings = super(SettingsForm, self).save()
+        settings.site.name = self.cleaned_data['name']
+        settings.site.save()
+        SiteSettings.objects.clear_cache()
+        return settings
+
+
 class VideoForm(forms.ModelForm):
     tags = TagField(required=False)
 
