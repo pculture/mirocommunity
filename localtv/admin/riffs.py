@@ -144,6 +144,8 @@ class VideoRiff(ModelRiff):
     list_kwargs = {
         'paginate_by': 10,
         'filters': ('status',),
+        'columns': ('name', 'published_datetime', 'status',
+                    'created_timestamp'),
     }
     update_kwargs = {
         'form_class': VideoForm,
