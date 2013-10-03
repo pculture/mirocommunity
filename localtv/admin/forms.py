@@ -2,18 +2,40 @@
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.utils.encoding import force_unicode
 import floppyforms as forms
 from haystack import connections
 from notification import models as notification
 from tagging.forms import TagField
 
-from localtv.models import Video, SiteSettings
+from localtv.models import Video, SiteSettings, Category
 from localtv.tasks import feed_update
 from localtv.utils import get_profile_model
 
 
 Profile = get_profile_model()
+
+
+class CategoryForm(forms.ModelForm):
+    parent = forms.ModelChoiceField(required=False,
+                                    queryset=Category.objects.filter(
+                                        site=settings.SITE_ID),
+                                    widget=forms.Select)
+
+    class Meta:
+        model = Category
+        exclude = ('site',)
+
+    def _post_clean(self):
+        self.instance.site = Site.objects.get_current()
+        # Because site is excluded, this won't validate uniqueness.
+        super(CategoryForm, self)._post_clean()
+        try:
+            self.instance.validate_unique()
+        except ValidationError, e:
+            self._update_errors(e.message_dict)
 
 
 class FeedCreateForm(forms.ModelForm):

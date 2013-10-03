@@ -5,9 +5,10 @@ from django.db.models import Count
 from django.template.defaultfilters import pluralize
 
 from localtv.admin.forms import (VideoForm, FeedCreateForm, ProfileForm,
-                                 NotificationsForm, SettingsForm)
+                                 NotificationsForm, SettingsForm,
+                                 CategoryForm)
 from localtv.admin.views import ProfileView, NotificationsView, SettingsView
-from localtv.models import Video, Feed, SourceImport
+from localtv.models import Video, Feed, SourceImport, Category
 from localtv.templatetags.filters import simpletimesince
 
 
@@ -157,6 +158,28 @@ class VideoRiff(ModelRiff):
                     'tags',
                     'categories',
                     'authors',
+                )
+            }),
+        ),
+    }
+
+
+class CategoryRiff(ModelRiff):
+    model = Category
+    list_kwargs = {
+        'paginate_by': 10,
+        'columns': ('name',)
+    }
+    update_kwargs = {
+        'form_class': CategoryForm,
+        'fieldsets': (
+            (None, {
+                'fields': (
+                    'name',
+                    'slug',
+                    'logo',
+                    'description',
+                    'parent',
                 )
             }),
         ),

@@ -612,6 +612,7 @@ class Category(MPTTModel):
         unique_together = (
             ('slug', 'site'),
             ('name', 'site'))
+        verbose_name_plural = _('categories')
 
     def __unicode__(self):
         return self.name
