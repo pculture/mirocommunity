@@ -281,3 +281,49 @@ h1, h2, h3, h4, h5, h6{
 // add margin to input groups. Bootstrap is missing this.
 
 .input-group{margin-bottom: 15px;}
+
+// Chosen
+// ==================================================
+
+.chzn-container {
+    font-size: $font-size-base;
+}
+
+.chzn-container-single .chzn-single{
+    line-height: $line-height-base;
+    height: 8px + ($line-height-base * $font-size-base);
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 48px;
+
+    span {
+        margin-right: 0;
+    }
+}
+
+.chzn-container .chzn-results li {
+    line-height: $line-height-base;
+}
+
+.chzn-container-single .chzn-single abbr,
+.chzn-container-single .chzn-single div b {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.chzn-container-single .chzn-search input{
+    // uses border-box.
+    height: 8px + ($line-height-base * $font-size-base);
+}
+
+.chzn-container-multi .chzn-choices {
+    @extend input;
+    @extend .form-control;
+    min-width: 200px;
+
+    .search-field input{
+        // uses border-box.
+        height: 25px;
+    }
+}
+
