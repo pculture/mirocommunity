@@ -1,5 +1,10 @@
+from djam.batteries import UserRiff
 from djam.riffs.admin import AdminRiff
+from djam.riffs.auth import AuthRiff
 from django.conf.urls import patterns, url, include
+
+from localtv.admin.riffs import (VideoRiff, FeedRiff, ProfileRiff,
+                                 NotificationsRiff)
 
 
 class MirocommunityAdminRiff(AdminRiff):
@@ -12,8 +17,10 @@ class MirocommunityAdminRiff(AdminRiff):
 
 
 admin_riff = MirocommunityAdminRiff()
-admin_riff.autodiscover(with_modeladmins=False, with_batteries=False)
 
+for cls in (AuthRiff, VideoRiff, FeedRiff, UserRiff,
+            ProfileRiff, NotificationsRiff):
+    admin_riff.register(cls)
 
 urlpatterns = patterns('',
     url(r'^', include(admin_riff.urls)),

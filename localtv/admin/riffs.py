@@ -1,67 +1,14 @@
+from djam.riffs.base import Riff
 from djam.riffs.models import ModelRiff
-from django.conf import settings
+from django.conf.urls import patterns, url
 from django.db.models import Count
 from django.template.defaultfilters import pluralize
-import floppyforms as forms
-from haystack import connections
-from tagging.forms import TagField
 
+from localtv.admin.forms import (VideoForm, FeedCreateForm, ProfileForm,
+                                 NotificationsForm)
+from localtv.admin.views import ProfileView, NotificationsView
 from localtv.models import Video, Feed, SourceImport
-from localtv.tasks import feed_update
 from localtv.templatetags.filters import simpletimesince
-
-
-class VideoForm(forms.ModelForm):
-    tags = TagField(required=False)
-
-    def save(self, commit=True):
-        # We need to update the Video.tags descriptor manually because
-        # Django's model forms does not (django.forms.models.construct_instance)
-        self.instance.tags = self.cleaned_data['tags']
-        instance = super(VideoForm, self).save(commit=False)
-        if commit:
-            instance.save(update_index=False)
-            self.save_m2m()
-            instance._update_index = True
-            ui = connections['default'].get_unified_index()
-            ui.get_index(Video)._enqueue_update(instance)
-        return instance
-
-
-class VideoRiff(ModelRiff):
-    model = Video
-    list_kwargs = {
-        'paginate_by': 10,
-        'filters': ('status',),
-    }
-    update_kwargs = {
-        'form_class': VideoForm,
-        'fieldsets': (
-            (None, {
-                'fields': (
-                    'name',
-                    'website_url',
-                    'thumbnail',
-                    'when_published',
-                    'description',
-                    'embed_code',
-                    'tags',
-                    'categories',
-                    'authors',
-                )
-            }),
-        ),
-    }
-
-
-class FeedCreateForm(forms.ModelForm):
-    def save(self, commit=True):
-        self.instance.site_id = settings.SITE_ID
-        self.instance.name = self.instance.original_url
-        instance = super(FeedCreateForm, self).save(commit)
-        if commit:
-            feed_update.delay(instance.pk)
-        return instance
 
 
 def latest_import(source):
@@ -140,4 +87,61 @@ class FeedRiff(ModelRiff):
     }
 
 
-riffs = [VideoRiff, FeedRiff]
+class NotificationsRiff(Riff):
+    display_name = "Notifications"
+
+    def get_extra_urls(self):
+        return patterns('',
+            url(r'^$',
+                NotificationsView.as_view(
+                    form_class=NotificationsForm,
+                    template_name='djam/form.html',
+                    **self.get_view_kwargs()),
+                name='notifications'),
+        )
+
+    def get_default_url(self):
+        return self.reverse('notifications')
+
+
+class ProfileRiff(Riff):
+    display_name = "Profile"
+
+    def get_extra_urls(self):
+        return patterns('',
+            url(r'^$',
+                ProfileView.as_view(
+                    form_class=ProfileForm,
+                    template_name='djam/form.html',
+                    **self.get_view_kwargs()),
+                name='profile'),
+        )
+
+    def get_default_url(self):
+        return self.reverse('profile')
+
+
+class VideoRiff(ModelRiff):
+    model = Video
+    list_kwargs = {
+        'paginate_by': 10,
+        'filters': ('status',),
+    }
+    update_kwargs = {
+        'form_class': VideoForm,
+        'fieldsets': (
+            (None, {
+                'fields': (
+                    'name',
+                    'website_url',
+                    'thumbnail',
+                    'when_published',
+                    'description',
+                    'embed_code',
+                    'tags',
+                    'categories',
+                    'authors',
+                )
+            }),
+        ),
+    }

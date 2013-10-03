@@ -1,6 +1,6 @@
 {% load url from future %}
 
-{% load i18n %}
+{% load i18n djam %}
 
 <ul class="nav navbar-nav navbar-right">
   {% url 'localtv_about' as url %}
@@ -32,20 +32,19 @@
     </li>
   {% endif %}
   {% if request.user.is_authenticated %}
-    {% url 'localtv_user_profile' as url %}
     {% trans 'Your Profile' as title %}
-    {% include 'djam/_nav_item.html' with url=url title=title text=request.user.get_full_name|default:request.user.username icon='icon-user' request=request only %}
+    {% include 'djam/_nav_item.html' with url=base_riff.profile.get_default_url title=title text=request.user.get_full_name|default:request.user.username icon='icon-user' request=request only %}
 
     {% if user_is_admin %}
       {% trans 'Admin' as title %}
       {% include 'djam/_nav_item.html' with icon='icon-cogs' url=base_riff.get_default_url title=title request=request only %}
     {% endif %}
 
-    {% url 'auth_logout' as url %}
+    {% riff_url base_riff.auth 'logout' as url %}
     {% trans 'Logout' as title %}
     {% include 'djam/_nav_item.html' with icon='icon-signout' url=url|add:"?next="|add:request.META.PATH_INFO title=title request=request only %}
   {% else %}{# if not request.user.is_authenticated #}
-    {% url 'auth_login' as url %}
+    {% riff_url base_riff.auth 'login' as url %}
     {% trans 'Login' as text %}
     {% include 'djam/_nav_item.html' with url=url|add:"?next="|add:request.META.PATH_INFO text=text request=request only %}
   {% endif %}
