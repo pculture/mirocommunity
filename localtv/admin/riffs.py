@@ -150,9 +150,8 @@ class VideoRiff(ModelRiff):
             (None, {
                 'fields': (
                     'name',
-                    'website_url',
+                    'external_url',
                     'thumbnail',
-                    'when_published',
                     'description',
                     'embed_code',
                     'tags',

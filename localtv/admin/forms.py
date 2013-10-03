@@ -175,7 +175,7 @@ class SettingsForm(forms.ModelForm):
 
 
 class VideoForm(forms.ModelForm):
-    tags = TagField(required=False)
+    tags = TagField(required=False, widget=forms.widgets.Input)
 
     def save(self, commit=True):
         # We need to update the Video.tags descriptor manually because
