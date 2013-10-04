@@ -1,9 +1,9 @@
 import urllib2
 
-from django import forms
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+import floppyforms as forms
 import vidscraper
 from vidscraper.exceptions import UnhandledVideo
 

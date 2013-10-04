@@ -9,7 +9,7 @@
     <div class='col-sm-6 col-xs-12'>
       <h2>{% trans "Submit a Video" %}</h2>
 
-      <form action="{% url 'localtv_submit_video' %}" method='post'>{% csrf_token %}
+      <form action="{{ request.path }}" method='post'>{% csrf_token %}
         {% if form.own_duplicate or form.other_duplicate %}
           <div class='alert'>
             <p>{% if form.own_duplicate %}

@@ -7,7 +7,8 @@ from django.template.defaultfilters import pluralize
 from localtv.admin.forms import (VideoForm, FeedCreateForm, ProfileForm,
                                  NotificationsForm, SettingsForm,
                                  CategoryForm)
-from localtv.admin.views import ProfileView, NotificationsView, SettingsView
+from localtv.admin.views import (ProfileView, NotificationsView, SettingsView,
+                                 VideoCreateView)
 from localtv.models import Video, Feed, SourceImport, Category
 from localtv.templatetags.filters import simpletimesince
 
@@ -141,6 +142,7 @@ class SettingsRiff(Riff):
 
 class VideoRiff(ModelRiff):
     model = Video
+    create_view = VideoCreateView
     list_kwargs = {
         'paginate_by': 10,
         'filters': ('status',),

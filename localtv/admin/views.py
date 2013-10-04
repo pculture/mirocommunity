@@ -1,7 +1,8 @@
-from djam.views.generic import UpdateView, FormView
+from djam.views.generic import UpdateView, FormView, RiffViewMixin
 from django.http import Http404
 
 from localtv.models import SiteSettings
+from localtv.views import SubmitView
 
 
 class ProfileView(UpdateView):
@@ -58,3 +59,8 @@ class SettingsView(UpdateView):
         if not self.request.user_is_admin():
             raise Http404
         return SiteSettings.objects.get_current()
+
+
+class VideoCreateView(RiffViewMixin, SubmitView):
+    def get_success_url(self):
+        return self.riff.reverse('update', kwargs={'pk': self.object.pk})
