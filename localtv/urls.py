@@ -68,14 +68,10 @@ urlpatterns += patterns(
 # Various inclusions
 urlpatterns += patterns(
     '',
-    # In the long term we should have a registration/logout template
-    # and use django-registration's copy of this view.
-    url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', {
-                    'next_page': '/'}),
-    url(r'^accounts/', include('registration.backends.default.urls')),
-    url(r'^accounts/', include('social_auth.urls')),
     url(r'^thumbs/', include('daguerre.urls')),
     url(r'^admin/', include('localtv.admin.urls')),
+    url(r'^admin/', include('registration.backends.default.urls')),
+    url(r'^admin/', include('social_auth.urls')),
     url(r'^listing/', include('localtv.listing.urls')),
     url(r'^feeds/', include('localtv.feeds.urls')),
     url(r'^goodies/', include('localtv.goodies.urls')),

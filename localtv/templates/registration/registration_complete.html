@@ -1,14 +1,10 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "djam/__base.html" %}
 
 {% load i18n %}
 
-{% block title %}{{ block.super }} - {% trans "Registration Completed" %}{% endblock %}
+{% block title %}{% trans "Registration Completed" %} – {{ block.super }}{% endblock %}
 
 {% block main %}
-	<header class="page-header">
-		<h1 class="page-title">{% trans "Registration Completed" %}</h1>
-	</header>
-	<div class="page-content padded">
-		<div class="message info">{% blocktrans with name=site_settings.site.name %}Thank you for registering at {{ name }}. Please check your email for account activation instructions.{% endblocktrans %}</div>
-	</div>
+	<h1>{% trans "Registration Completed" %}</h1>
+	<div class="message info">{% blocktrans with name=site_settings.site.name %}Thank you for registering at {{ name }}. Please check your email for account activation instructions.{% endblocktrans %}</div>
 {% endblock %}

@@ -1,25 +1,15 @@
-{% extends "localtv/__layouts/100.html" %}
+{% extends "djam/form.html" %}
 
 {% load i18n %}
 
 {% block title %}{% trans "Register" %}{% endblock %}
 
-{% block styles %}
-{{ block.super }}
+{% block main %}
+	<h1>{% trans "Register for a New Account" %}</h1>
+	
+	{{ block.super }}
 {% endblock %}
 
-{% block main %}
-	<header class="page-header">
-		<h1 class="page-title">{% trans "Register for a New Account" %}</h1>
-	</header>
-	<div class="page-content padded">
-		<form action="{% url registration_register %}" method="POST">{% csrf_token %}
-			{% include "localtv/_form_inner.html" %}
-			<div class="control-group">
-				<div class="controls">
-					<button>{% trans "Register" %}</button>
-				</div>
-			</div>
-		</form>
-	</div>
-{% endblock %}
+{% block form_action %}{% url registration_register %}{% endblock %}
+
+{% block success-text %}{% trans "Register" %}{% endblock %}
